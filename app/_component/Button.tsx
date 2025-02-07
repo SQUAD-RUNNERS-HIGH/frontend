@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-function FlatButton({
+function Button({
   children,
   onPress,
   theme = "default",
@@ -33,7 +33,7 @@ function FlatButton({
   );
 }
 
-export default FlatButton;
+export default Button;
 
 const styles = StyleSheet.create({
   button: {
