@@ -4,12 +4,13 @@ import { StyleSheet, View, Text, Image, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import RhSplashScreen from "./_component/RhSplashScreen";
 import Button from "./_component/Button";
+import { useRouter } from "expo-router";
 // Splash Screen을 유지
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [isAppReady, setAppReady] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     const prepareApp = async () => {
       // Splash Screen 동안 실행할 초기 작업 (ex: 데이터 로딩, API 호출 등)
@@ -33,13 +34,13 @@ export default function App() {
       style={styles.rootContainer}
     >
       <View style={styles.container}>
-        <View style={styles.innerContainer}>
+        <View  style={styles.innerContainer}>
           <Image source={require("../assets/images/logo.png")} />
           <Text style={styles.text}>Runner's High</Text>
         </View>
         <View style={styles.buttonGroup}>
-          <Button onPress={() => {}}>로그인</Button>
-          <Button theme='secondary' onPress={() => {}}>회원가입</Button>
+          <Button onPress={() => {router.push("/login")}}>로그인</Button>
+          <Button theme='secondary' onPress={() => {router.push("/signup")}}>회원가입</Button>
         </View>
       </View>
     </LinearGradient>
