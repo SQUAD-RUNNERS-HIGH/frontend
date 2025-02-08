@@ -38,7 +38,7 @@ export default Button;
 const styles = StyleSheet.create({
   button: {
     paddingVertical: 14,
-    paddingHorizontal: 134,
+    width:'100%',
     borderRadius: 6,
     elevation: 2,
     shadowColor: "black",
