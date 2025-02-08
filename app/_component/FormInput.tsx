@@ -12,6 +12,7 @@ interface FormInputProps {
   type?: string;
   isRadio?: boolean;
   placeholder: string;
+  hideError?: boolean;
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -22,6 +23,7 @@ const FormInput: React.FC<FormInputProps> = ({
   type = "text",
   placeholder,
   isRadio,
+  hideError
 }) => {
   return (
     <View style={styles.form}>
@@ -62,7 +64,7 @@ const FormInput: React.FC<FormInputProps> = ({
                 onChange={field.onChange}
                 
               />
-              <Text style={styles.error}>{errorMessage}</Text>
+              {!hideError && <Text style={styles.error}>{errorMessage}</Text>}
             </>
           );
         }}
@@ -73,7 +75,7 @@ const FormInput: React.FC<FormInputProps> = ({
 
 const styles = StyleSheet.create({
   form: {
-    gap: 4,
+    gap: 6,
     width: "100%",
     minWidth: 320,
     maxWidth: 360,
