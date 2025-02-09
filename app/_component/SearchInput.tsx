@@ -18,7 +18,6 @@ const SearchInput = ({ searchQuery, setSearchQuery }: SearchInputProps) => {
           value={searchQuery} // 숫자일 경우 문자열로 변환
           placeholder="위치를 검색하세요"
           placeholderTextColor="#737373"
-          // onFocus={handleFocus}
           // onBlur={handleBlur}
           style={styles.input}
         />
@@ -45,7 +44,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   searchContainer: {
-    paddingVertical: 6,
+    // paddingVertical: 6,
     backgroundColor: "#E2E2E2",
     paddingHorizontal: 12,
     alignItems: "center",
@@ -59,9 +58,10 @@ const styles = StyleSheet.create({
     color: "#737373",
     fontSize: 14,
     fontWeight: 400,
-    lineHeight: 20,
-    flex: 1,
+    alignItems:'center',
     fontFamily: "Open Sans",
+    flex:1,
+    height: '100%',
   },
 });
 

@@ -1,22 +1,80 @@
-import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { useCallback, useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { useCallback, useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import { debounce } from "lodash";
+import SearchDropdown from "./SearchDropdown";
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
+  const [results, setResults] = useState<string[]>([]); // 검색 결과 리스트
+  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
+  const [selectedQuery, setSelectedQuery] = useState<string>('');
+   const sampleData = [
+      "Apple",
+      "Banana",
+      "Cherry",
+      "Date",
+      "Grape",
+      "Mango",
+      "Orange",
+      "Peach",
+    ];
+  useEffect(() => {
+    if(results.length>0) {
+      setIsDropdownVisible(true);
+    }
+  }, [results]);
+  useEffect(() =>{
+    setSearchQuery(selectedQuery);
+  },[selectedQuery])
+   const handleSearch = useCallback(
+        debounce((query: string) => {
+          if (query) {
+            const filtered = sampleData.filter((item) =>
+              item.toLowerCase().includes(query.toLowerCase())
+            );
+            setResults(filtered);
+          } else {
+            setResults([]);
+          }
+        }, 300),
+        []
+      );
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [searchQuery]);
 
+  
   return (
-    <View style={styles.container}>
-      <Pressable>
-        <Image source={require("../../assets/images/header_logo.png")} />
-      </Pressable>
-      <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <Image source={require("../../assets/images/notification.png")} />
-    </View>
+    <TouchableWithoutFeedback >
+      <View style={styles.rootContainer}>
+        <View style={styles.container}>
+          <Pressable>
+            <Image source={require("../../assets/images/header_logo.png")} />
+          </Pressable>
+          <SearchInput
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+          <Image source={require("../../assets/images/notification.png")} />
+        </View>
+        {isDropdownVisible && <SearchDropdown setSelectedQuery = {setSelectedQuery} setIsDropdownVisible = {setIsDropdownVisible} results={results} />}
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 const styles = StyleSheet.create({
+  rootContainer: {
+    width: "100%",
+    position: "sticky",
+    top: 0,
+  },
   container: {
     paddingVertical: 10,
     backgroundColor: "#fff",
@@ -27,24 +85,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  searchContainer: {
-    paddingVertical: 6,
-    backgroundColor: "#E2E2E2",
-    paddingHorizontal: 12,
-    alignItems: "center",
-    flexDirection: "row",
-    marginLeft: 4,
-    gap: 8,
-    borderRadius: 999,
-    flex: 1,
-  },
-  input: {
-    color: "#737373",
-    fontSize: 14,
-    fontWeight:400,
-    lineHeight: 20,
-    flex: 1,
-    fontFamily: "Open Sans",
-  },
+
 });
 export default Header;
