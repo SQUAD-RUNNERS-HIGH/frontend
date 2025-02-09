@@ -5,6 +5,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  Image,
   Platform,
 } from "react-native";
 import { useForm } from "react-hook-form";
@@ -37,9 +38,12 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.rootContainer}>
-          <View>
+          <View style={styles.container}>
             <Text style={styles.title}>로그인</Text>
-
+              <Image
+                style = {{width:111, height:113, marginTop:38}}
+                source={require("../../assets/images/logo.png")}
+              />
             <View style={styles.formContainer}>
               <FormInput
                 control={control}
@@ -84,6 +88,10 @@ const styles = StyleSheet.create({
     paddingTop: 32,
     paddingBottom: 76,
   },
+  container: {
+    width: "100%",
+    alignItems: 'center',
+  },
   title: {
     fontFamily: "Roboto",
     fontSize: 24,
@@ -93,7 +101,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   formContainer: {
-    marginTop: 32,
+    marginTop: 85,
     width: "100%",
     gap: 24,
     alignItems: "center",

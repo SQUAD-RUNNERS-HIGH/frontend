@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
     paddingVertical: 10,
+    width: '100%',
   },
   input: {
     flex: 1,

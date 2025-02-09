@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     gap: 6,
     width: "100%",
     minWidth: 320,
-    maxWidth: 360,
+    maxWidth: 500,
   },
   formTitle: {
     color: "#6B7280",

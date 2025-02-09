@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Pressable,
 } from "react-native";
 import Input from "../_component/Input";
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioButton } from "react-native-paper";
 import FormInput from "../_component/FormInput";
 import Button from "../_component/Button";
+import { useRouter } from "expo-router";
 export const signUpSchema = z.object({
   username: z.string().min(2, "아이디는 최소 2글자여야 합니다."),
   password: z.string().min(8, "비밀번호는 최소 8글자여야합니다"),
@@ -35,7 +37,7 @@ export const signUpSchema = z.object({
     })
     .positive("양수만 입력 가능합니다.")
     .int("정수만 입력 가능합니다."), // 문자열을 숫자로 변환,
-  gender: z.enum(['male','female'])
+  gender: z.enum(["male", "female"]),
 });
 export default function Signup() {
   const {
@@ -46,6 +48,7 @@ export default function Signup() {
     resolver: zodResolver(signUpSchema),
     mode: "onChange",
   });
+  const router = useRouter();
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -117,7 +120,18 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 회원가입
               </Button>
             </View>
-            <Text style = {styles.loginContainer}><Text>이미 계정이 있으신가요? <Text style = {styles.loginButton}>로그인하기</Text></Text></Text>
+            <View style={styles.loginContainer}>
+                <Text>
+                이미 계정이 있으신가요?
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    router.push("/login");
+                  }}
+                >
+                  <Text style={styles.loginButton}>로그인하기</Text>
+                </Pressable>
+              </View>
           </View>
         </View>
       </ScrollView>
@@ -147,16 +161,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonview: {
-    width: '100%',
+    width: "100%",
     marginTop: 40,
-    marginBottom:24,
+    marginBottom: 24,
   },
   loginContainer: {
-    marginBottom:32,
-    color: '#4B5563',
+    marginBottom: 32,
+    color: "#4B5563",
+    alignItems: "center",
+    flexDirection: "row", // 버튼과 텍스트를 한 줄로 정렬
+    gap:2,
   },
   loginButton: {
-    color: '#000000',
-    fontWeight: 500,
-  }
+    color: "#000000",
+    fontWeight: "500",
+  },
 });
