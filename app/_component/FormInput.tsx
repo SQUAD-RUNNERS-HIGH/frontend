@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
-import { Controller, Control, FieldErrors } from "react-hook-form";
+import { Controller, Control } from "react-hook-form";
 import Input from "./Input";
 
 interface FormInputProps {
@@ -15,7 +15,7 @@ interface FormInputProps {
   hideError?: boolean;
 }
 
-const FormInput: React.FC<FormInputProps> = ({
+const FormInput = ({
   control,
   errorMessage,
   name,
@@ -24,7 +24,7 @@ const FormInput: React.FC<FormInputProps> = ({
   placeholder,
   isRadio,
   hideError
-}) => {
+}:FormInputProps) => {
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
