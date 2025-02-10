@@ -1,8 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View, Image, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { SplashScreen } from "expo-router";
-import Button from "./Button";
 
 function RhSplashScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current; // 페이드 인용 애니메이션 값
@@ -63,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: -100,
-    gap: "80px",
+    gap: 80,
     height: "100%",
   },
   innerContainer: {
@@ -80,7 +78,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   spinner: {
-    gap: "20px",
+    gap: 20,
     height: 132,
     justifyContent:'center'
   },
