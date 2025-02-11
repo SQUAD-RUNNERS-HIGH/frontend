@@ -14,9 +14,14 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
+        "backgroundColor": "rgba(0,0,0,0)"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDaTqHF5kjpaYmlx55lNT7C7tGSiIvIWJA"
+        }
+    }
+  },
     "web": {
       "bundler": "metro",
       "output": "static",
