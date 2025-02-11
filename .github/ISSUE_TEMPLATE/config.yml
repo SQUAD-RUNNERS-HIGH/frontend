@@ -1,8 +1,6 @@
 blank_issues_enabled: false
 contact_links: []
 issue_templates:
-  - name: 이슈 생성 템플릿
-    about: 이슈 생성 고고
-    title: "[해당Label] 구현 기능"
-    labels: ''
-    assignees: ''
+  - name: "이슈 생성 템플릿"
+    description: "기본 이슈 생성 템플릿"
+    file: "이슈-생성-템플릿.md"
