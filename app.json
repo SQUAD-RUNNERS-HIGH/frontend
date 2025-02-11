@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.company.runnershigh",
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyAK7JyZb9Xf71WhAwUEiS9WGzxnGuLVW-o"
+      }
     },
     "android": {
       "adaptiveIcon": {
