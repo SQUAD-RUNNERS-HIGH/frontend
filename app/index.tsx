@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import MapView, { Polyline, PROVIDER_GOOGLE } from "react-native-maps";
-import * as Location from 'expo-location';
-
-
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import * as Location from "expo-location";
+import { LinearGradient } from "expo-linear-gradient";
+import PulsingMarke from "./_component/PulsingMarker";
+import { Image } from "react-native";
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObjectCoords>();
   // const [coordinates, setCoordinates] = useState([
@@ -13,8 +14,10 @@ export default function Index() {
   //   { latitude: 37.78925, longitude: -122.4382 },
   // ]);
 
-  const [subscription, setSubscription] = useState<Location.LocationSubscription | null>(null); // 위치 구독 객체
-  const [permissionStatus, requestPermission] = Location.useForegroundPermissions();
+  const [subscription, setSubscription] =
+    useState<Location.LocationSubscription | null>(null); // 위치 구독 객체
+  const [permissionStatus, requestPermission] =
+    Location.useForegroundPermissions();
 
   // 위치 추적 시작
   const startLocationTracking = async () => {
@@ -29,7 +32,7 @@ export default function Index() {
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 1000, // 1초마다 업데이트
+        timeInterval: 3000, // 1초마다 업데이트
         distanceInterval: 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
@@ -53,38 +56,47 @@ export default function Index() {
   }, []);
 
   return (
-    <View style = {styles.rootContainer}>
+    <View style={styles.rootContainer}>
       {location && (
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={{
-          latitude: location?.latitude,
-          longitude: location?.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      >
-        {/* <Polyline
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: location?.latitude,
+            longitude: location?.longitude,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          }}
+        
+        >
+          {/* <Polyline
           coordinates={coordinates}
           strokeColor="#FF0000" // 빨간색
           strokeWidth={4}
         /> */}
-      </MapView>
+          <Marker
+            coordinate={{
+              latitude: location?.latitude,
+              longitude: location?.longitude,
+            }}
+          >
+          <Image width = {20} height={20} source = {require('@/assets/images/marker.png')} />
+          </Marker>
+        </MapView>
       )}
     </View>
   );
 }
 const styles = StyleSheet.create({
   rootContainer: {
-    width:'100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center'
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  map:{
-    flex:1,
-    width: '100%',
-    height: '100%',
-  }
-})
+  map: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+});
