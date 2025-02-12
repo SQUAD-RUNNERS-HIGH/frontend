@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
-import { LinearGradient } from "expo-linear-gradient";
-import PulsingMarke from "./_component/PulsingMarker";
 import { Image } from "react-native";
+import { coordinates } from "./_constants";
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObjectCoords>();
   // const [coordinates, setCoordinates] = useState([
@@ -18,7 +17,19 @@ export default function Index() {
     useState<Location.LocationSubscription | null>(null); // 위치 구독 객체
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
+  const [selectedCourse, setSelectedCourse] = useState<number>(-1);
 
+  const [course, setCourse] = useState<
+    { latitude: number; longitude: number }[] | null
+  >(null);
+  const convertedCoordinates = coordinates.map((a) =>
+    a.map(([longitude, latitude]) => ({
+      latitude,
+      longitude,
+    }))
+  );
+
+  console.log(convertedCoordinates);
   // 위치 추적 시작
   const startLocationTracking = async () => {
     if (!permissionStatus?.granted) {
@@ -37,6 +48,21 @@ export default function Index() {
       },
       (newLocation) => {
         setLocation(newLocation.coords);
+        const newcourse = [
+          {
+            latitude: newLocation?.coords.latitude + 0.0001,
+            longitude: newLocation?.coords.longitude + 0.0001,
+          },
+          {
+            latitude: newLocation?.coords.latitude + 0.0003,
+            longitude: newLocation?.coords.longitude + 0.0003,
+          },
+          {
+            latitude: newLocation?.coords.latitude - 0.0001,
+            longitude: newLocation?.coords.longitude + 0.0001,
+          },
+        ];
+        setCourse(newcourse);
       }
     );
     setSubscription(sub);
@@ -67,21 +93,45 @@ export default function Index() {
             latitudeDelta: 0.02,
             longitudeDelta: 0.02,
           }}
-        
         >
-          {/* <Polyline
-          coordinates={coordinates}
-          strokeColor="#FF0000" // 빨간색
-          strokeWidth={4}
-        /> */}
           <Marker
             coordinate={{
               latitude: location?.latitude,
               longitude: location?.longitude,
             }}
           >
-          <Image width = {20} height={20} source = {require('@/assets/images/marker.png')} />
+            <Image
+              width={20}
+              height={20}
+              source={require("@/assets/images/marker.png")}
+            />
           </Marker>
+          {coordinates.map((course, index) => (
+            <Marker
+              key={index}
+              coordinate={{
+                longitude: course[0][0],
+                latitude: course[0][1],
+              }}
+              onPress={() => setSelectedCourse(index)}
+              title={`코스 ${index + 1}`}
+              description={`코스 ${index + 1} 상세보기`}
+              pinColor="#8A2BE2"
+            />
+          ))}
+          {/* 선택된 코스의 Polyline 그리기 */}
+          {selectedCourse !== -1 && (
+            <Polyline
+              coordinates={coordinates[selectedCourse].map(
+                ([longitude, latitude]) => ({
+                  latitude,
+                  longitude,
+                })
+              )}
+              strokeColor='#4169E1'
+              strokeWidth={4}
+            />
+          )}
         </MapView>
       )}
     </View>
