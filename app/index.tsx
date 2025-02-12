@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, Pressable } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { Image } from "react-native";
 import { coordinates } from "./_constants";
+import { InfoModal } from "./_component/InfoModal";
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObjectCoords>();
   // const [coordinates, setCoordinates] = useState([
@@ -29,7 +30,6 @@ export default function Index() {
     }))
   );
 
-  console.log(convertedCoordinates);
   // 위치 추적 시작
   const startLocationTracking = async () => {
     if (!permissionStatus?.granted) {
@@ -82,71 +82,82 @@ export default function Index() {
   }, []);
 
   return (
-    <View style={styles.rootContainer}>
-      {location && (
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          initialRegion={{
-            latitude: location?.latitude,
-            longitude: location?.longitude,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
-        >
-          <Marker
-            coordinate={{
+   
+      <View style={styles.rootContainer}>
+        {location && (
+          <MapView
+            style={styles.map}
+            provider={PROVIDER_GOOGLE}
+            initialRegion={{
               latitude: location?.latitude,
               longitude: location?.longitude,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
             }}
+            onPress={() => {setSelectedCourse(-1)}}
           >
-            <Image
-              width={20}
-              height={20}
-              source={require("@/assets/images/marker.png")}
-            />
-          </Marker>
-          {coordinates.map((course, index) => (
-            <Marker
-              key={index}
-              coordinate={{
-                longitude: course[0][0],
-                latitude: course[0][1],
-              }}
-              onPress={() => setSelectedCourse(index)}
-              title={`코스 ${index + 1}`}
-              description={`코스 ${index + 1} 상세보기`}
-              pinColor="#8A2BE2"
-            />
-          ))}
-          {/* 선택된 코스의 Polyline 그리기 */}
-          {selectedCourse !== -1 && (
-            <Polyline
-              coordinates={coordinates[selectedCourse].map(
-                ([longitude, latitude]) => ({
-                  latitude,
-                  longitude,
-                })
+            <View style={{ flex: 1 }}>
+              <Marker
+                coordinate={{
+                  latitude: location?.latitude,
+                  longitude: location?.longitude,
+                }}
+                style = {{zIndex:3}}
+              >
+                <Image
+                  width={20}
+                  height={20}
+                  source={require("@/assets/images/marker.png")}
+                />
+              </Marker>
+              {coordinates.map((course, index) => (
+                <Marker
+                  key={index}
+                  coordinate={{
+                    longitude: course[0][0],
+                    latitude: course[0][1],
+                  }}
+                  onPress={() => setSelectedCourse(index)}
+                  title={`코스 ${index + 1}`}
+                  description={`코스 ${index + 1} 상세보기`}
+                  pinColor="#8A2BE2"
+                />
+              ))}
+              {/* 선택된 코스의 Polyline 그리기 */}
+              {selectedCourse !== -1 && (
+                <Polyline
+                  coordinates={coordinates[selectedCourse].map(
+                    ([longitude, latitude]) => ({
+                      latitude,
+                      longitude,
+                    })
+                  )}
+                  strokeColor="#4169E1"
+                  strokeWidth={4}
+                />
               )}
-              strokeColor='#4169E1'
-              strokeWidth={4}
-            />
-          )}
-        </MapView>
-      )}
-    </View>
+            </View>
+          </MapView>
+        )}
+        <InfoModal
+          selectedCourse={selectedCourse}
+          setSelectedCourse={setSelectedCourse}
+        />
+      </View>
+     
   );
 }
 const styles = StyleSheet.create({
   rootContainer: {
+    flex: 1,
     width: "100%",
-    height: "100%",
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
   },
   map: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    zIndex:1,
   },
 });
