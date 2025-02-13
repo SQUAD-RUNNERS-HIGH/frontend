@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
 import Button from "../Button";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import Checkbox from "expo-checkbox";
 
 interface competitor {
@@ -9,7 +9,11 @@ interface competitor {
   name: string;
   time: string;
 }
-export function SelectedModal() {
+export function SelectedModal({
+  setTheme,
+}: {
+  setTheme: React.Dispatch<SetStateAction<string>>;
+}) {
   const [competitors, setCompetitors] = useState<competitor[]>([
     { id: 1, name: "김소연", time: "2:35" },
     { id: 2, name: "박민준", time: "2:45" },
@@ -27,12 +31,15 @@ export function SelectedModal() {
     <>
       <View style={styles.container}>
         <View style={styles.titleContainer}>
-          <Pressable style={styles.backButton}>
+          <Pressable style={styles.backButton} onPress = {() => {setTheme('info')}}>
             <Ionicons name="arrow-back" size={18} color="black" />
           </Pressable>
           <Text style={styles.title}>경쟁자 선택</Text>
         </View>
-        <ScrollView style = {styles.competitorContainer} contentContainerStyle = {{gap:16}}>
+        <ScrollView
+          style={styles.competitorContainer}
+          contentContainerStyle={{ gap: 16 }}
+        >
           {competitors?.map((competitor) => (
             <View style={styles.competitor} key={competitor.id}>
               <Text style={styles.name}>{competitor.name}</Text>
@@ -89,7 +96,7 @@ const styles = StyleSheet.create({
     width: "100%",
     minHeight: 61,
     maxHeight: 228,
-    height: '100%',
+    height: "100%",
     flexDirection: "column",
     marginTop: 20,
   },
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    padding:8,
-    marginTop:20,
+    padding: 8,
+    marginTop: 20,
   },
 });

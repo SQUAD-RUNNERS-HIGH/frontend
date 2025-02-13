@@ -1,7 +1,8 @@
 import { StyleSheet, View, Text } from "react-native";
 import Button from "../Button";
+import { SetStateAction } from "react";
 
-export function InfoModal() {
+export function InfoModal({setTheme}: {setTheme: React.Dispatch<SetStateAction<string>>}) {
   return (
     <>
       <View style={styles.container}>
@@ -31,7 +32,7 @@ export function InfoModal() {
         <Button style={{ flex: 1 }} onPress={() => {}}>
           코스 자세히
         </Button>
-        <Button style={{ flex: 1 }} onPress={() => {}}>
+        <Button style={{ flex: 1 }} onPress={() => {setTheme('select')}}>
           혼자 뛰기
         </Button>
       </View>

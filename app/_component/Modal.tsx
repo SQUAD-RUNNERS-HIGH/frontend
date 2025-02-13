@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text } from "react-native";
 import Button from "./Button";
-import { SetStateAction } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { InfoModal } from "./Modal/InfoModal";
 import { SelectedModal } from "./Modal/SelectedModal";
 
@@ -11,12 +11,16 @@ export function Modal({
   selectedCourse: number;
   setSelectedCourse: React.Dispatch<SetStateAction<number>>;
 }) {
+  const [theme, setTheme] = useState("info");
+  useEffect(() => {
+    setTheme("info");
+  }, [selectedCourse]);
   return (
     <>
       {selectedCourse !== -1 && (
         <View style={styles.rootContainer}>
-          {/* <InfoModal /> */}
-          <SelectedModal />
+          {theme === "info" && <InfoModal setTheme={setTheme} />}
+          {theme === "select" && <SelectedModal setTheme={setTheme} />}
         </View>
       )}
     </>
