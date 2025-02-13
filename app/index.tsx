@@ -4,7 +4,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { Image } from "react-native";
 import { coordinates } from "./_constants";
-import { InfoModal } from "./_component/InfoModal";
+import { Modal } from "./_component/Modal";
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObjectCoords>();
   // const [coordinates, setCoordinates] = useState([
@@ -139,7 +139,7 @@ export default function Index() {
             </View>
           </MapView>
         )}
-        <InfoModal
+        <Modal
           selectedCourse={selectedCourse}
           setSelectedCourse={setSelectedCourse}
         />
