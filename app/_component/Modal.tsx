@@ -1,8 +1,9 @@
 import { StyleSheet, View, Text } from "react-native";
 import Button from "./Button";
-import { SetStateAction, useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { InfoModal } from "./Modal/InfoModal";
 import { SelectedModal } from "./Modal/SelectedModal";
+import { RunningModal } from "./Modal/RunningModal";
 
 export function Modal({
   selectedCourse,
@@ -11,9 +12,11 @@ export function Modal({
   selectedCourse: number;
   setSelectedCourse: React.Dispatch<SetStateAction<number>>;
 }) {
-  const [theme, setTheme] = useState("info");
+  const [theme, setTheme] = useState("running");
   useEffect(() => {
-    setTheme("info");
+    if (selectedCourse === -1) {
+      setTheme("info");
+    }
   }, [selectedCourse]);
   return (
     <>
@@ -21,6 +24,7 @@ export function Modal({
         <View style={styles.rootContainer}>
           {theme === "info" && <InfoModal setTheme={setTheme} />}
           {theme === "select" && <SelectedModal setTheme={setTheme} />}
+          {theme === 'running' && <RunningModal />}
         </View>
       )}
     </>
