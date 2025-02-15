@@ -4,6 +4,7 @@ import React, { SetStateAction, useEffect, useState } from "react";
 import { InfoModal } from "./Modal/InfoModal";
 import { SelectedModal } from "./Modal/SelectedModal";
 import { RunningModal } from "./Modal/RunningModal";
+import { useLocation } from "../_hooks/useLocation";
 
 export function Modal({
   selectedCourse,
@@ -13,19 +14,19 @@ export function Modal({
   setSelectedCourse: React.Dispatch<SetStateAction<number>>;
 }) {
   const [theme, setTheme] = useState("info");
+  const {running} = useLocation();
   useEffect(() => {
     if (selectedCourse === -1) {
       setTheme("info");
     }
   }, [selectedCourse]);
-  console.log(theme);
   return (
     <>
       {selectedCourse !== -1 && (
-        <View style={styles.rootContainer}>
+        <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
           {theme === "info" && <InfoModal setTheme={setTheme} />}
           {theme === "select" && <SelectedModal setTheme={setTheme} />}
-          {theme === 'running' && <RunningModal />}
+          {theme === 'running' && <RunningModal setSelectedCourse = {setSelectedCourse}/>}
         </View>
       )}
     </>
@@ -43,6 +44,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: "12px 12px 0px 0px",
   },
+  runningModalBackground: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  },
   container: {
     flexDirection: "row",
     gap: 20,
@@ -54,7 +58,7 @@ const styles = StyleSheet.create({
   info: {
     color: "#6B7280",
   },
-  value: {
+  value: {  
     color: "#000000",
     fontWeight: 600,
   },

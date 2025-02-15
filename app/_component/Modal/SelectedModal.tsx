@@ -3,6 +3,7 @@ import Button from "../Button";
 import { Ionicons } from "@expo/vector-icons";
 import { SetStateAction, useState } from "react";
 import Checkbox from "expo-checkbox";
+import { useLocation } from "@/app/_hooks/useLocation";
 
 interface competitor {
   id: number;
@@ -27,11 +28,17 @@ export function SelectedModal({
     { id: 10, name: "이하은", time: "2:52" },
   ]);
   const [selectedId, setSelectedId] = useState<number>(0);
+  const { setRunning } = useLocation();
   return (
     <>
       <View style={styles.container}>
         <View style={styles.titleContainer}>
-          <Pressable style={styles.backButton} onPress = {() => {setTheme('info')}}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => {
+              setTheme("info");
+            }}
+          >
             <Ionicons name="arrow-back" size={18} color="black" />
           </Pressable>
           <Text style={styles.title}>경쟁자 선택</Text>
@@ -61,7 +68,13 @@ export function SelectedModal({
           ))}
         </ScrollView>
         <View style={styles.buttonContainer}>
-          <Button style={{ flex: 1 }} onPress={() => {setTheme('running')}}>
+          <Button
+            style={{ flex: 1 }}
+            onPress={() => {
+              setTheme("running");
+              setRunning(true);
+            }}
+          >
             시작 하기
           </Button>
         </View>
