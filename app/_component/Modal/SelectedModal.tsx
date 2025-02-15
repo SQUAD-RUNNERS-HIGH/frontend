@@ -61,7 +61,7 @@ export function SelectedModal({
           ))}
         </ScrollView>
         <View style={styles.buttonContainer}>
-          <Button style={{ flex: 1 }} onPress={() => {}}>
+          <Button style={{ flex: 1 }} onPress={() => {setTheme('running')}}>
             시작 하기
           </Button>
         </View>

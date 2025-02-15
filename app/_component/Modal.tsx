@@ -12,12 +12,13 @@ export function Modal({
   selectedCourse: number;
   setSelectedCourse: React.Dispatch<SetStateAction<number>>;
 }) {
-  const [theme, setTheme] = useState("running");
+  const [theme, setTheme] = useState("info");
   useEffect(() => {
     if (selectedCourse === -1) {
       setTheme("info");
     }
   }, [selectedCourse]);
+  console.log(theme);
   return (
     <>
       {selectedCourse !== -1 && (

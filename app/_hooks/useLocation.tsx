@@ -18,6 +18,8 @@ interface LocationContextType {
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
+  setTime: React.Dispatch<SetStateAction<number>>;
+  setDistance: React.Dispatch<SetStateAction<number>>;
   locationDelta: locationDeltaType;
 }
 
@@ -40,6 +42,8 @@ export const LocationProvider = ({
     latitudeDelta: 0.02,
     longitudeDelta: 0.02,
   });
+  const [time, setTime] = useState<number>(3000);
+  const [distance, setDistance] = useState<number>(3);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
@@ -49,14 +53,22 @@ export const LocationProvider = ({
       }
     }
   };
-
+ 
+  // 위치 추적 중지 (setInterval 정리)
+  const stopRunning = async () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    await startLocationTracking();
+  };
   // 위치 추적 시작
   const startLocationTracking = async () => {
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 3000, // 3초마다 업데이트
-        distanceInterval: 3, // 5m 이동마다 업데이트
+        timeInterval: time, // 3초마다 업데이트
+        distanceInterval: distance, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setLocation(newLocation.coords);
@@ -83,6 +95,8 @@ export const LocationProvider = ({
         startLocationTracking,
         stopLocationTracking,
         locationDelta,
+        setTime,
+        setDistance
       }}
     >
       {children}
