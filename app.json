@@ -16,6 +16,8 @@
       }
     },
     "android": {
+      "package": "com.company.runnershigh",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "rgba(0,0,0,0)"
@@ -24,8 +26,9 @@
         "googleMaps": {
           "apiKey": "AIzaSyDaTqHF5kjpaYmlx55lNT7C7tGSiIvIWJA"
         }
-    }
-  },
+      },
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -45,6 +48,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
+      }
+    },
+    "owner": "juyung0903"
   }
 }
