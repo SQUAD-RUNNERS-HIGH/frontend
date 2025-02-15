@@ -1,13 +1,16 @@
 import { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 
 function Button({
   children,
+  style,
   onPress,
   theme = "default",
 }: {
   children: ReactNode;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
+  width?: string;
   theme?: string;
 }) {
   return (
@@ -16,6 +19,7 @@ function Button({
         { backgroundColor: `${theme === "default" ? "#6500A8" : "white"}` },
         styles.button,
         pressed && styles.pressed,
+        style
       ]}
       onPress={onPress}
     >
@@ -23,7 +27,7 @@ function Button({
         <Text
           style={[
             styles.text,
-            { color: `${theme === "default" ? "#ffffff" : "#6500A8"}` },
+            { color: `${theme === "default" ? "#ffffff" : "#6500A8"}`,}
           ]}
         >
           {children}
@@ -38,7 +42,6 @@ export default Button;
 const styles = StyleSheet.create({
   button: {
     paddingVertical: 14,
-    width:'100%',
     borderRadius: 6,
     elevation: 2,
     shadowColor: "black",
