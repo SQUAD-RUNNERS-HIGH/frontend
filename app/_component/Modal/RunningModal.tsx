@@ -4,27 +4,27 @@ import { SetStateAction, useEffect, useState } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
 import { convertSpeedToPace } from "@/app/_lib/convertSpeedToPace";
+import { ProgressBar } from "react-native-paper";
 
-export function RunningModal() {
-  const { location, setTime, setDistance } = useLocation();
+const dummyData = 120;
+
+export function RunningModal({
+  setSelectedCourse,
+}: {
+  setSelectedCourse: React.Dispatch<SetStateAction<number>>;
+}) {
+  const { location, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
- 
+  const progress = Math.min(seconds / dummyData, 1);
   useEffect(() => {
-    setTime(500);
-    setDistance(0.5);
     const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
       setSpeed(convertSpeedToPace(location?.speed));
     }, 1000);
+
     return () => clearInterval(interval);
   }, []);
-  useEffect(() => {
-    // 1초마다 seconds 상태를 증가시키는 Interval 설정
-  }, []);
-
-  // 초를 시, 분, 초로 변환
- 
   return (
     <>
       <View style={styles.infoContainer}>
@@ -41,11 +41,22 @@ export function RunningModal() {
           <Text style={styles.key}>속도</Text>
         </View>
       </View>
+      {progress < 1 ? (
+        <ProgressBar
+          progress={progress}
+          color="#6200ee"
+          style={styles.progressBar}
+        />
+      ) : (
+        <Text style={{ textAlign: "center" }}>
+          경쟁 러너의 러닝이 끝났습니다.
+        </Text>
+      )}
       <View style={styles.buttonContainer}>
         <Button
           onPress={() => {
-            setTime(3000);
-            setDistance(3);
+            setRunning(false);
+            setSelectedCourse(-1);
           }}
         >
           종료하기
@@ -59,10 +70,15 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 12,
   },
   info: {
     alignItems: "center",
     fontFamily: "Roboto",
+  },
+  progressBar: {
+    height: 16,
+    borderRadius: 12,
   },
   value: {
     fontSize: 18,

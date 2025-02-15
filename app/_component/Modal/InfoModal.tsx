@@ -77,5 +77,6 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     gap: 28,
+    marginTop:12,
   },
 });
