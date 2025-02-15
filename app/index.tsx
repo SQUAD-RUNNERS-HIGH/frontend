@@ -20,8 +20,7 @@ export default function Index() {
     location,
     locationDelta,
     startLocationTracking,
-    stopLocationTracking,
-    
+    stopLocationTracking, 
   } = useLocation();
   // 위치 추적 시작
   useEffect(() => {
@@ -37,8 +36,8 @@ export default function Index() {
           initialRegion={{
             latitude: location?.latitude,
             longitude: location?.longitude,
-            latitudeDelta: locationDelta.latitudeDelta,
-            longitudeDelta: locationDelta.longitudeDelta,
+            latitudeDelta: locationDelta?.latitudeDelta || 0.02,
+            longitudeDelta: locationDelta?.longitudeDelta || 0.02,
           }}
           onPress={() => {
             setSelectedCourse(-1);
