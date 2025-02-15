@@ -18,8 +18,8 @@ interface LocationContextType {
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
-  setTime: React.Dispatch<SetStateAction<number>>;
-  setDistance: React.Dispatch<SetStateAction<number>>;
+  running: boolean;
+  setRunning: React.Dispatch<SetStateAction<boolean>>;
   locationDelta: locationDeltaType;
 }
 
@@ -39,11 +39,10 @@ export const LocationProvider = ({
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
   const [locationDelta, setLocationDelta] = useState<locationDeltaType>({
-    latitudeDelta: 0.02,
-    longitudeDelta: 0.02,
+    latitudeDelta: 0.002,
+    longitudeDelta: 0.002,
   });
-  const [time, setTime] = useState<number>(3000);
-  const [distance, setDistance] = useState<number>(3);
+  const [running, setRunning] = useState<boolean>(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
@@ -67,8 +66,8 @@ export const LocationProvider = ({
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: time, // 3초마다 업데이트
-        distanceInterval: distance, // 5m 이동마다 업데이트
+        timeInterval: running? 500:3000, // 3초마다 업데이트
+        distanceInterval: running? 1: 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setLocation(newLocation.coords);
@@ -90,13 +89,13 @@ export const LocationProvider = ({
   return (
     <LocationContext.Provider
       value={{
+        running,
+        setRunning,
         location,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
         locationDelta,
-        setTime,
-        setDistance
       }}
     >
       {children}
