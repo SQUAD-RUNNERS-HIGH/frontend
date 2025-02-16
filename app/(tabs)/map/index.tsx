@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Image } from "react-native";
-import { coordinates } from "./_constants";
-import { Modal } from "./_component/Modal";
-import { useLocation } from "./_hooks/useLocation";
+import { coordinates } from "../../_constants";
+import { Modal } from "../../_component/Modal";
+import { useLocation } from "../../_hooks/useLocation";
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
   const [course, setCourse] = useState<

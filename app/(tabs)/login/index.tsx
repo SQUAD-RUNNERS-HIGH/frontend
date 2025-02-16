@@ -11,8 +11,8 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import FormInput from "../_component/FormInput";
-import Button from "../_component/Button";
+import FormInput from "../../_component/FormInput";
+import Button from "../../_component/Button";
 export const signUpSchema = z.object({
   username: z.string().min(2, "아이디는 최소 2글자여야 합니다."),
   password: z.string().min(8, "비밀번호는 최소 8글자여야합니다"),
@@ -42,7 +42,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
             <Text style={styles.title}>로그인</Text>
               <Image
                 style = {{width:111, height:113, marginTop:38}}
-                source={require("../../assets/images/logo.png")}
+                source={require("../../../assets/images/logo.png")}
               />
             <View style={styles.formContainer}>
               <FormInput

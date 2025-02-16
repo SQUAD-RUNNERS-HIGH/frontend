@@ -8,13 +8,13 @@ import {
   Platform,
   Pressable,
 } from "react-native";
-import Input from "../_component/Input";
+import Input from "../../_component/Input";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioButton } from "react-native-paper";
-import FormInput from "../_component/FormInput";
-import Button from "../_component/Button";
+import FormInput from "../../_component/FormInput";
+import Button from "../../_component/Button";
 import { useRouter } from "expo-router";
 export const signUpSchema = z.object({
   username: z.string().min(2, "아이디는 최소 2글자여야 합니다."),

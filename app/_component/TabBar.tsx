@@ -8,10 +8,18 @@ import ProfileIcon from './TabBar/ProfileIcon'
 import ChatIcon  from './TabBar/ChatIcon';
 import CourseIcon from './TabBar/CourseIcon';
 import CrewIcon from './TabBar/CrewIcon';
+import { useSegments } from "expo-router";
+import { useEffect, useState } from "react";
 function TabBar() {
-  
+  const segments = useSegments();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    if(segments.length !== 1 && segments[segments.length-1] !== 'login' && segments[segments.length-1] !== 'signup'){
+      setShow(true);
+    }
+  },[]);
   return (
-      <View style={styles.rootContainer}>
+      <View style={[styles.rootContainer,!show && styles.hide]}>
         <View style={styles.container}>
             <Pressable style={({ pressed }) =>[styles.button, pressed && styles.pressed]}>
               <CourseIcon fill = '#6500A8'/>
@@ -36,6 +44,9 @@ function TabBar() {
 const styles = StyleSheet.create({
   rootContainer: {
     width: "100%",
+  },
+  hide: {
+    display: 'none'
   },
   container: {
     backgroundColor: "#fff",
