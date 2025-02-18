@@ -2,43 +2,38 @@ import {
   StyleSheet,
   View,
   Text,
-  TextInput,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   Pressable,
 } from "react-native";
-import Input from "../../_component/Input";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RadioButton } from "react-native-paper";
 import FormInput from "../../_component/FormInput";
 import Button from "../../_component/Button";
 import { useRouter } from "expo-router";
-export const signUpSchema = z.object({
-  username: z.string().min(2, "아이디는 최소 2글자여야 합니다."),
-  password: z.string().min(8, "비밀번호는 최소 8글자여야합니다"),
-  nickname: z
-    .string()
-    .min(2, "닉네임은 최소 2글자 여야 합니다.")
-    .max(10, "닉네임은 10글자를 넘을 수 없습니다."),
-  age: z.coerce
-    .number({
-      required_error: "나이를 입력해주세요.",
-      invalid_type_error: "숫자만 입력 가능합니다.",
-    })
-    .positive("양수만 입력 가능합니다.")
-    .int("정수만 입력 가능합니다."), // 문자열을 숫자로 변환,
-  weight: z.coerce
-    .number({
-      required_error: "몸무게를 입력해주세요.",
-      invalid_type_error: "숫자만 입력 가능합니다.",
-    })
-    .positive("양수만 입력 가능합니다.")
-    .int("정수만 입력 가능합니다."), // 문자열을 숫자로 변환,
-  gender: z.enum(["male", "female"]),
-});
+import { signUpSchema } from "./_lib/signUpSchema";
+import { fetchSignup } from "./_lib/fetchSignup";
+import { userSignupType } from "@/app/_types";
+const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+  const { gender, age, height, weight, ...rest } = data;
+  const newData:userSignupType = {
+    ...rest,
+    physical: {
+      gender,
+      age,
+      height,
+      weight,
+    },
+  };
+  const response = await fetchSignup(newData);
+  if (response?.status === 200) {
+    alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
+    // 로그인 로직
+  }
+};
+
 export default function Signup() {
   const {
     control,
@@ -67,7 +62,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
             <FormInput
               control={control}
               errorMessage={errors.username?.message}
-              name="username"
+              name="loginId"
               label="아이디"
               placeholder="아이디를 입력하세요"
             />
@@ -81,8 +76,8 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
             />
             <FormInput
               control={control}
-              errorMessage={errors.nickname?.message}
-              name="nickname"
+              errorMessage={errors.username?.message}
+              name="username"
               label="닉네임"
               placeholder="2-10자 사이로 입력해주세요"
             />
@@ -102,6 +97,14 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
               type="number"
               placeholder="몸무게를 입력해주세요"
             />
+            <FormInput
+              control={control}
+              errorMessage={errors.height?.message}
+              name="height"
+              label="키"
+              type="number"
+              placeholder="키를 입력해주세요"
+            />
             {/* 성별 */}
             <FormInput
               control={control}
@@ -112,26 +115,18 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
               placeholder="성별을 입력해주세요"
             />
             <View style={styles.buttonview}>
-              <Button
-                onPress={() => {
-                  console.log(isValid);
-                }}
-              >
-                회원가입
-              </Button>
+              <Button onPress={handleSubmit(onSubmit)}>회원가입</Button>
             </View>
             <View style={styles.loginContainer}>
-                <Text>
-                이미 계정이 있으신가요?
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    router.push("/login");
-                  }}
-                >
-                  <Text style={styles.loginButton}>로그인하기</Text>
-                </Pressable>
-              </View>
+              <Text>이미 계정이 있으신가요?</Text>
+              <Pressable
+                onPress={() => {
+                  router.push("/login");
+                }}
+              >
+                <Text style={styles.loginButton}>로그인하기</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -170,7 +165,7 @@ const styles = StyleSheet.create({
     color: "#4B5563",
     alignItems: "center",
     flexDirection: "row", // 버튼과 텍스트를 한 줄로 정렬
-    gap:2,
+    gap: 2,
   },
   loginButton: {
     color: "#000000",

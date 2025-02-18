@@ -43,11 +43,11 @@ const FormInput = ({
               >
                 <View style={styles.group}>
                   <View style={styles.option}>
-                    <RadioButton value="male" />
+                    <RadioButton value="MALE" />
                     <Text style={styles.optionText}>남성</Text>
                   </View>
                   <View style={styles.option}>
-                    <RadioButton value="female" />
+                    <RadioButton value="FEMALE" />
                     <Text style={styles.optionText}>여성</Text>
                   </View>
                 </View>
