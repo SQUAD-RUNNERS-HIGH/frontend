@@ -1,10 +1,9 @@
 import { StyleSheet, View, Text } from "react-native";
-import Button from "./Button";
 import React, { SetStateAction, useEffect, useState } from "react";
-import { InfoModal } from "./Modal/InfoModal";
-import { SelectedModal } from "./Modal/SelectedModal";
-import { RunningModal } from "./Modal/RunningModal";
-import { useLocation } from "../_hooks/useLocation";
+import { InfoModal } from "./InfoModal";
+import { SelectedModal } from "./SelectedModal";
+import { RunningModal } from "./RunningModal";
+import { useLocation } from "../../_hooks/useLocation";
 
 export function Modal({
   selectedCourse,
