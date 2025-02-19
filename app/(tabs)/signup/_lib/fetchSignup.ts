@@ -7,6 +7,8 @@ export async function fetchSignup(data: userSignupType) {
     const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/user/register`, data);
     return response;
   } catch (error) {
-    Alert.alert("회원가입에 실패했습니다.");
+    if (error?.response) {
+      Alert.alert(error.response.data.serverErrorMessage);
+    }
   }
 }
