@@ -19,6 +19,7 @@ import { fetchLogin } from "./_lib/fetchLogin";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/app/_hooks/useAuth";
+import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 
 export default function Login() {
   const {
@@ -29,59 +30,64 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
-  const {authenticate} = useAuth();
+  const { authenticate } = useAuth();
   const router = useRouter();
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const response = await fetchLogin(data);
     if (response?.status === 200) {
-      await authenticate(response?.data.data.accessToken, response?.data.data.refreshToken)
+      await authenticate(
+        response?.data.data.accessToken,
+        response?.data.data.refreshToken
+      );
       router.push("/map");
     }
   }
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      {/* keyboardShouldPersistTaps는 키보드가 열려있을 때도 동작가능하게 하는 것
-contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 때 스크롤 발동하는 것 */}
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
+    <ProtectedRoute isAuthPage>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View style={styles.rootContainer}>
-          <View style={styles.container}>
-            <Text style={styles.title}>로그인</Text>
-            <Image
-              style={{ width: 111, height: 113, marginTop: 38 }}
-              source={require("../../../assets/images/logo.png")}
-            />
-            <View style={styles.formContainer}>
-              <FormInput
-                control={control}
-                errorMessage={errors.loginId?.message}
-                name="loginId"
-                label="아이디"
-                placeholder="아이디를 입력하세요"
-                hideError
+        {/* keyboardShouldPersistTaps는 키보드가 열려있을 때도 동작가능하게 하는 것
+contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 때 스크롤 발동하는 것 */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.rootContainer}>
+            <View style={styles.container}>
+              <Text style={styles.title}>로그인</Text>
+              <Image
+                style={{ width: 111, height: 113, marginTop: 38 }}
+                source={require("../../../assets/images/logo.png")}
               />
-              <FormInput
-                control={control}
-                errorMessage={errors.password?.message}
-                name="password"
-                label="비밀번호"
-                type="password"
-                placeholder="비밀번호를 입력하세요"
-                hideError
-              />
+              <View style={styles.formContainer}>
+                <FormInput
+                  control={control}
+                  errorMessage={errors.loginId?.message}
+                  name="loginId"
+                  label="아이디"
+                  placeholder="아이디를 입력하세요"
+                  hideError
+                />
+                <FormInput
+                  control={control}
+                  errorMessage={errors.password?.message}
+                  name="password"
+                  label="비밀번호"
+                  type="password"
+                  placeholder="비밀번호를 입력하세요"
+                  hideError
+                />
+              </View>
+            </View>
+            <View style={styles.buttonview}>
+              <Button onPress={handleSubmit(onSubmit)}>로그인</Button>
             </View>
           </View>
-          <View style={styles.buttonview}>
-            <Button onPress={handleSubmit(onSubmit)}>로그인</Button>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ProtectedRoute>
   );
 }
 const styles = StyleSheet.create({

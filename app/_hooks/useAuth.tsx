@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
-import axios from "axios";
 import { useRouter } from "expo-router";
 import { apiClient } from "@/api/apiClient";
-
 
 interface AuthContextType {
   accessToken: string | null;
@@ -27,8 +25,7 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
         const refreshToken = await SecureStore.getItemAsync("refreshToken");
         if (refreshToken) {
           await refreshAccessToken();
-          router.push('/map');
-        } 
+        }
       } catch (error) {
         console.error("토큰 불러오기 실패:", error);
       }
@@ -37,7 +34,10 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, []);
 
-  const authenticate = async (newAccessToken: string, newRefreshToken: string) => {
+  const authenticate = async (
+    newAccessToken: string,
+    newRefreshToken: string
+  ) => {
     try {
       await AsyncStorage.setItem("accessToken", newAccessToken);
       await SecureStore.setItemAsync("refreshToken", newRefreshToken);
@@ -72,7 +72,7 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.removeItem("accessToken");
       await SecureStore.deleteItemAsync("refreshToken");
       setAccessToken(null);
-      router.push('/');
+      router.push("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }

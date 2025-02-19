@@ -5,15 +5,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import RhSplashScreen from "../_component/RhSplashScreen";
 import Button from "../_component/Button";
 import { useNavigation, useRouter } from "expo-router";
+import { ProtectedRoute } from "../_component/ProtectedRoute";
 
 // Splash Screen을 유지
 SplashScreen.preventAutoHideAsync();
 
-
 export default function Index() {
   const [isAppReady, setAppReady] = useState(false);
   const router = useRouter();
-
 
   useEffect(() => {
     const prepareApp = async () => {
@@ -31,36 +30,38 @@ export default function Index() {
   }
 
   return (
-    <LinearGradient
-      colors={["#8A2BE2", "#4169E1"]} // 색상 배열
-      start={{ x: 0, y: 0 }} // 시작 지점 (왼쪽 상단)
-      end={{ x: 1, y: 1 }} // 끝 지점 (오른쪽 하단)
-      style={styles.rootContainer}
-    >
-      <View style={styles.container}>
-        <View style={styles.innerContainer}>
-          <Image source={require("../../assets/images/logo.png")} />
-          <Text style={styles.text}>Runner's High</Text>
+    <ProtectedRoute isAuthPage>
+      <LinearGradient
+        colors={["#8A2BE2", "#4169E1"]} // 색상 배열
+        start={{ x: 0, y: 0 }} // 시작 지점 (왼쪽 상단)
+        end={{ x: 1, y: 1 }} // 끝 지점 (오른쪽 하단)
+        style={styles.rootContainer}
+      >
+        <View style={styles.container}>
+          <View style={styles.innerContainer}>
+            <Image source={require("../../assets/images/logo.png")} />
+            <Text style={styles.text}>Runner's High</Text>
+          </View>
+          <View style={styles.buttonGroup}>
+            <Button
+              onPress={() => {
+                router.push("/login");
+              }}
+            >
+              로그인
+            </Button>
+            <Button
+              theme="secondary"
+              onPress={() => {
+                router.push("/signup");
+              }}
+            >
+              회원가입
+            </Button>
+          </View>
         </View>
-        <View style={styles.buttonGroup}>
-          <Button
-            onPress={() => {
-              router.push("/login");
-            }}
-          >
-            로그인
-          </Button>
-          <Button
-            theme="secondary"
-            onPress={() => {
-              router.push("/signup");
-            }}
-          >
-            회원가입
-          </Button>
-        </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </ProtectedRoute>
   );
 }
 
@@ -77,8 +78,8 @@ const styles = StyleSheet.create({
     marginTop: -100,
     gap: 80,
     height: "100%",
-    width:"100%",
-    paddingHorizontal:20,
+    width: "100%",
+    paddingHorizontal: 20,
   },
   innerContainer: {
     gap: 65,

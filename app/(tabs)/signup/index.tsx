@@ -16,9 +16,10 @@ import { useRouter } from "expo-router";
 import { signUpSchema } from "./_lib/signUpSchema";
 import { fetchSignup } from "./_lib/fetchSignup";
 import { userSignupType } from "@/app/_types";
+import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
   const { gender, age, height, weight, ...rest } = data;
-  const newData:userSignupType = {
+  const newData: userSignupType = {
     ...rest,
     physical: {
       gender,
@@ -45,92 +46,94 @@ export default function Signup() {
   });
   const router = useRouter();
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      {/* keyboardShouldPersistTaps는 키보드가 열려있을 때도 동작가능하게 하는 것
-contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 때 스크롤 발동하는 것 */}
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
+    <ProtectedRoute isAuthPage>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View style={styles.rootContainer}>
-          <Text style={styles.title}>회원가입</Text>
+        {/* keyboardShouldPersistTaps는 키보드가 열려있을 때도 동작가능하게 하는 것
+contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 때 스크롤 발동하는 것 */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.rootContainer}>
+            <Text style={styles.title}>회원가입</Text>
 
-          <View style={styles.formContainer}>
-            <FormInput
-              control={control}
-              errorMessage={errors.loginId?.message}
-              name="loginId"
-              label="아이디"
-              placeholder="아이디를 입력하세요"
-            />
-            <FormInput
-              control={control}
-              errorMessage={errors.password?.message}
-              name="password"
-              label="비밀번호"
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-            />
-            <FormInput
-              control={control}
-              errorMessage={errors.username?.message}
-              name="username"
-              label="닉네임"
-              placeholder="2-10자 사이로 입력해주세요"
-            />
-            <FormInput
-              control={control}
-              errorMessage={errors.age?.message}
-              name="age"
-              type="number"
-              label="나이"
-              placeholder="나이를 입력해주세요"
-            />
-            <FormInput
-              control={control}
-              errorMessage={errors.weight?.message}
-              name="weight"
-              label="몸무게"
-              type="number"
-              placeholder="몸무게를 입력해주세요"
-            />
-            <FormInput
-              control={control}
-              errorMessage={errors.height?.message}
-              name="height"
-              label="키"
-              type="number"
-              placeholder="키를 입력해주세요"
-            />
-            {/* 성별 */}
-            <FormInput
-              control={control}
-              errorMessage={errors.gender?.message}
-              isRadio
-              name="gender"
-              label="성별"
-              placeholder="성별을 입력해주세요"
-            />
-            <View style={styles.buttonview}>
-              <Button onPress={handleSubmit(onSubmit)}>회원가입</Button>
-            </View>
-            <View style={styles.loginContainer}>
-              <Text>이미 계정이 있으신가요?</Text>
-              <Pressable
-                onPress={() => {
-                  router.push("/login");
-                }}
-              >
-                <Text style={styles.loginButton}>로그인하기</Text>
-              </Pressable>
+            <View style={styles.formContainer}>
+              <FormInput
+                control={control}
+                errorMessage={errors.loginId?.message}
+                name="loginId"
+                label="아이디"
+                placeholder="아이디를 입력하세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.password?.message}
+                name="password"
+                label="비밀번호"
+                type="password"
+                placeholder="비밀번호를 입력하세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.username?.message}
+                name="username"
+                label="닉네임"
+                placeholder="2-10자 사이로 입력해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.age?.message}
+                name="age"
+                type="number"
+                label="나이"
+                placeholder="나이를 입력해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.weight?.message}
+                name="weight"
+                label="몸무게"
+                type="number"
+                placeholder="몸무게를 입력해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.height?.message}
+                name="height"
+                label="키"
+                type="number"
+                placeholder="키를 입력해주세요"
+              />
+              {/* 성별 */}
+              <FormInput
+                control={control}
+                errorMessage={errors.gender?.message}
+                isRadio
+                name="gender"
+                label="성별"
+                placeholder="성별을 입력해주세요"
+              />
+              <View style={styles.buttonview}>
+                <Button onPress={handleSubmit(onSubmit)}>회원가입</Button>
+              </View>
+              <View style={styles.loginContainer}>
+                <Text>이미 계정이 있으신가요?</Text>
+                <Pressable
+                  onPress={() => {
+                    router.push("/login");
+                  }}
+                >
+                  <Text style={styles.loginButton}>로그인하기</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ProtectedRoute>
   );
 }
 const styles = StyleSheet.create({
