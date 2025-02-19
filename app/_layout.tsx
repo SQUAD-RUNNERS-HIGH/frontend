@@ -1,14 +1,17 @@
 import { Tabs } from "expo-router";
 import TabBar from "./_component/TabBar";
 import Header from "./_component/Header";
+import { LocationProvider } from "./_hooks/useLocation";
 
 export default function TabLayout() {
-
   return (
-    <Tabs screenOptions={{
-      header: () => <Header />, // 모든 탭에 공통적으로 헤더 설정
-    }}
-    tabBar={() => <TabBar />}>
+    <LocationProvider>
+    <Tabs
+      screenOptions={{
+        header: () => <Header />, // 모든 탭에 공통적으로 헤더 설정
+      }}
+      tabBar={() => <TabBar />}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -25,7 +28,8 @@ export default function TabLayout() {
         name="signup"
         options={{ title: "signup", headerShown: false }}
       />
-      <Tabs.Screen name="map" options={{ title: "Home" }} />
+      <Tabs.Screen name="map" options={{ title: "map" }} />
     </Tabs>
+    </LocationProvider>
   );
 }
