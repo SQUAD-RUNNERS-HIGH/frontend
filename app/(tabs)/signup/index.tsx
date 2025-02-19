@@ -6,6 +6,7 @@ import {
   ScrollView,
   Platform,
   Pressable,
+  Alert,
 } from "react-native";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,23 +18,6 @@ import { signUpSchema } from "./_lib/signUpSchema";
 import { fetchSignup } from "./_lib/fetchSignup";
 import { userSignupType } from "@/app/_types";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
-  const { gender, age, height, weight, ...rest } = data;
-  const newData: userSignupType = {
-    ...rest,
-    physical: {
-      gender,
-      age,
-      height,
-      weight,
-    },
-  };
-  const response = await fetchSignup(newData);
-  if (response?.status === 200) {
-    alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
-    // 로그인 로직
-  }
-};
 
 export default function Signup() {
   const {
@@ -45,6 +29,24 @@ export default function Signup() {
     mode: "onChange",
   });
   const router = useRouter();
+  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+    const { gender, age, height, weight, ...rest } = data;
+    const newData: userSignupType = {
+      ...rest,
+      physical: {
+        gender,
+        age,
+        height,
+        weight,
+      },
+    };
+    const response = await fetchSignup(newData);
+    if (response?.status === 200) {
+      Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
+      router.push('/login');
+    }
+  };
+  
   return (
     <ProtectedRoute isAuthPage>
       <KeyboardAvoidingView
