@@ -9,3 +9,8 @@ export interface userSignupType {
     weight: number;
   };
 };
+
+export interface userLoginType {
+  loginId: string;
+  password: string;
+}

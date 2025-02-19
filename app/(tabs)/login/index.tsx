@@ -7,25 +7,33 @@ import {
   ScrollView,
   Image,
   Platform,
+  Alert,
 } from "react-native";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormInput from "../../_component/FormInput";
 import Button from "../../_component/Button";
-export const signUpSchema = z.object({
-  username: z.string().min(2, "아이디는 최소 2글자여야 합니다."),
-  password: z.string().min(8, "비밀번호는 최소 8글자여야합니다"),
-});
-export default function Signup() {
+import { loginSchema } from "./_lib/loginSchema";
+import { fetchLogin } from "./_lib/fetchLogin";
+import { useRouter } from "expo-router";
+
+export default function Login() {
   const {
     control,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
+  } = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
+  const router = useRouter();
+  async function onSubmit(data: z.infer<typeof loginSchema>) {
+    const response = await fetchLogin(data);
+    if (response?.status === 200) {
+      router.push("/map");
+    }
+  }
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -40,15 +48,15 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
         <View style={styles.rootContainer}>
           <View style={styles.container}>
             <Text style={styles.title}>로그인</Text>
-              <Image
-                style = {{width:111, height:113, marginTop:38}}
-                source={require("../../../assets/images/logo.png")}
-              />
+            <Image
+              style={{ width: 111, height: 113, marginTop: 38 }}
+              source={require("../../../assets/images/logo.png")}
+            />
             <View style={styles.formContainer}>
               <FormInput
                 control={control}
-                errorMessage={errors.username?.message}
-                name="username"
+                errorMessage={errors.loginId?.message}
+                name="loginId"
                 label="아이디"
                 placeholder="아이디를 입력하세요"
                 hideError
@@ -65,13 +73,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
             </View>
           </View>
           <View style={styles.buttonview}>
-            <Button
-              onPress={() => {
-                console.log(isValid);
-              }}
-            >
-              로그인
-            </Button>
+            <Button onPress={handleSubmit(onSubmit)}>로그인</Button>
           </View>
         </View>
       </ScrollView>
@@ -90,7 +92,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontFamily: "Roboto",
