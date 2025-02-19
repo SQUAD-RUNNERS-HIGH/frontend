@@ -32,3 +32,5 @@ export const coordinates = [
     ]
 
   ];
+
+export const API_URL = 'http://192.168.173.58:8080/api'
