@@ -17,6 +17,8 @@ import Button from "../../_component/Button";
 import { loginSchema } from "./_lib/loginSchema";
 import { fetchLogin } from "./_lib/fetchLogin";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/app/_hooks/useAuth";
 
 export default function Login() {
   const {
@@ -27,10 +29,12 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
+  const {authenticate} = useAuth();
   const router = useRouter();
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const response = await fetchLogin(data);
     if (response?.status === 200) {
+      await authenticate(response?.data.data.accessToken, response?.data.data.refreshToken)
       router.push("/map");
     }
   }
