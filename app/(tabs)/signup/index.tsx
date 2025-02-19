@@ -61,7 +61,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
           <View style={styles.formContainer}>
             <FormInput
               control={control}
-              errorMessage={errors.username?.message}
+              errorMessage={errors.loginId?.message}
               name="loginId"
               label="아이디"
               placeholder="아이디를 입력하세요"
