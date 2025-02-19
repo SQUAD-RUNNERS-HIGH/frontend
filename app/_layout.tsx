@@ -2,9 +2,11 @@ import { Tabs } from "expo-router";
 import TabBar from "./_component/TabBar";
 import Header from "./_component/Header";
 import { LocationProvider } from "./_hooks/useLocation";
+import AuthContextProvider from "./_hooks/useAuth";
 
 export default function TabLayout() {
   return (
+    <AuthContextProvider>
     <LocationProvider>
     <Tabs
       screenOptions={{
@@ -31,5 +33,6 @@ export default function TabLayout() {
       <Tabs.Screen name="map" options={{ title: "map" }} />
     </Tabs>
     </LocationProvider>
+    </AuthContextProvider>
   );
 }
