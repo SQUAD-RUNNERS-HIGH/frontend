@@ -34,6 +34,7 @@ export default function Login() {
   const router = useRouter();
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const response = await fetchLogin(data);
+
     if (response?.status === 200) {
       await authenticate(
         response?.data.data.accessToken,
@@ -82,7 +83,9 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
               </View>
             </View>
             <View style={styles.buttonview}>
-              <Button onPress={handleSubmit(onSubmit)}>로그인</Button>
+              <Button disabled={!isValid} onPress={handleSubmit(onSubmit)}>
+                로그인
+              </Button>
             </View>
           </View>
         </ScrollView>

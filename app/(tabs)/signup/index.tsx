@@ -119,7 +119,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 placeholder="성별을 입력해주세요"
               />
               <View style={styles.buttonview}>
-                <Button onPress={handleSubmit(onSubmit)}>회원가입</Button>
+                <Button onPress={handleSubmit(onSubmit)} disabled={!isValid}>회원가입</Button>
               </View>
               <View style={styles.loginContainer}>
                 <Text>이미 계정이 있으신가요?</Text>
