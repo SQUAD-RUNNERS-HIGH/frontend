@@ -19,3 +19,14 @@ export interface location {
   latitude: number;
   longitude: number;
 }
+
+type Coordinate = [number, number];
+
+export type CourseResponse = {
+  coordinates: Coordinate[][];
+  courseId: string;
+};
+
+export type CourseResponses = {
+  courseResponses: CourseResponse[];
+};

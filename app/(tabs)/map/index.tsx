@@ -6,9 +6,11 @@ import { coordinates } from "../../_constants";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-import { location } from "@/app/_types";
+import { CourseResponse, CourseResponses, location } from "@/app/_types";
 import { fetchUserLocation } from "./_lib/fetchUserLocation";
 import { LocationObjectCoords } from "expo-location";
+import { fetchCourses } from "./_lib/fetchCourses";
+
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
   const {
@@ -18,19 +20,24 @@ export default function Index() {
     stopLocationTracking,
   } = useLocation();
   const prevLocationRef = useRef<LocationObjectCoords | null>(null);
-
-  // 위치 추적 시작
-  useEffect(() => {
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  async function onChangeLoation(){
     if (!location) return;
 
     const { latitude, longitude } = location;
     const prevLocation = prevLocationRef.current;
 
     if (!prevLocation || prevLocation.latitude !== latitude || prevLocation.longitude !== longitude) {
-      fetchUserLocation({ latitude, longitude });
+      await fetchUserLocation({ latitude, longitude });
+      const response = await fetchCourses({latitude,longitude});
+      setCourses(response.courseResponses);
     }
 
     prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
+  }
+  // 위치 추적 시작
+  useEffect(() => {
+    onChangeLoation();
   }, [location, fetchUserLocation]);
 
   useEffect(() => {
@@ -39,7 +46,6 @@ export default function Index() {
       stopLocationTracking();
     }
   },[])
-  console.log(locationDelta);
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -71,13 +77,13 @@ export default function Index() {
                   source={require("@/assets/images/marker.png")}
                 />
               </Marker>
-              {coordinates.map((course, index) => {
+              {courses?.map((course, index) => {
                 return (
                   <Marker
                     key={index}
                     coordinate={{
-                      longitude: course[0][0],
-                      latitude: course[0][1],
+                      longitude: course.coordinates[0][0][0],
+                      latitude: course.coordinates[0][0][1],
                     }}
                     onPress={() => {
                       setSelectedCourse(index);
@@ -91,7 +97,7 @@ export default function Index() {
               {/* 선택된 코스의 Polyline 그리기 */}
               {selectedCourse !== -1 && (
                 <Polyline
-                  coordinates={coordinates[selectedCourse].map(
+                  coordinates={courses[selectedCourse].coordinates[0].map(
                     ([longitude, latitude]) => ({
                       latitude,
                       longitude,
