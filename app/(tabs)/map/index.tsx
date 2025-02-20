@@ -19,6 +19,7 @@ export default function Index() {
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
+  const mapRef = useRef<MapView>(null);
   const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   async function onChangeLoation(){
@@ -51,6 +52,7 @@ export default function Index() {
       <View style={styles.rootContainer}>
         {location && (
           <MapView
+            ref = {mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
@@ -87,6 +89,17 @@ export default function Index() {
                     }}
                     onPress={() => {
                       setSelectedCourse(index);
+                      if(mapRef.current) {
+                        const formattedCoordinates = courses[index].coordinates[0].map(([lng, lat]) => ({
+                          latitude: lat,
+                          longitude: lng,
+                        }));
+                        mapRef.current.fitToCoordinates(formattedCoordinates,{
+                          edgePadding: { top: 100, right: 50, bottom: 250, left: 50 },
+                          animated: true,
+                        })
+                        
+                      }
                     }}
                     title={`코스 ${index + 1}`}
                     description={`코스 ${index + 1} 상세보기`}
