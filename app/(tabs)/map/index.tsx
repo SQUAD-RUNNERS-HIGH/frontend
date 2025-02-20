@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Image } from "react-native";
@@ -6,28 +6,40 @@ import { coordinates } from "../../_constants";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
+import { location } from "@/app/_types";
+import { fetchUserLocation } from "./_lib/fetchUserLocation";
+import { LocationObjectCoords } from "expo-location";
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
-  const [course, setCourse] = useState<
-    { latitude: number; longitude: number }[] | null
-  >(null);
-  const convertedCoordinates = coordinates.map((a) =>
-    a.map(([longitude, latitude]) => ({
-      latitude,
-      longitude,
-    }))
-  );
   const {
     location,
     locationDelta,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
+  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
+
   // 위치 추적 시작
   useEffect(() => {
+    if (!location) return;
+
+    const { latitude, longitude } = location;
+    const prevLocation = prevLocationRef.current;
+
+    if (!prevLocation || prevLocation.latitude !== latitude || prevLocation.longitude !== longitude) {
+      fetchUserLocation({ latitude, longitude });
+    }
+
+    prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
+  }, [location, fetchUserLocation]);
+
+  useEffect(() => {
     startLocationTracking();
-    return () => stopLocationTracking();
-  }, []);
+    return () =>{
+      stopLocationTracking();
+    }
+  },[])
+  console.log(locationDelta);
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>

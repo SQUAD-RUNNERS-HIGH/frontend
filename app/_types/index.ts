@@ -14,3 +14,8 @@ export interface userLoginType {
   loginId: string;
   password: string;
 }
+
+export interface location {
+  latitude: number;
+  longitude: number;
+}
