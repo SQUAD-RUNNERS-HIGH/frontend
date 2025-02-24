@@ -63,9 +63,6 @@ export function InfoModal({
             <Button style={{ flex: 1 }} onPress={() => {}}>
               같이 뛰기
             </Button>
-            <Button style={{ flex: 1 }} onPress={() => {}}>
-              코스 자세히
-            </Button>
             <Button
               style={{ flex: 1 }}
               onPress={() => {
