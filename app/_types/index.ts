@@ -22,6 +22,10 @@ export interface location {
 
 type Coordinate = [number, number];
 
+interface Elevation {
+  elevation: number;
+}
+
 export type CourseResponse = {
   coordinates: Coordinate[][];
   courseId: string;
@@ -30,3 +34,11 @@ export type CourseResponse = {
 export type CourseResponses = {
   courseResponses: CourseResponse[];
 };
+
+export interface CourseDetail {
+  courseElevations: Elevation[];
+  courseName: string;
+  maxCalorie: number;
+  minCalorie: number;
+  perimeter: number;
+}

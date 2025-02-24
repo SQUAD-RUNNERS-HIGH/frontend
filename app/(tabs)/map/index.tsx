@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { LatLng, Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Image } from "react-native";
-import { coordinates } from "../../_constants";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-import { CourseResponse, CourseResponses, location } from "@/app/_types";
+import { CourseResponse } from "@/app/_types";
 import { fetchUserLocation } from "./_lib/fetchUserLocation";
 import { LocationObjectCoords } from "expo-location";
 import { fetchCourses } from "./_lib/fetchCourses";
@@ -22,15 +21,19 @@ export default function Index() {
   const mapRef = useRef<MapView>(null);
   const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
-  async function onChangeLoation(){
+  async function onChangeLoation() {
     if (!location) return;
 
     const { latitude, longitude } = location;
     const prevLocation = prevLocationRef.current;
 
-    if (!prevLocation || prevLocation.latitude !== latitude || prevLocation.longitude !== longitude) {
+    if (
+      !prevLocation ||
+      prevLocation.latitude !== latitude ||
+      prevLocation.longitude !== longitude
+    ) {
       await fetchUserLocation({ latitude, longitude });
-      const response = await fetchCourses({latitude,longitude});
+      const response = await fetchCourses({ latitude, longitude });
       setCourses(response.courseResponses);
     }
 
@@ -43,16 +46,16 @@ export default function Index() {
 
   useEffect(() => {
     startLocationTracking();
-    return () =>{
+    return () => {
       stopLocationTracking();
-    }
-  },[])
+    };
+  }, []);
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
         {location && (
           <MapView
-            ref = {mapRef}
+            ref={mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
@@ -80,25 +83,29 @@ export default function Index() {
                 />
               </Marker>
               {courses?.map((course, index) => {
+                const courseStart:LatLng = {longitude:course?.coordinates[0][0][0],latitude: course?.coordinates[0][0][1]};
                 return (
                   <Marker
                     key={index}
-                    coordinate={{
-                      longitude: course.coordinates[0][0][0],
-                      latitude: course.coordinates[0][0][1],
-                    }}
+                    coordinate={courseStart}
                     onPress={() => {
                       setSelectedCourse(index);
-                      if(mapRef.current) {
-                        const formattedCoordinates = courses[index].coordinates[0].map(([lng, lat]) => ({
+                      if (mapRef.current) {
+                        const formattedCoordinates = courses[
+                          index
+                        ].coordinates[0].map(([lng, lat]) => ({
                           latitude: lat,
                           longitude: lng,
                         }));
-                        mapRef.current.fitToCoordinates(formattedCoordinates,{
-                          edgePadding: { top: 100, right: 50, bottom: 250, left: 50 },
+                        mapRef.current.fitToCoordinates(formattedCoordinates, {
+                          edgePadding: {
+                            top: 100,
+                            right: 50,
+                            bottom: 250,
+                            left: 50,
+                          },
                           animated: true,
-                        })
-                        
+                        });
                       }
                     }}
                     title={`코스 ${index + 1}`}
@@ -106,7 +113,7 @@ export default function Index() {
                     pinColor="#8A2BE2"
                   />
                 );
-              })}
+              })} 
               {/* 선택된 코스의 Polyline 그리기 */}
               {selectedCourse !== -1 && (
                 <Polyline
@@ -125,6 +132,7 @@ export default function Index() {
         )}
         <Modal
           selectedCourse={selectedCourse}
+          selectedId={courses[selectedCourse]?.courseId || ''}
           setSelectedCourse={setSelectedCourse}
         />
       </View>
@@ -145,6 +153,3 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-function startRunning() {
-  throw new Error("Function not implemented.");
-}
