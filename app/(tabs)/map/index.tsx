@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet } from "react-native";
-import MapView, { LatLng, Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import { View, StyleSheet, Pressable } from "react-native";
+import MapView, {
+  LatLng,
+  Marker,
+  Polyline,
+  PROVIDER_GOOGLE,
+} from "react-native-maps";
 import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
@@ -9,6 +14,7 @@ import { CourseResponse } from "@/app/_types";
 import { fetchUserLocation } from "./_lib/fetchUserLocation";
 import { LocationObjectCoords } from "expo-location";
 import { fetchCourses } from "./_lib/fetchCourses";
+import MyLocation from "@/assets/images/svg/Mylocation";
 
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
@@ -83,7 +89,10 @@ export default function Index() {
                 />
               </Marker>
               {courses?.map((course, index) => {
-                const courseStart:LatLng = {longitude:course?.coordinates[0][0][0],latitude: course?.coordinates[0][0][1]};
+                const courseStart: LatLng = {
+                  longitude: course?.coordinates[0][0][0],
+                  latitude: course?.coordinates[0][0][1],
+                };
                 return (
                   <Marker
                     key={index}
@@ -108,12 +117,10 @@ export default function Index() {
                         });
                       }
                     }}
-                    title={`코스 ${index + 1}`}
-                    description={`코스 ${index + 1} 상세보기`}
                     pinColor="#8A2BE2"
                   />
                 );
-              })} 
+              })}
               {/* 선택된 코스의 Polyline 그리기 */}
               {selectedCourse !== -1 && (
                 <Polyline
@@ -130,9 +137,30 @@ export default function Index() {
             </View>
           </MapView>
         )}
+        {location && (
+          <Pressable
+            onPress={() => {
+              mapRef.current?.animateToRegion(
+                {
+                  latitude: location?.latitude,
+                  longitude: location?.longitude,
+                  latitudeDelta: 0.002,
+                  longitudeDelta: 0.002,
+                },
+                1000
+              );
+            }}
+            style={[
+              styles.locationContainer,
+              selectedCourse !== -1 && styles.whenModal,
+            ]}
+          >
+            <MyLocation />
+          </Pressable>
+        )}
         <Modal
           selectedCourse={selectedCourse}
-          selectedId={courses[selectedCourse]?.courseId || ''}
+          selectedId={courses[selectedCourse]?.courseId || ""}
           setSelectedCourse={setSelectedCourse}
         />
       </View>
@@ -143,13 +171,24 @@ const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
     width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
     position: "relative",
   },
   map: {
     flex: 1,
     width: "100%",
     zIndex: 1,
+  },
+  locationContainer: {
+    backgroundColor: "white",
+    zIndex: 2,
+    padding: 17,
+    position: "absolute",
+    bottom: 38,
+    right: 17,
+  },
+  whenModal: {
+    bottom: 268,
   },
 });
