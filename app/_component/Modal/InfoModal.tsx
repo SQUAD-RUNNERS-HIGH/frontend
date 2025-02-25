@@ -84,7 +84,7 @@ export function InfoModal({
             <View style={styles.textContainer}>
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>코스 이름</Text>
-                <Text style={styles.value}>{detail?.courseName}</Text>
+                <Text style={styles.value}>{(detail?.courseName)? detail?.courseName: 'Untitled'}</Text>
               </View>
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>예상 소모 칼로리</Text>
