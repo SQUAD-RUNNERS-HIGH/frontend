@@ -3,6 +3,7 @@ import Button from "../Button";
 import { SetStateAction, useEffect, useState } from "react";
 import { CourseDetail } from "@/app/_types";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
+import { LineChart } from "react-native-chart-kit";
 
 export function InfoModal({
   setTheme,
@@ -13,6 +14,7 @@ export function InfoModal({
 }) {
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
   async function updateDetail() {
     setLoading(true);
     const detail = await fetchCourseDetail(selectedId);
@@ -27,7 +29,7 @@ export function InfoModal({
   return (
     <>
       {loading ? (
-        <View style = {styles.spinnerContainer}>
+        <View style={styles.spinnerContainer}>
           <ActivityIndicator size={"large"} />
         </View>
       ) : (
@@ -35,8 +37,48 @@ export function InfoModal({
           <View style={styles.container}>
             <View style={styles.imageContainer}>
               <Text style={styles.info}>고도</Text>
-              <View style={styles.background}>
-                <Text>{detail?.courseElevations[0].elevation}</Text>
+              <View
+                style={styles.background}
+                onLayout={(event) => {
+                  const { width, height } = event.nativeEvent.layout;
+                  setParentStyle({ width, height }); // 부모 View 크기 저장
+                }}
+              >
+                {detail?.courseElevations && (
+                  <LineChart
+                    data={{
+                      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                      datasets: [
+                        {
+                          data: detail?.courseElevations.map((elevation) => {
+                            return elevation.elevation;
+                          }),
+                        },
+                      ],
+                    }}
+                    width={parentStyle.width+10} // 전체 너비
+                    
+                    height={Math.floor(parentStyle.height)} // 높이
+                    chartConfig={{
+                      backgroundColor: "#4169E1",
+                      backgroundGradientFrom: "#8A2BE2",
+                      backgroundGradientTo: "#4169E1",
+                      
+                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      labelColor: (opacity = 1) =>
+                        `rgba(255, 255, 255, ${opacity})`,
+                      strokeWidth:2,
+                    }}
+                    bezier // 부드러운 곡선
+                    style={{
+                      marginLeft: -10,
+                      marginRight: 0,
+                      borderRadius: 16,
+                      width: "100%",
+                      minHeight: "100%",
+                    }}
+                  />
+                )}
               </View>
             </View>
             <View style={styles.textContainer}>
@@ -83,11 +125,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   spinnerContainer: {
-    width: '100%',
-    height:222,
-    display: 'flex',
-    justifyContent:'center',
-    alignItems: 'center',
+    width: "100%",
+    height: 222,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: {
     flexDirection: "row",
@@ -107,8 +149,10 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     flex: 1,
-    backgroundColor: "#D8D8D8",
+    overflow:'hidden',
+    borderRadius:16,
   },
+
   textContainer: {
     flex: 1,
     gap: 12,
