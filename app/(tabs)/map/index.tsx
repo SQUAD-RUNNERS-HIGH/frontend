@@ -21,6 +21,8 @@ export default function Index() {
   const {
     location,
     locationDelta,
+    running,
+    setRunning,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
@@ -42,14 +44,18 @@ export default function Index() {
       const response = await fetchCourses({ latitude, longitude });
       setCourses(response.courseResponses);
     }
-
     prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
   }
+  useEffect(() => {
+    if(selectedCourse === -1) {
+      setRunning(false);
+    }
+  },[selectedCourse]);
+
   // 위치 추적 시작
   useEffect(() => {
     onChangeLoation();
   }, [location, fetchUserLocation]);
-
   useEffect(() => {
     startLocationTracking();
     return () => {
@@ -65,10 +71,23 @@ export default function Index() {
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
-              latitude: location?.latitude,
-              longitude: location?.longitude,
-              latitudeDelta: locationDelta?.latitudeDelta || 0.02,
-              longitudeDelta: locationDelta?.longitudeDelta || 0.02,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              latitudeDelta: 0.002,
+              longitudeDelta: 0.002,
+            }}
+            onLayout={() => {
+              if (mapRef.current) {
+                mapRef.current.animateToRegion(
+                  {
+                    latitude: location?.latitude,
+                    longitude: location?.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  },
+                  0
+                );
+              }
             }}
             onPress={() => {
               setSelectedCourse(-1);
