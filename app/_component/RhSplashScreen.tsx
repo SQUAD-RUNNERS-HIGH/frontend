@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   innerContainer: {
-    gap: "65px",
+    gap: 65,
     alignItems: "center",
   },
   text: {
