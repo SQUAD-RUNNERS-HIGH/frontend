@@ -60,7 +60,7 @@ export default function Index() {
           longitude: location?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: location?.heading, // 방향 (나아가는 방향)
+        heading: location?.heading, // 방향 (나아가는 방향) 
         altitude: location?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
@@ -87,8 +87,8 @@ export default function Index() {
             initialRegion={{
               latitude: location.latitude,
               longitude: location.longitude,
-              latitudeDelta: 0.002,
-              longitudeDelta: 0.002,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
             onLayout={() => {
               if (mapRef.current) {
@@ -177,8 +177,8 @@ export default function Index() {
                 {
                   latitude: location?.latitude,
                   longitude: location?.longitude,
-                  latitudeDelta: 0.002,
-                  longitudeDelta: 0.002,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
                 },
                 1000
               );
