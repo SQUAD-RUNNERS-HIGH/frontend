@@ -15,7 +15,6 @@ import { fetchUserLocation } from "./_lib/fetchUserLocation";
 import { LocationObjectCoords } from "expo-location";
 import { fetchCourses } from "./_lib/fetchCourses";
 import MyLocation from "@/assets/images/svg/Mylocation";
-
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
   const {

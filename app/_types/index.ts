@@ -9,7 +9,10 @@ export interface userSignupType {
     weight: number;
   };
 };
-
+export interface location {
+  latitude: number;
+  longitude: number;
+}
 export interface userLoginType {
   loginId: string;
   password: string;
