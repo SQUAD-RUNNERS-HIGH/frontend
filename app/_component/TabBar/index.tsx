@@ -6,10 +6,11 @@ import CrewIcon from "./CrewIcon";
 import { useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/_hooks/useAuth";
+import { useLocation } from "@/app/_hooks/useLocation";
 function TabBar() {
   const segments = useSegments();
   const [show, setShow] = useState(false);
-  console.log(segments);
+  const {stopLocationTracking} = useLocation();
   useEffect(() => {
     if (
       segments.length !== 1 &&
@@ -45,7 +46,10 @@ function TabBar() {
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          onPress={logout}
+          onPress={async() => {
+            stopLocationTracking();
+            await logout();
+          }}
         >
           <ProfileIcon fill="#9CA3AF" />
           <Text style={styles.buttonText}>프로필</Text>

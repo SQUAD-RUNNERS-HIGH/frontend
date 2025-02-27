@@ -1,6 +1,5 @@
 import { apiClient } from "@/api/apiClient";
 import { location } from "@/app/_types";
-import axios from "axios";
 import { Alert } from "react-native";
 
 export async function fetchUserLocation(data:location) {

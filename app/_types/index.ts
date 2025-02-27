@@ -17,3 +17,31 @@ export interface userLoginType {
   loginId: string;
   password: string;
 }
+
+export interface location {
+  latitude: number;
+  longitude: number;
+}
+
+type Coordinate = [number, number];
+
+interface Elevation {
+  elevation: number;
+}
+
+export type CourseResponse = {
+  coordinates: Coordinate[][];
+  courseId: string;
+};
+
+export type CourseResponses = {
+  courseResponses: CourseResponse[];
+};
+
+export interface CourseDetail {
+  courseElevations: Elevation[];
+  courseName: string;
+  maxCalorie: number;
+  minCalorie: number;
+  perimeter: number;
+}

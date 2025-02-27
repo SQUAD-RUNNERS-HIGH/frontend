@@ -51,7 +51,8 @@ export default function Signup() {
     <ProtectedRoute isAuthPage>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        contentContainerStyle={{ flex: 1 }}
+        
       >
         {/* keyboardShouldPersistTaps는 키보드가 열려있을 때도 동작가능하게 하는 것
 contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 때 스크롤 발동하는 것 */}

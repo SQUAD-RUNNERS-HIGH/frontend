@@ -40,7 +40,7 @@ function RhSplashScreen() {
           <Image source={require("../../assets/images/logo.png")} />
           <Text style={styles.text}>Runner's High</Text>
         </Animated.View>
-        <Animated.View style={[styles.spinner, , { opacity: spinner }]}>
+        <Animated.View style={[styles.spinner, { opacity: spinner }]}>
           <ActivityIndicator  size={'large'} />
         </Animated.View>
       </View>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   innerContainer: {
-    gap: "65px",
+    gap: 65,
     alignItems: "center",
   },
   text: {
