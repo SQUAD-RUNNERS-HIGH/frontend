@@ -15,12 +15,12 @@ export function RunningModal({
 }) {
   const { location, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
-  const [speed, setSpeed] = useState<string>("00'00\"");
+  const [speed, setSpeed] = useState<number>(0);
   const progress = Math.min(seconds / dummyData, 1);
   useEffect(() => {
     const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
-      setSpeed(convertSpeedToPace(location?.speed));
+      setSpeed(location?.speed?.toFixed(2));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -37,7 +37,7 @@ export function RunningModal({
           <Text style={styles.key}>남은 거리</Text>
         </View>
         <View style={styles.info}>
-          <Text style={styles.value}>{speed}</Text>
+          <Text style={styles.value}>{speed} m/s</Text>
           <Text style={styles.key}>속도</Text>
         </View>
       </View>
