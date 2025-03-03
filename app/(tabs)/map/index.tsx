@@ -45,11 +45,14 @@ export default function Index() {
     }
     prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
   }
+
+  // 모달이 없어질 시 러닝 끝내기(예비)
   useEffect(() => {
-    if(selectedCourse === -1) {
+    if (selectedCourse === -1) {
       setRunning(false);
     }
-  },[selectedCourse]);
+  }, [selectedCourse]);
+
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
     if (running && location) {
@@ -59,12 +62,13 @@ export default function Index() {
           longitude: location?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: location?.heading, // 방향 (나아가는 방향) 
+        heading: location?.heading, // 방향 (나아가는 방향)
         altitude: location?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
   }, [running, location]);
+
   // 위치 추적 시작
   useEffect(() => {
     onChangeLoation();
@@ -129,7 +133,7 @@ export default function Index() {
                   <Marker
                     key={index}
                     coordinate={courseStart}
-                    onPress={() => {
+                    onPress={async () => {
                       setSelectedCourse(index);
                       if (mapRef.current) {
                         const formattedCoordinates = courses[
@@ -171,16 +175,22 @@ export default function Index() {
         )}
         {location && (
           <Pressable
-            onPress={() => {
-              mapRef.current?.animateToRegion(
-                {
-                  latitude: location?.latitude,
-                  longitude: location?.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                },
-                1000
-              );
+            onPress={async () => {
+              const currentCamera = await mapRef.current?.getCamera();
+              if (currentCamera) {
+                const { center, zoom, ...rest } = currentCamera;
+                mapRef.current?.animateCamera(
+                  {
+                    center: {
+                      longitude: location?.longitude,
+                      latitude: location?.latitude,
+                    },
+                    zoom,
+                    ...rest,
+                  },
+                  { duration: 1000 }
+                );
+              }
             }}
             style={[
               styles.locationContainer,
