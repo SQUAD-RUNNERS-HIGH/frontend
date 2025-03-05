@@ -29,6 +29,8 @@
       },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ]
     },
@@ -48,6 +50,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "runnershigh가 사용자의 위치를 추적합니다.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {
@@ -61,6 +70,12 @@
         "projectId": "6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
       }
     },
-    "owner": "juyung0903"
+    "owner": "juyung0903",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
+    }
   }
 }
