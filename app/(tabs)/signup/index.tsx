@@ -126,7 +126,6 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 <Text>이미 계정이 있으신가요?</Text>
                 <Pressable
                   onPress={() => {
-                    alert(process.env.EXPO_PUBLIC_API_URL);
                     router.push("/login");
                   }}
                 >

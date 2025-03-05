@@ -68,7 +68,6 @@ export default function Index() {
   // 위치 추적 시작
   useEffect(() => {
     onChangeLoation();
-    alert(location?.latitude);
   }, [location, fetchUserLocation]);
   useEffect(() => {
     startLocationTracking();
