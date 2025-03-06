@@ -71,9 +71,7 @@
       }
     },
     "owner": "juyung0903",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
     }
