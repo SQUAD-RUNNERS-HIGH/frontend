@@ -20,11 +20,16 @@ export function RunningModal({
   useEffect(() => {
     const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
-      setSpeed(location?.speed?.toFixed(2));
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
+  useEffect(() => {
+    if (location?.speed) {
+      console.log(speed);
+      setSpeed(location.speed.toFixed(2));
+    }
+  }, [location]); // location이 바뀔 때 speed 업데이트
   return (
     <>
       <View style={styles.infoContainer}>
