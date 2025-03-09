@@ -1,3 +1,4 @@
+import "react-native-get-random-values";
 import { Tabs } from "expo-router";
 import TabBar from "./_component/TabBar";
 import Header from "./_component/Header";
