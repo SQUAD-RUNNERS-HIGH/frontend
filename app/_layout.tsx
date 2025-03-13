@@ -9,11 +9,13 @@ export default function TabLayout() {
   return (
     <AuthContextProvider>
       <LocationProvider>
-        <Header />
+      <Header />
+
         <Tabs
         screenOptions={{headerShown:false}}
           tabBar={() => <TabBar />}
         >
+
           <Tabs.Screen
             name="index"
             options={{
