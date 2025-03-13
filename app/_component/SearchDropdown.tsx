@@ -1,34 +1,34 @@
 import React, { SetStateAction } from "react";
-import {
-  Text,
-  StyleSheet,
-  FlatList,
-  View,
-  Pressable,
-} from "react-native";
+import { Text, StyleSheet, FlatList, View, Pressable } from "react-native";
 
 interface SearchInputProps {
   results: string[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
 }
-const SearchDropdown = ({ results, setSelectedQuery, setIsDropdownVisible }: SearchInputProps) => {
+const SearchDropdown = ({
+  results,
+  setSelectedQuery,
+  setIsDropdownVisible,
+}: SearchInputProps) => {
   return (
     <FlatList
       data={results}
-      keyExtractor={(index) => index.toString()}
-      renderItem={({ item,index }) => (
-        <Pressable
-          style={styles.resultItem}
-          onPress={() => {
-            setSelectedQuery(item);
-            setIsDropdownVisible(false);
-          }}
-        >
-          <View style={styles.resultIcon}></View>
+      keyExtractor={(_, index) => index.toString()}
+      renderItem={({ item }) => {
+        return (
+          <Pressable
+            style={styles.resultItem}
+            onPress={() => {
+              setSelectedQuery(item);
+              setIsDropdownVisible(false);
+            }}
+          >
+            <View style={styles.resultIcon}></View>
             <Text style={styles.resultText}>{item}</Text>
-       </Pressable>
-      )}
+          </Pressable>
+        );
+      }}
       style={styles.dropdown}
     />
   );
@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: "100%",
     backgroundColor: "#ACACAC",
-
   },
   resultItem: {
     borderBottomWidth: 1,
@@ -60,20 +59,19 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical:12,
+    paddingVertical: 12,
   },
 
   notFirst: {
     borderTopWidth: 1, // border-top: 1px
     borderTopColor: "#2D2D32", // border-top의 색상
-  
   },
   resultText: {
     fontSize: 16,
     color: "#000000",
-    fontFamily:'Open Sans',
+    fontFamily: "Open Sans",
     fontWeight: 600,
-    verticalAlign:'middle'
+    verticalAlign: "middle",
   },
 });
 

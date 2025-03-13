@@ -19,17 +19,45 @@ function Header() {
   const [selectedQuery, setSelectedQuery] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-  const sampleData = [
-    "Apple",
-    "Banana",
-    "Cherry",
-    "Date",
-    "Grape",
-    "Mango",
-    "Orange",
-    "Peach",
-  ];
+  const fetchPlaces = async (query: string) => {
+    if (!query) {
+      setResults([]);
+      return;
+    }
+
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+      query
+    )}&language=ko&region=kr&key=${process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === "OK") {
+        const places = data.results.map(
+          (place: any) => place.formatted_address
+        );
+        setResults(places);
+        setIsDropdownVisible(true);
+      } else {
+        setResults([]);
+        setIsDropdownVisible(false);
+      }
+    } catch (error) {
+      console.error("Error fetching places:", error);
+      setResults([]);
+      setIsDropdownVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchPlaces(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     if (
       segments.length !== 1 &&
@@ -49,34 +77,34 @@ function Header() {
   useEffect(() => {
     setSearchQuery(selectedQuery);
   }, [selectedQuery]);
-  const handleSearch = useCallback(
-    debounce((query: string) => {
-      if (query) {
-        const filtered = sampleData.filter((item) =>
-          item.toLowerCase().includes(query.toLowerCase())
-        );
-        setResults(filtered);
-      } else {
-        setResults([]);
-      }
-    }, 300),
-    []
-  );
-  useEffect(() => {
-    handleSearch(searchQuery);
-  }, [searchQuery]);
 
   return (
     <TouchableWithoutFeedback>
-      <View style={[styles.rootContainer,!show && styles.hide]}>
+      <View
+        style={[styles.rootContainer, !show && styles.hide]}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setHeaderHeight(height);
+        }}
+      >
         <View style={styles.container}>
           <Pressable>
             <Image source={require("../../assets/images/header_logo.png")} />
           </Pressable>
-          <LocationInput onLocationSelect={() => {console.log('success')}}
+          <SearchInput
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
+
           <Image source={require("../../assets/images/notification.png")} />
         </View>
+        {isDropdownVisible && (
+          <SearchDropdown
+            results={results}
+            setSelectedQuery={setSelectedQuery}
+            setIsDropdownVisible={setIsDropdownVisible}
+          />
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -84,12 +112,12 @@ function Header() {
 const styles = StyleSheet.create({
   rootContainer: {
     width: "100%",
-    position: 'sticky',
+    position: "absolute",
     zIndex: 100,
-    top:0,
+    top: 0,
   },
   hide: {
-    display: 'none',
+    display: "none",
   },
   container: {
     paddingVertical: 10,
