@@ -10,6 +10,7 @@ import SearchInput from "./SearchInput";
 import { debounce } from "lodash";
 import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
+import LocationInput from "./LocationInput";
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
@@ -70,9 +71,7 @@ function Header() {
           <Pressable>
             <Image source={require("../../assets/images/header_logo.png")} />
           </Pressable>
-          <SearchInput
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+          <LocationInput onLocationSelect={() => {console.log('success')}}
           />
           <Image source={require("../../assets/images/notification.png")} />
         </View>
@@ -90,8 +89,9 @@ function Header() {
 const styles = StyleSheet.create({
   rootContainer: {
     width: "100%",
-    position: "sticky",
-    top: 0,
+    position: 'sticky',
+    zIndex: 100,
+    top:0,
   },
   hide: {
     display: 'none',

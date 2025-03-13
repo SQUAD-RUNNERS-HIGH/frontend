@@ -9,10 +9,9 @@ export default function TabLayout() {
   return (
     <AuthContextProvider>
       <LocationProvider>
+        <Header />
         <Tabs
-          screenOptions={{
-            header: () => <Header />, // 모든 탭에 공통적으로 헤더 설정
-          }}
+        screenOptions={{headerShown:false}}
           tabBar={() => <TabBar />}
         >
           <Tabs.Screen
