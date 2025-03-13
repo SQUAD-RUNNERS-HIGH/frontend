@@ -37,8 +37,10 @@ function Header() {
       segments[segments.length - 1] !== "signup"
     ) {
       setShow(true);
+    } else {
+      setShow(false);
     }
-  }, []);
+  }, [segments]);
   useEffect(() => {
     if (results.length > 0) {
       setIsDropdownVisible(true);
@@ -75,13 +77,6 @@ function Header() {
           />
           <Image source={require("../../assets/images/notification.png")} />
         </View>
-        {isDropdownVisible && (
-          <SearchDropdown
-            setSelectedQuery={setSelectedQuery}
-            setIsDropdownVisible={setIsDropdownVisible}
-            results={results}
-          />
-        )}
       </View>
     </TouchableWithoutFeedback>
   );
