@@ -5,21 +5,19 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
-import { debounce } from "lodash";
 import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
-import LocationInput from "./LocationInput";
+import { Place } from "../_types";
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
-  const [results, setResults] = useState<string[]>([]); // 검색 결과 리스트
+  const [results, setResults] = useState<Place[]>([]); // 검색 결과 리스트
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [selectedQuery, setSelectedQuery] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  const [headerHeight, setHeaderHeight] = useState(0);
 
   const fetchPlaces = async (query: string) => {
     if (!query) {
@@ -29,16 +27,15 @@ function Header() {
 
     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
       query
-    )}&language=ko&region=kr&key=${process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY}`;
+    )}&language=ko&region=kr&key=${
+      process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY
+    }`;
 
     try {
       const response = await fetch(url);
       const data = await response.json();
       if (data.status === "OK") {
-        const places = data.results.map(
-          (place: any) => place.formatted_address
-        );
-        setResults(places);
+        setResults(data.results);
         setIsDropdownVisible(true);
       } else {
         setResults([]);
@@ -80,13 +77,7 @@ function Header() {
 
   return (
     <TouchableWithoutFeedback>
-      <View
-        style={[styles.rootContainer, !show && styles.hide]}
-        onLayout={(event) => {
-          const { height } = event.nativeEvent.layout;
-          setHeaderHeight(height);
-        }}
-      >
+      <View style={[styles.rootContainer, !show && styles.hide]}>
         <View style={styles.container}>
           <Pressable>
             <Image source={require("../../assets/images/header_logo.png")} />

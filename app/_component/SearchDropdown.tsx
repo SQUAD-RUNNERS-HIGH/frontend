@@ -1,8 +1,10 @@
-import React, { SetStateAction } from "react";
+import React, { SetStateAction, useEffect } from "react";
 import { Text, StyleSheet, FlatList, View, Pressable } from "react-native";
+import { Place } from "../_types";
+import { useLocation } from "../_hooks/useLocation";
 
 interface SearchInputProps {
-  results: string[];
+  results: Place[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
 }
@@ -11,21 +13,28 @@ const SearchDropdown = ({
   setSelectedQuery,
   setIsDropdownVisible,
 }: SearchInputProps) => {
+  const {searchedLocation,setSearchedLocation} = useLocation();
+  useEffect(() => {
+    setIsDropdownVisible(false);
+  }, [searchedLocation]);
   return (
     <FlatList
       data={results}
       keyExtractor={(_, index) => index.toString()}
-      renderItem={({ item }) => {
+      renderItem={({item}: {item: Place}) => {
         return (
           <Pressable
             style={styles.resultItem}
             onPress={() => {
-              setSelectedQuery(item);
-              setIsDropdownVisible(false);
+              const latitudeDelta = item.geometry.viewport.northeast.lat - item.geometry.viewport.southwest.lat;
+              const longitudeDelta = item.geometry.viewport.northeast.lng - item.geometry.viewport.southwest.lng;
+              const location = {latitude: item.geometry.location.lat,longitude: item.geometry.location.lng,latitudeDelta,longitudeDelta};
+              setSelectedQuery(item.formatted_address);
+              setSearchedLocation(location);
             }}
           >
             <View style={styles.resultIcon}></View>
-            <Text style={styles.resultText}>{item}</Text>
+            <Text style={styles.resultText}>{item.formatted_address}</Text>
           </Pressable>
         );
       }}

@@ -10,6 +10,7 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { fetchUserLocation } from "../(tabs)/map/_lib/fetchUserLocation";
+import { Region } from "react-native-maps";
 
 // 타입 정의
 interface LocationContextType {
@@ -17,8 +18,9 @@ interface LocationContextType {
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
-  serchedLocation: Location.LocationObjectCoords;
   running: boolean;
+  searchedLocation: Region | null;
+  setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
   setRunning: React.Dispatch<SetStateAction<boolean>>;
 }
 
@@ -31,8 +33,8 @@ export const LocationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [location, setLocation] =
-    useState<Location.LocationObjectCoords | null>(null);
+  const [searchedLocation, setSearchedLocation] =
+    useState<Region | null>(null);
     const [myLocation, setMyLocation] =
     useState<Location.LocationObjectCoords | null>(null);
   const [subscription, setSubscription] =
@@ -101,8 +103,8 @@ export const LocationProvider = ({
       value={{
         running,
         setRunning,
-        location,
-        setLocation,
+        searchedLocation,
+        setSearchedLocation,
         myLocation,
         permissionStatus,
         startLocationTracking,

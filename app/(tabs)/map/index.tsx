@@ -17,6 +17,7 @@ export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
   const [location, setLocation] = useState<location>();
   const {
+    searchedLocation,
     myLocation,
     running,
     setRunning,
@@ -31,7 +32,11 @@ export default function Index() {
       setRunning(false);
     }
   }, [selectedCourse]);
-
+  useEffect(() => {
+    if(searchedLocation) {
+      mapRef.current?.animateToRegion(searchedLocation);
+    }
+  },[searchedLocation])
   useEffect(() => {
     async function updateCourses() {
       if (location) {
@@ -99,8 +104,8 @@ export default function Index() {
             }}
             onRegionChangeComplete={(location) => {
               setLocation({
-                latitude: myLocation.latitude,
-                longitude: myLocation.longitude,
+                latitude: location.latitude,
+                longitude: location.longitude,
               });
             }}
           >
@@ -119,6 +124,7 @@ export default function Index() {
                 />
               </Marker>
               {courses?.map((course, index) => {
+                if(!course) return;
                 const courseStart: LatLng = {
                   longitude: course?.coordinates[0][0][0],
                   latitude: course?.coordinates[0][0][1],

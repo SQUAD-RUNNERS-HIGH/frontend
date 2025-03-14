@@ -23,6 +23,28 @@ export interface location {
   longitude: number;
 }
 
+export interface Place {
+  name: string;
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+    viewport: {
+      northeast: {
+        lat: number;
+        lng: number;
+      };
+      southwest: {
+        lat: number;
+        lng: number;
+      }
+    }
+  };
+  place_id: string;
+}
+
 type Coordinate = [number, number];
 
 interface Elevation {
