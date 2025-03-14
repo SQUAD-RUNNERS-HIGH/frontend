@@ -13,10 +13,8 @@ const SearchDropdown = ({
   setSelectedQuery,
   setIsDropdownVisible,
 }: SearchInputProps) => {
-  const {searchedLocation,setSearchedLocation} = useLocation();
-  useEffect(() => {
-    setIsDropdownVisible(false);
-  }, [searchedLocation]);
+  const {setSearchedLocation} = useLocation();
+
   return (
     <FlatList
       data={results}
@@ -31,6 +29,7 @@ const SearchDropdown = ({
               const location = {latitude: item.geometry.location.lat,longitude: item.geometry.location.lng,latitudeDelta,longitudeDelta};
               setSelectedQuery(item.formatted_address);
               setSearchedLocation(location);
+              setIsDropdownVisible(false);
             }}
           >
             <View style={styles.resultIcon}></View>
@@ -54,6 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     maxHeight: 200, // 드롭다운 최대 높이 설정
     paddingVertical: 4,
+    zIndex:20,
   },
   resultIcon: {
     width: 20,

@@ -10,6 +10,7 @@ import SearchInput from "./SearchInput";
 import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
 import { Place } from "../_types";
+import { useLocation } from "../_hooks/useLocation";
 
 function Header() {
   const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
@@ -18,13 +19,12 @@ function Header() {
   const [selectedQuery, setSelectedQuery] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-
+  const { searchedLocation } = useLocation();
   const fetchPlaces = async (query: string) => {
     if (!query) {
       setResults([]);
       return;
     }
-
     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
       query
     )}&language=ko&region=kr&key=${
@@ -50,7 +50,9 @@ function Header() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchPlaces(searchQuery);
+      if (selectedQuery !== searchQuery) {
+        fetchPlaces(searchQuery);
+      }
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
