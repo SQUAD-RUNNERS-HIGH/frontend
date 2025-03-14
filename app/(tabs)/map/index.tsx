@@ -10,43 +10,22 @@ import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-import { CourseResponse } from "@/app/_types";
-import { fetchUserLocation } from "./_lib/fetchUserLocation";
-import { LocationObjectCoords } from "expo-location";
-import { fetchCourses } from "./_lib/fetchCourses";
+import { CourseResponse, location } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
+import { fetchCourses } from "./_lib/fetchCourses";
 export default function Index() {
   const [selectedCourse, setSelectedCourse] = useState<number>(-1);
+  const [location, setLocation] = useState<location>();
   const {
-    location,
-    locationDelta,
+    myLocation,
     running,
     setRunning,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
   const mapRef = useRef<MapView>(null);
-  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
-  async function onChangeLoation() {
-    if (!location) return;
 
-    const { latitude, longitude } = location;
-    const prevLocation = prevLocationRef.current;
-
-    if (
-      !prevLocation ||
-      prevLocation.latitude !== latitude ||
-      prevLocation.longitude !== longitude
-    ) {
-      await fetchUserLocation({ latitude, longitude });
-      const response = await fetchCourses({ latitude, longitude });
-      setCourses(response.courseResponses);
-    }
-    prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
-  }
-
-  // 모달이 없어질 시 러닝 끝내기(예비)
   useEffect(() => {
     if (selectedCourse === -1) {
       setRunning(false);
@@ -54,25 +33,33 @@ export default function Index() {
   }, [selectedCourse]);
 
   useEffect(() => {
+    async function updateCourses() {
+      if (location) {
+        const response = await fetchCourses(location);
+        setCourses(response.courseResponses);
+      }
+    }
+    updateCourses();
+  }, [location]);
+  // 러닝 시
+  useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running && location) {
+    if (running && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: location?.latitude,
-          longitude: location?.longitude,
+          latitude: myLocation?.latitude,
+          longitude: myLocation?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: location?.heading, // 방향 (나아가는 방향)
-        altitude: location?.altitude, // 고도
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
-  }, [running, location]);
+  }, [running, myLocation]);
 
   // 위치 추적 시작
-  useEffect(() => {
-    onChangeLoation();
-  }, [location, fetchUserLocation]);
+
   useEffect(() => {
     startLocationTracking();
     return () => {
@@ -82,14 +69,14 @@ export default function Index() {
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
-        {location && (
+        {myLocation && (
           <MapView
             ref={mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: myLocation?.latitude,
+              longitude: myLocation?.longitude,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
@@ -97,24 +84,31 @@ export default function Index() {
               if (mapRef.current) {
                 mapRef.current.animateToRegion(
                   {
-                    latitude: location?.latitude,
-                    longitude: location?.longitude,
+                    latitude: myLocation?.latitude,
+                    longitude: myLocation?.longitude,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   },
                   0
                 );
+                setLocation({latitude:myLocation.latitude,longitude: myLocation.longitude})
               }
             }}
             onPress={() => {
               setSelectedCourse(-1);
             }}
+            onRegionChangeComplete={(location) => {
+              setLocation({
+                latitude: myLocation.latitude,
+                longitude: myLocation.longitude,
+              });
+            }}
           >
             <View style={{ flex: 1 }}>
               <Marker
                 coordinate={{
-                  latitude: location?.latitude,
-                  longitude: location?.longitude,
+                  latitude: myLocation?.latitude,
+                  longitude: myLocation?.longitude,
                 }}
                 style={{ zIndex: 3 }}
               >
@@ -133,6 +127,7 @@ export default function Index() {
                   <Marker
                     key={index}
                     coordinate={courseStart}
+                    style = {{zIndex:3}}
                     onPress={async () => {
                       setSelectedCourse(index);
                       if (mapRef.current) {
@@ -173,7 +168,7 @@ export default function Index() {
             </View>
           </MapView>
         )}
-        {location && (
+        {myLocation && (
           <Pressable
             onPress={async () => {
               const currentCamera = await mapRef.current?.getCamera();
@@ -182,8 +177,8 @@ export default function Index() {
                 mapRef.current?.animateCamera(
                   {
                     center: {
-                      longitude: location?.longitude,
-                      latitude: location?.latitude,
+                      longitude: myLocation?.longitude,
+                      latitude: myLocation?.latitude,
                     },
                     zoom,
                     ...rest,

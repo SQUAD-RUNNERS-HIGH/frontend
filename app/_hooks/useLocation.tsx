@@ -3,24 +3,23 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import * as Location from "expo-location";
 import { Alert } from "react-native";
+import { LocationObjectCoords } from "expo-location";
+import { fetchUserLocation } from "../(tabs)/map/_lib/fetchUserLocation";
 
-interface locationDeltaType {
-  latitudeDelta: number;
-  longitudeDelta: number;
-}
 // 타입 정의
 interface LocationContextType {
-  location: Location.LocationObjectCoords | null;
+  myLocation: Location.LocationObjectCoords | null;
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
+  serchedLocation: Location.LocationObjectCoords;
   running: boolean;
   setRunning: React.Dispatch<SetStateAction<boolean>>;
-  locationDelta: locationDeltaType;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -34,16 +33,17 @@ export const LocationProvider = ({
 }) => {
   const [location, setLocation] =
     useState<Location.LocationObjectCoords | null>(null);
+    const [myLocation, setMyLocation] =
+    useState<Location.LocationObjectCoords | null>(null);
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
-  const [locationDelta, setLocationDelta] = useState<locationDeltaType>({
-    latitudeDelta: 0.002,
-    longitudeDelta: 0.002,
-  });
+
+    const prevLocationRef = useRef<LocationObjectCoords | null>(null);
+  
   const [running, setRunning] = useState<boolean>(false);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -52,15 +52,22 @@ export const LocationProvider = ({
       }
     }
   };
+ async function onChangeLoation() {
+     if (!myLocation) return;
  
-  // 위치 추적 중지 (setInterval 정리)
-  const stopRunning = async () => {
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
+     const { latitude, longitude } = myLocation;
+     const prevLocation = prevLocationRef.current;
+ 
+     if (
+       !prevLocation ||
+       prevLocation.latitude !== latitude ||
+       prevLocation.longitude !== longitude
+     ) {
+       await fetchUserLocation({ latitude, longitude });
+       
+     }
+     prevLocationRef.current = myLocation; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
     }
-    await startLocationTracking();
-  };
   // 위치 추적 시작
   const startLocationTracking = async () => {
     const sub = await Location.watchPositionAsync(
@@ -70,7 +77,7 @@ export const LocationProvider = ({
         distanceInterval: running? 1: 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
-        setLocation(newLocation.coords);
+        setMyLocation(newLocation.coords);
       }
     );
     setSubscription(sub);
@@ -86,16 +93,20 @@ export const LocationProvider = ({
   useEffect(() => {
     askPermission();
   }, []);
+  useEffect(() => {
+    onChangeLoation();
+  }, [myLocation]);
   return (
     <LocationContext.Provider
       value={{
         running,
         setRunning,
         location,
+        setLocation,
+        myLocation,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
-        locationDelta,
       }}
     >
       {children}
