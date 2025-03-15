@@ -6,14 +6,12 @@ import { useLocation } from "../_hooks/useLocation";
 interface SearchInputProps {
   results: Place[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
-  setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
 }
 const SearchDropdown = ({
   results,
   setSelectedQuery,
-  setIsDropdownVisible,
 }: SearchInputProps) => {
-  const {setSearchedLocation} = useLocation();
+  const {setSearchedLocation, setIsDropdownVisible} = useLocation();
 
   return (
     <FlatList

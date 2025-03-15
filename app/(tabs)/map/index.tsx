@@ -14,12 +14,14 @@ import { CourseResponse, location } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
 export default function Index() {
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [location, setLocation] = useState<location>();
   const {
+    selectedCourse,
     searchedLocation,
     myLocation,
     running,
+    setSelectedCourse,
+    setIsDropdownVisible,
     setRunning,
     startLocationTracking,
     stopLocationTracking,
@@ -101,6 +103,7 @@ export default function Index() {
             }}
             onPress={() => {
               setSelectedCourse('');
+              setIsDropdownVisible(false);
             }}
             onRegionChangeComplete={(location) => {
               setLocation({
@@ -202,8 +205,6 @@ export default function Index() {
           </Pressable>
         )}
         <Modal
-          selectedCourse={selectedCourse || ""}
-          setSelectedCourse={setSelectedCourse}
         />
       </View>
     </ProtectedRoute>

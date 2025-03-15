@@ -20,8 +20,12 @@ interface LocationContextType {
   stopLocationTracking: () => void;
   running: boolean;
   searchedLocation: Region | null;
-  setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
+  setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
   setRunning: React.Dispatch<SetStateAction<boolean>>;
+  selectedCourse: string;
+  setSelectedCourse: React.Dispatch<SetStateAction<string>>;
+  isDropdownVisible: boolean;
+  setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -33,17 +37,16 @@ export const LocationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [searchedLocation, setSearchedLocation] =
-    useState<Region | null>(null);
-    const [myLocation, setMyLocation] =
+  const [searchedLocation, setSearchedLocation] = useState<Region | null>(null);
+  const [myLocation, setMyLocation] =
     useState<Location.LocationObjectCoords | null>(null);
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
-
-    const prevLocationRef = useRef<LocationObjectCoords | null>(null);
-  
+  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string>('');
+  const [isDropdownVisible,setIsDropdownVisible] = useState<boolean>(false);
   const [running, setRunning] = useState<boolean>(false);
 
   const askPermission = async () => {
@@ -54,29 +57,28 @@ export const LocationProvider = ({
       }
     }
   };
- async function onChangeLoation() {
-     if (!myLocation) return;
- 
-     const { latitude, longitude } = myLocation;
-     const prevLocation = prevLocationRef.current;
- 
-     if (
-       !prevLocation ||
-       prevLocation.latitude !== latitude ||
-       prevLocation.longitude !== longitude
-     ) {
-       await fetchUserLocation({ latitude, longitude });
-       
-     }
-     prevLocationRef.current = myLocation; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
+  async function onChangeLoation() {
+    if (!myLocation) return;
+
+    const { latitude, longitude } = myLocation;
+    const prevLocation = prevLocationRef.current;
+
+    if (
+      !prevLocation ||
+      prevLocation.latitude !== latitude ||
+      prevLocation.longitude !== longitude
+    ) {
+      await fetchUserLocation({ latitude, longitude });
     }
+    prevLocationRef.current = myLocation; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
+  }
   // 위치 추적 시작
   const startLocationTracking = async () => {
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: running? 500:3000, // 3초마다 업데이트
-        distanceInterval: running? 1: 5, // 5m 이동마다 업데이트
+        timeInterval: running ? 500 : 3000, // 3초마다 업데이트
+        distanceInterval: running ? 1 : 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setMyLocation(newLocation.coords);
@@ -109,6 +111,10 @@ export const LocationProvider = ({
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
+        selectedCourse,
+        setSelectedCourse,
+        isDropdownVisible,
+        setIsDropdownVisible,
       }}
     >
       {children}

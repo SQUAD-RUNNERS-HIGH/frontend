@@ -1,22 +1,14 @@
-import { StyleSheet, View, Text } from "react-native";
-import React, { SetStateAction, useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
 import { RunningModal } from "./RunningModal";
 import { useLocation } from "../../_hooks/useLocation";
-import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
-import { CourseDetail } from "@/app/_types";
 
-export function Modal({
-  selectedCourse,
-  setSelectedCourse,
-}: {
-  selectedCourse: string;
-  setSelectedCourse: React.Dispatch<SetStateAction<string>>;
-}) {
+export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const {running} = useLocation();
- 
+  const {running, selectedCourse} = useLocation();
+
   useEffect(() => {
     if (selectedCourse !== '') {
       setTheme("info");
@@ -26,9 +18,9 @@ export function Modal({
     <>
       {selectedCourse !== '' && (
         <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === "info" && <InfoModal selectedCourse = {selectedCourse} setTheme={setTheme} />}
+          {theme === "info" && <InfoModal  setTheme={setTheme} />}
           {theme === "select" && <SelectedModal setTheme={setTheme} />}
-          {theme === 'running' && <RunningModal setSelectedCourse = {setSelectedCourse}/>}
+          {theme === 'running' && <RunningModal />}
         </View>
       )}
     </>

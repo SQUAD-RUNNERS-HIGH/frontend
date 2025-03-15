@@ -15,11 +15,10 @@ import { useLocation } from "../_hooks/useLocation";
 function Header() {
   const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
   const [results, setResults] = useState<Place[]>([]); // 검색 결과 리스트
-  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [selectedQuery, setSelectedQuery] = useState<string>("");
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  const { searchedLocation } = useLocation();
+  const { isDropdownVisible, setIsDropdownVisible } = useLocation();
   const fetchPlaces = async (query: string) => {
     if (!query) {
       setResults([]);
@@ -95,7 +94,6 @@ function Header() {
           <SearchDropdown
             results={results}
             setSelectedQuery={setSelectedQuery}
-            setIsDropdownVisible={setIsDropdownVisible}
           />
         )}
       </View>
