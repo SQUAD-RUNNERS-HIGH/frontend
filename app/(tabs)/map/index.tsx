@@ -85,7 +85,7 @@ export default function Index() {
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
-            onLayout={() => {
+            onMapReady={() => {
               if (mapRef.current) {
                 mapRef.current.animateToRegion(
                   {
