@@ -125,7 +125,7 @@ export default function Index() {
                 setSelectedCourse("");
                 mapRef.current?.animateToRegion(region);
               }
-              if (isKeyBoardShow) {
+              if (!isKeyBoardShow) {
                 setIsDropdownVisible(false);
               }
             }}
@@ -162,6 +162,7 @@ export default function Index() {
                     style={{ zIndex: 3 }}
                     onPress={async () => {
                       setSelectedCourse(course.courseId);
+                      setIsDropdownVisible(false);
                       if (mapRef.current) {
                         const formattedCoordinates = courses[
                           index
