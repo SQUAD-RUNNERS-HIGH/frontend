@@ -1,5 +1,5 @@
 import React, { SetStateAction, useEffect } from "react";
-import { Text, StyleSheet, FlatList, View, Pressable } from "react-native";
+import { Text, StyleSheet, FlatList, View, Pressable, Image } from "react-native";
 import { Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
 
@@ -14,10 +14,11 @@ const SearchDropdown = ({
   const {setSearchedLocation, setIsDropdownVisible} = useLocation();
 
   return (
+    <View style = {styles.dropdowncontainer}>
     <FlatList
       data={results}
-      keyExtractor={(_, index) => index.toString()}
-      renderItem={({item}: {item: Place}) => {
+      keyExtractor={(_,index) => index.toString()}
+      renderItem={({item}: {item: any}) => {
         return (
           <Pressable
             style={styles.resultItem}
@@ -30,33 +31,39 @@ const SearchDropdown = ({
               setIsDropdownVisible(false);
             }}
           >
-            <View style={styles.resultIcon}></View>
+            <Image style={styles.resultIcon} source={{uri: item?.icon}} />
             <Text style={styles.resultText}>{item.formatted_address}</Text>
           </Pressable>
         );
       }}
       style={styles.dropdown}
+      contentContainerStyle = {{flexGrow:1}}
     />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  dropdown: {
+  dropdowncontainer: {
     position: "absolute",
     width: "100%",
     top: "100%",
+    maxHeight: 200, // 드롭다운 최대 높이 설정
+    zIndex:20,
+  },
+  dropdown: {
+    flex:1,
+    flexGrow:1,
     borderWidth: 1,
     borderColor: "#cccccc",
     borderRadius: 8,
     backgroundColor: "#ffffff",
-    maxHeight: 200, // 드롭다운 최대 높이 설정
     paddingVertical: 4,
-    zIndex:20,
   },
   resultIcon: {
     width: 20,
     height: 20,
-    borderRadius: "100%",
+    borderRadius: 999,
     backgroundColor: "#ACACAC",
   },
   resultItem: {
