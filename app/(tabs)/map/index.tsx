@@ -5,16 +5,17 @@ import MapView, {
   Marker,
   Polyline,
   PROVIDER_GOOGLE,
+  Region,
 } from "react-native-maps";
 import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-import { CourseResponse, location } from "@/app/_types";
+import { CourseResponse } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
 export default function Index() {
-  const [location, setLocation] = useState<location>();
+  const [region, setRegion] = useState<Region>();
   const {
     selectedCourse,
     searchedLocation,
@@ -29,12 +30,11 @@ export default function Index() {
   const mapRef = useRef<MapView>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
-
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
     });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
       setIsKeyBoardShow(false);
     });
 
@@ -44,24 +44,24 @@ export default function Index() {
     };
   }, []);
   useEffect(() => {
-    if (selectedCourse === '') {
+    if (selectedCourse === "") {
       setRunning(false);
     }
   }, [selectedCourse]);
   useEffect(() => {
-    if(searchedLocation) {
+    if (searchedLocation) {
       mapRef.current?.animateToRegion(searchedLocation);
     }
-  },[searchedLocation])
+  }, [searchedLocation]);
   useEffect(() => {
     async function updateCourses() {
-      if (location) {
-        const response = await fetchCourses(location);
+      if (region) {
+        const response = await fetchCourses(region);
         setCourses(response.courseResponses);
       }
     }
     updateCourses();
-  }, [location]);
+  }, [region]);
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
@@ -87,7 +87,6 @@ export default function Index() {
       stopLocationTracking();
     };
   }, []);
-
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -113,20 +112,27 @@ export default function Index() {
                   },
                   0
                 );
-                setLocation({latitude:myLocation?.latitude, longitude: myLocation?.longitude})
+                setRegion({
+                  latitude: myLocation?.latitude,
+                  longitude: myLocation?.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                });
               }
             }}
             onPress={() => {
-              setSelectedCourse('');
-              if(isKeyBoardShow) {
+              if (selectedCourse !== "" && region) {
+                setSelectedCourse("");
+                mapRef.current?.animateToRegion(region);
+              }
+              if (isKeyBoardShow) {
                 setIsDropdownVisible(false);
               }
             }}
-            onRegionChangeComplete={(location) => {
-              setLocation({
-                latitude: location.latitude,
-                longitude: location.longitude,
-              });
+            onRegionChangeComplete={(region) => {
+              if (selectedCourse === "") {
+                setRegion(region);
+              }
             }}
           >
             <View style={{ flex: 1 }}>
@@ -144,7 +150,7 @@ export default function Index() {
                 />
               </Marker>
               {courses?.map((course, index) => {
-                if(!course) return;
+                if (!course) return;
                 const courseStart: LatLng = {
                   longitude: course?.coordinates[0][0][0],
                   latitude: course?.coordinates[0][0][1],
@@ -153,7 +159,7 @@ export default function Index() {
                   <Marker
                     key={index}
                     coordinate={courseStart}
-                    style = {{zIndex:3}}
+                    style={{ zIndex: 3 }}
                     onPress={async () => {
                       setSelectedCourse(course.courseId);
                       if (mapRef.current) {
@@ -179,14 +185,14 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== '' && (
+              {selectedCourse !== "" && (
                 <Polyline
-                  coordinates={courses?.find(course => course.courseId === selectedCourse).coordinates[0].map(
-                    ([longitude, latitude]) => ({
+                  coordinates={courses
+                    ?.find((course) => course.courseId === selectedCourse)
+                    .coordinates[0].map(([longitude, latitude]) => ({
                       latitude,
                       longitude,
-                    })
-                  )}
+                    }))}
                   strokeColor="#4169E1"
                   strokeWidth={4}
                 />
@@ -215,14 +221,13 @@ export default function Index() {
             }}
             style={[
               styles.locationContainer,
-              selectedCourse !== '' && styles.whenModal,
+              selectedCourse !== "" && styles.whenModal,
             ]}
           >
             <MyLocation />
           </Pressable>
         )}
-        <Modal
-        />
+        <Modal />
       </View>
     </ProtectedRoute>
   );
