@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Keyboard } from "react-native";
 import MapView, {
   LatLng,
   Marker,
@@ -28,6 +28,21 @@ export default function Index() {
   } = useLocation();
   const mapRef = useRef<MapView>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyBoardShow(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyBoardShow(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
   useEffect(() => {
     if (selectedCourse === '') {
       setRunning(false);
@@ -103,7 +118,9 @@ export default function Index() {
             }}
             onPress={() => {
               setSelectedCourse('');
-              setIsDropdownVisible(false);
+              if(isKeyBoardShow) {
+                setIsDropdownVisible(false);
+              }
             }}
             onRegionChangeComplete={(location) => {
               setLocation({
