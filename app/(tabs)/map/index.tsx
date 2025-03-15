@@ -14,7 +14,7 @@ import { CourseResponse, location } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
 export default function Index() {
-  const [selectedCourse, setSelectedCourse] = useState<number>(-1);
+  const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [location, setLocation] = useState<location>();
   const {
     searchedLocation,
@@ -26,9 +26,8 @@ export default function Index() {
   } = useLocation();
   const mapRef = useRef<MapView>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
-
   useEffect(() => {
-    if (selectedCourse === -1) {
+    if (selectedCourse === '') {
       setRunning(false);
     }
   }, [selectedCourse]);
@@ -71,6 +70,7 @@ export default function Index() {
       stopLocationTracking();
     };
   }, []);
+
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -100,7 +100,7 @@ export default function Index() {
               }
             }}
             onPress={() => {
-              setSelectedCourse(-1);
+              setSelectedCourse('');
             }}
             onRegionChangeComplete={(location) => {
               setLocation({
@@ -135,7 +135,7 @@ export default function Index() {
                     coordinate={courseStart}
                     style = {{zIndex:3}}
                     onPress={async () => {
-                      setSelectedCourse(index);
+                      setSelectedCourse(course.courseId);
                       if (mapRef.current) {
                         const formattedCoordinates = courses[
                           index
@@ -159,9 +159,9 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== -1 && (
+              {selectedCourse !== '' && (
                 <Polyline
-                  coordinates={courses[selectedCourse].coordinates[0].map(
+                  coordinates={courses?.find(course => course.courseId === selectedCourse).coordinates[0].map(
                     ([longitude, latitude]) => ({
                       latitude,
                       longitude,
@@ -195,15 +195,14 @@ export default function Index() {
             }}
             style={[
               styles.locationContainer,
-              selectedCourse !== -1 && styles.whenModal,
+              selectedCourse !== '' && styles.whenModal,
             ]}
           >
             <MyLocation />
           </Pressable>
         )}
         <Modal
-          selectedCourse={selectedCourse}
-          selectedId={courses[selectedCourse]?.courseId || ""}
+          selectedCourse={selectedCourse || ""}
           setSelectedCourse={setSelectedCourse}
         />
       </View>

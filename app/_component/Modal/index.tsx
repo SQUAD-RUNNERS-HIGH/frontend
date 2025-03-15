@@ -8,27 +8,25 @@ import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { CourseDetail } from "@/app/_types";
 
 export function Modal({
-  selectedId,
   selectedCourse,
   setSelectedCourse,
 }: {
-  selectedId: string;
-  selectedCourse:number;
-  setSelectedCourse: React.Dispatch<SetStateAction<number>>;
+  selectedCourse: string;
+  setSelectedCourse: React.Dispatch<SetStateAction<string>>;
 }) {
   const [theme, setTheme] = useState<string>("info");
   const {running} = useLocation();
  
   useEffect(() => {
-    if (selectedCourse !== -1) {
+    if (selectedCourse !== '') {
       setTheme("info");
     }
-  }, [selectedId]);
+  }, [selectedCourse]);
   return (
     <>
-      {selectedCourse !== -1 && (
+      {selectedCourse !== '' && (
         <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === "info" && <InfoModal selectedId = {selectedId} setTheme={setTheme} />}
+          {theme === "info" && <InfoModal selectedCourse = {selectedCourse} setTheme={setTheme} />}
           {theme === "select" && <SelectedModal setTheme={setTheme} />}
           {theme === 'running' && <RunningModal setSelectedCourse = {setSelectedCourse}/>}
         </View>

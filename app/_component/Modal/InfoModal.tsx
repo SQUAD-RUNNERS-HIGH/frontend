@@ -7,25 +7,25 @@ import { LineChart } from "react-native-chart-kit";
 
 export function InfoModal({
   setTheme,
-  selectedId,
+  selectedCourse,
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
-  selectedId: string;
+  selectedCourse: string;
 }) {
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
   async function updateDetail() {
     setLoading(true);
-    const detail = await fetchCourseDetail(selectedId);
+    const detail = await fetchCourseDetail(selectedCourse);
     setDetail(detail);
     setLoading(false);
   }
   useEffect(() => {
-    if (selectedId !== "") {
+    if (selectedCourse !== "") {
       updateDetail();
     }
-  }, [selectedId]);
+  }, [selectedCourse]);
   return (
     <>
       {loading ? (

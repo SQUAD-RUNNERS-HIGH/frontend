@@ -11,7 +11,7 @@ const dummyData = 120;
 export function RunningModal({
   setSelectedCourse,
 }: {
-  setSelectedCourse: React.Dispatch<SetStateAction<number>>;
+  setSelectedCourse: React.Dispatch<SetStateAction<string>>;
 }) {
   const { location, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
@@ -56,7 +56,7 @@ export function RunningModal({
         <Button
           onPress={() => {
             setRunning(false);
-            setSelectedCourse(-1);
+            setSelectedCourse('');
           }}
         >
           종료하기
