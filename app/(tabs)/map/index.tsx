@@ -96,7 +96,7 @@ export default function Index() {
                   },
                   0
                 );
-                setLocation({latitude:myLocation.latitude,longitude: myLocation.longitude})
+                setLocation({latitude:myLocation?.latitude, longitude: myLocation?.longitude})
               }
             }}
             onPress={() => {
