@@ -1,74 +1,86 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Keyboard } from "react-native";
 import MapView, {
   LatLng,
   Marker,
   Polyline,
   PROVIDER_GOOGLE,
+  Region,
 } from "react-native-maps";
 import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
 import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 import { CourseResponse } from "@/app/_types";
-import { fetchUserLocation } from "./_lib/fetchUserLocation";
-import { LocationObjectCoords } from "expo-location";
-import { fetchCourses } from "./_lib/fetchCourses";
 import MyLocation from "@/assets/images/svg/Mylocation";
+import { fetchCourses } from "./_lib/fetchCourses";
 export default function Index() {
-  const [selectedCourse, setSelectedCourse] = useState<number>(-1);
+  const [region, setRegion] = useState<Region>();
   const {
-    location,
-    locationDelta,
+    selectedCourse,
+    searchedLocation,
+    myLocation,
     running,
+    setSelectedCourse,
+    setIsDropdownVisible,
     setRunning,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
   const mapRef = useRef<MapView>(null);
-  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
-  async function onChangeLoation() {
-    if (!location) return;
-
-    const { latitude, longitude } = location;
-    const prevLocation = prevLocationRef.current;
-
-    if (
-      !prevLocation ||
-      prevLocation.latitude !== latitude ||
-      prevLocation.longitude !== longitude
-    ) {
-      await fetchUserLocation({ latitude, longitude });
-      const response = await fetchCourses({ latitude, longitude });
-      setCourses(response.courseResponses);
-    }
-    prevLocationRef.current = location; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
-  }
+  const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
   useEffect(() => {
-    if(selectedCourse === -1) {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setIsKeyBoardShow(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setIsKeyBoardShow(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+  useEffect(() => {
+    if (selectedCourse === "") {
       setRunning(false);
     }
-  },[selectedCourse]);
+  }, [selectedCourse]);
+  useEffect(() => {
+    if (searchedLocation) {
+      mapRef.current?.animateToRegion(searchedLocation);
+    }
+  }, [searchedLocation]);
+  useEffect(() => {
+    async function updateCourses() {
+      if (region) {
+        const response = await fetchCourses(region);
+        setCourses(response.courseResponses);
+      }
+    }
+    updateCourses();
+  }, [region]);
+  // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running && location) {
+    if (running && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: location?.latitude,
-          longitude: location?.longitude,
+          latitude: myLocation?.latitude,
+          longitude: myLocation?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: location?.heading, // 방향 (나아가는 방향) 
-        altitude: location?.altitude, // 고도
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
-  }, [running, location]);
+  }, [running, myLocation]);
+
   // 위치 추적 시작
-  useEffect(() => {
-    onChangeLoation();
-  }, [location, fetchUserLocation]);
+
   useEffect(() => {
     startLocationTracking();
     return () => {
@@ -78,39 +90,56 @@ export default function Index() {
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
-        {location && (
+        {myLocation && (
           <MapView
             ref={mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: myLocation?.latitude,
+              longitude: myLocation?.longitude,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
-            onLayout={() => {
+            onMapReady={() => {
               if (mapRef.current) {
                 mapRef.current.animateToRegion(
                   {
-                    latitude: location?.latitude,
-                    longitude: location?.longitude,
+                    latitude: myLocation?.latitude,
+                    longitude: myLocation?.longitude,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   },
                   0
                 );
+                setRegion({
+                  latitude: myLocation?.latitude,
+                  longitude: myLocation?.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                });
               }
             }}
             onPress={() => {
-              setSelectedCourse(-1);
+              if (selectedCourse !== "" && region) {
+                setSelectedCourse("");
+                mapRef.current?.animateToRegion(region);
+              }
+              if (!isKeyBoardShow) {
+                setIsDropdownVisible(false);
+              }
+            }}
+            onRegionChangeComplete={(region) => {
+              if (selectedCourse === "") {
+                setRegion(region);
+              }
             }}
           >
             <View style={{ flex: 1 }}>
               <Marker
                 coordinate={{
-                  latitude: location?.latitude,
-                  longitude: location?.longitude,
+                  latitude: myLocation?.latitude,
+                  longitude: myLocation?.longitude,
                 }}
                 style={{ zIndex: 3 }}
               >
@@ -121,6 +150,7 @@ export default function Index() {
                 />
               </Marker>
               {courses?.map((course, index) => {
+                if (!course) return;
                 const courseStart: LatLng = {
                   longitude: course?.coordinates[0][0][0],
                   latitude: course?.coordinates[0][0][1],
@@ -129,8 +159,10 @@ export default function Index() {
                   <Marker
                     key={index}
                     coordinate={courseStart}
-                    onPress={() => {
-                      setSelectedCourse(index);
+                    style={{ zIndex: 3 }}
+                    onPress={async () => {
+                      setSelectedCourse(course.courseId);
+                      setIsDropdownVisible(false);
                       if (mapRef.current) {
                         const formattedCoordinates = courses[
                           index
@@ -154,14 +186,14 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== -1 && (
+              {selectedCourse !== "" && (
                 <Polyline
-                  coordinates={courses[selectedCourse].coordinates[0].map(
-                    ([longitude, latitude]) => ({
+                  coordinates={courses
+                    ?.find((course) => course.courseId === selectedCourse)
+                    .coordinates[0].map(([longitude, latitude]) => ({
                       latitude,
                       longitude,
-                    })
-                  )}
+                    }))}
                   strokeColor="#4169E1"
                   strokeWidth={4}
                 />
@@ -169,32 +201,34 @@ export default function Index() {
             </View>
           </MapView>
         )}
-        {location && (
+        {myLocation && (
           <Pressable
-            onPress={() => {
-              mapRef.current?.animateToRegion(
-                {
-                  latitude: location?.latitude,
-                  longitude: location?.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                },
-                1000
-              );
+            onPress={async () => {
+              const currentCamera = await mapRef.current?.getCamera();
+              if (currentCamera) {
+                const { center, zoom, ...rest } = currentCamera;
+                mapRef.current?.animateCamera(
+                  {
+                    center: {
+                      longitude: myLocation?.longitude,
+                      latitude: myLocation?.latitude,
+                    },
+                    zoom,
+                    ...rest,
+                  },
+                  { duration: 1000 }
+                );
+              }
             }}
             style={[
               styles.locationContainer,
-              selectedCourse !== -1 && styles.whenModal,
+              selectedCourse !== "" && styles.whenModal,
             ]}
           >
             <MyLocation />
           </Pressable>
         )}
-        <Modal
-          selectedCourse={selectedCourse}
-          selectedId={courses[selectedCourse]?.courseId || ""}
-          setSelectedCourse={setSelectedCourse}
-        />
+        <Modal />
       </View>
     </ProtectedRoute>
   );

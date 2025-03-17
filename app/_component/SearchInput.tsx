@@ -58,10 +58,12 @@ const styles = StyleSheet.create({
     color: "#737373",
     fontSize: 14,
     fontWeight: 400,
-    alignItems:'center',
+    alignItems: "center",
     fontFamily: "Open Sans",
-    flex:1,
-    height: '100%',
+    flex: 1,
+    height: "100%",
+    overflow: "hidden",
+    maxHeight: 40,
   },
 });
 

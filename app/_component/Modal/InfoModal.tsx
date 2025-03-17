@@ -4,28 +4,28 @@ import { SetStateAction, useEffect, useState } from "react";
 import { CourseDetail } from "@/app/_types";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { LineChart } from "react-native-chart-kit";
+import { useLocation } from "@/app/_hooks/useLocation";
 
 export function InfoModal({
   setTheme,
-  selectedId,
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
-  selectedId: string;
 }) {
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
+  const {selectedCourse} = useLocation();
   async function updateDetail() {
     setLoading(true);
-    const detail = await fetchCourseDetail(selectedId);
+    const detail = await fetchCourseDetail(selectedCourse);
     setDetail(detail);
     setLoading(false);
   }
   useEffect(() => {
-    if (selectedId !== "") {
+    if (selectedCourse !== "") {
       updateDetail();
     }
-  }, [selectedId]);
+  }, [selectedCourse]);
   return (
     <>
       {loading ? (

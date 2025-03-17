@@ -8,12 +8,8 @@ import { ProgressBar } from "react-native-paper";
 
 const dummyData = 120;
 
-export function RunningModal({
-  setSelectedCourse,
-}: {
-  setSelectedCourse: React.Dispatch<SetStateAction<number>>;
-}) {
-  const { location, setRunning } = useLocation();
+export function RunningModal() {
+  const { location, setSelectedCourse, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const progress = Math.min(seconds / dummyData, 1);
@@ -56,7 +52,7 @@ export function RunningModal({
         <Button
           onPress={() => {
             setRunning(false);
-            setSelectedCourse(-1);
+            setSelectedCourse('');
           }}
         >
           종료하기
