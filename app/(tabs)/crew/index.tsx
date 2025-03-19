@@ -1,33 +1,45 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, ScrollView } from "react-native";
 import MyCrew from "./_component/MyCrew";
 import Button from "@/app/_component/Button";
 import SurroundCrews from "./_component/SurroundCrews";
+import CrewRaking from "./_component/CrewRanking";
 
 export function CrewHome() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>크루</Text>
-      <View style={styles.innerContainer}>
-        <View style={styles.innerTitleContainer}>
-          <Text style={styles.innerTitle}>내 크루</Text>
-          <Button
-            fontSize={14}
-            style={{ paddingHorizontal: 14, paddingVertical: 8 }}
-            onPress={() => {}}
-          >
-            크루 만들기
-          </Button>
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={styles.title}>크루</Text>
+        <View style={styles.innerContainer}>
+          <View style={styles.innerTitleContainer}>
+            <Text style={styles.innerTitle}>내 크루</Text>
+            <Button
+              fontSize={14}
+              style={{ paddingHorizontal: 14, paddingVertical: 8 }}
+              onPress={() => {}}
+            >
+              크루 만들기
+            </Button>
+          </View>
+          <MyCrew />
         </View>
-        <MyCrew />
-      </View>
-      <View style={styles.innerContainer}>
-        <View style={styles.innerTitleContainer}>
-          <Text style={styles.innerTitle}>주변 크루</Text>
-        </View>
+        <View style={styles.innerContainer}>
+          <View style={styles.innerTitleContainer}>
+            <Text style={styles.innerTitle}>주변 크루</Text>
+          </View>
           <SurroundCrews />
+        </View>
+        <View style={styles.innerContainer}>
+          <View style={[styles.innerTitleContainer, { flexDirection: "row" }]}>
+            <Text style={styles.innerTitle}>크루 랭킹</Text>
+            <Button theme="secondary" style = {{paddingVertical:5, paddingHorizontal: 12}} onPress={() => {}}>
+              랭킹 전체보기
+            </Button>
+          </View>
+          <CrewRaking />
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
