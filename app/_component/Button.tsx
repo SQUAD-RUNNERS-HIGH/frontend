@@ -14,10 +14,12 @@ function Button({
   onPress,
   theme = "default",
   disabled = false,
+  fontSize = 18,
 }: {
   children: ReactNode;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
+  fontSize?: number;
   width?: string;
   theme?: string;
   disabled?: boolean;
@@ -29,7 +31,8 @@ function Button({
           <Text
             style={[
               styles.text,
-              { color: `${theme === "default" ? "#ffffff" : "#6500A8"}` },
+              { color: `${theme === "default" ? "#ffffff" : "#6500A8"}`, fontSize },
+              
             ]}
           >
             {children}
@@ -84,7 +87,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: "Roboto",
-    fontSize: 18,
     fontWeight: "500",
     lineHeight: 28,
     textAlign: "center",
