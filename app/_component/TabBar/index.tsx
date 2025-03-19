@@ -3,13 +3,14 @@ import ProfileIcon from "./ProfileIcon";
 import ChatIcon from "./ChatIcon";
 import CourseIcon from "./CourseIcon";
 import CrewIcon from "./CrewIcon";
-import { useSegments } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/_hooks/useAuth";
 import { useLocation } from "@/app/_hooks/useLocation";
 function TabBar() {
   const segments = useSegments();
   const [show, setShow] = useState(false);
+  const router = useRouter();
   const {stopLocationTracking} = useLocation();
   useEffect(() => {
     if (
@@ -40,6 +41,7 @@ function TabBar() {
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          onPress={() => {router.push('/crew')}}
         >
           <CrewIcon fill="#9CA3AF" />
           <Text style={styles.buttonText}>크루</Text>
