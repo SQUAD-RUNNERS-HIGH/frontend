@@ -103,7 +103,7 @@ function Header() {
 const styles = StyleSheet.create({
   rootContainer: {
     width: "100%",
-    position: "absolute",
+    position: "sticky",
     zIndex: 100,
     top: 0,
   },
