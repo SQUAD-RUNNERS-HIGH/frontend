@@ -2,7 +2,7 @@ import { View, StyleSheet, Text } from "react-native";
 
 function Mycrew() {
   return (
-    <>
+    <View style = {styles.container}>
       <View style={styles.crewInfo}>
         <View style={styles.image}></View>
         <View>
@@ -11,10 +11,28 @@ function Mycrew() {
         </View>
       </View>
       <Text style={styles.role}>리더</Text>
-    </>
+    </View>
   );
 }
 const styles = StyleSheet.create({
+  container: {
+    borderRadius: 12,
+    opacity: 1,
+    flexDirection: "row",
+    padding: 16,
+    fontFamily: "Roboto",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    width: "100%",
+    gap: 12,
+  },
   crewInfo: {
     gap: 12,
     flexDirection: "row",

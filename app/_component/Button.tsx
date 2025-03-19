@@ -41,7 +41,7 @@ function Button({
       ) : (
         <Pressable
           style={({ pressed }) => [
-            { backgroundColor: `${theme === "default" ? "#6500A8" : "white"}` },
+            theme === 'default'? styles.default: styles.secondary,
             styles.button,
             pressed && styles.pressed,
             styles.shadow,
@@ -49,7 +49,6 @@ function Button({
           ]}
           onPress={onPress}
         >
-          <View>
             <Text
               style={[
                 styles.text,
@@ -58,7 +57,6 @@ function Button({
             >
               {children}
             </Text>
-          </View>
         </Pressable>
       )}
     </>
@@ -71,6 +69,14 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 14,
     borderRadius: 6,
+  },
+  default: {
+    backgroundColor: "#6500A8",
+  },
+  secondary: {
+    backgroundColor: "white",
+    borderColor:"#6500A8",
+    borderWidth: 1,
   },
   shadow: {
     elevation: 2,

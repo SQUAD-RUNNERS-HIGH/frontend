@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, Text } from "react-native";
 import MyCrew from "./_component/MyCrew";
 import Button from "@/app/_component/Button";
+import SurroundCrews from "./_component/SurroundCrews";
 
 export function CrewHome() {
   return (
@@ -18,11 +19,14 @@ export function CrewHome() {
             크루 만들기
           </Button>
         </View>
-        <View style={styles.innerContentContainer}>
-          <MyCrew />
-        </View>
+        <MyCrew />
       </View>
-      
+      <View style={styles.innerContainer}>
+        <View style={styles.innerTitleContainer}>
+          <Text style={styles.innerTitle}>주변 크루</Text>
+        </View>
+          <SurroundCrews />
+      </View>
     </View>
   );
 }
@@ -45,6 +49,7 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     lineHeight: 28,
     letterSpacing: 0,
+    color: "#000000",
   },
   title: {
     fontFamily: "Roboto",
@@ -73,7 +78,7 @@ const styles = StyleSheet.create({
   innerContentContainer: {
     borderRadius: 12,
     opacity: 1,
-    flexDirection: "row",
+    flexDirection: "column",
     padding: 16,
     fontFamily: "Roboto",
     flexWrap: "wrap",
