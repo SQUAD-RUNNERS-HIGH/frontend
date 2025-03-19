@@ -49,8 +49,11 @@ function Header() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (selectedQuery !== searchQuery) {
+      if (segments.includes('map') && selectedQuery !== searchQuery) {
         fetchPlaces(searchQuery);
+      }
+      if (segments.includes('crew') && selectedQuery !== searchQuery) {
+        // 크루검색
       }
     }, 300);
     return () => clearTimeout(timer);

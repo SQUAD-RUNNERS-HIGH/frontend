@@ -1,4 +1,5 @@
-import React, { SetStateAction } from "react";
+import { useSegments } from "expo-router";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { View, TextInput, StyleSheet, Image } from "react-native";
 
 interface SearchInputProps {
@@ -6,6 +7,14 @@ interface SearchInputProps {
   setSearchQuery: React.Dispatch<SetStateAction<string>>;
 }
 const SearchInput = ({ searchQuery, setSearchQuery }: SearchInputProps) => {
+  const segments = useSegments();
+  const [placeholder,setPlaceHolder] = useState<string>('');
+  useEffect(() => {
+    if(segments.includes('crew'))
+      setPlaceHolder('크루를 검색하세요')
+    if(segments.includes('map'))
+      setPlaceHolder('위치를 검색하세요')
+  },[segments])
   return (
     <View style={styles.rootContainer}>
       <View style={styles.searchContainer}>
@@ -16,7 +25,7 @@ const SearchInput = ({ searchQuery, setSearchQuery }: SearchInputProps) => {
         <TextInput
           onChangeText={setSearchQuery}
           value={searchQuery} // 숫자일 경우 문자열로 변환
-          placeholder="위치를 검색하세요"
+          placeholder={placeholder}
           placeholderTextColor="#737373"
           // onBlur={handleBlur}
           style={styles.input}

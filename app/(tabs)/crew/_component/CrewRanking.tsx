@@ -25,7 +25,7 @@ function CrewRaking() {
   return (
     <View style={styles.container}>
       {crewRanking.map((crew) => (
-        <View style={styles.crewContainer}>
+        <View key={crew.id} style={styles.crewContainer}>
           <View style = {styles.crewLeftContainer}>
             <View style = {styles.rankingContainer}>
               <Text style = {styles.ranking}>{crew.rank}</Text>
