@@ -7,6 +7,7 @@ import { useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/_hooks/useAuth";
 import { useLocation } from "@/app/_hooks/useLocation";
+import { tabBarFill } from "@/app/_constants";
 function TabBar() {
   const segments = useSegments();
   const [show, setShow] = useState(false);
@@ -29,22 +30,23 @@ function TabBar() {
       <View style={styles.container}>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          onPress = {() => {router.push('/map')}}
         >
-          <CourseIcon fill="#6500A8" />
-          <Text style={[styles.buttonText, styles.currentPage]}>코스</Text>
+          <CourseIcon fill={`${segments.includes('map')?tabBarFill.activate:tabBarFill.inactivate}`} />
+          <Text style={[styles.buttonText, segments.includes('map') &&  styles.currentPage]}>코스</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
         >
-          <ChatIcon fill="#9CA3AF" />
-          <Text style={styles.buttonText}>채팅</Text>
+          <ChatIcon fill={`${segments.includes('chat')?tabBarFill.activate:tabBarFill.inactivate}`}  />
+          <Text style={[styles.buttonText, segments.includes('chat') &&  styles.currentPage]}>채팅</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
           onPress={() => {router.push('/crew')}}
         >
-          <CrewIcon fill="#9CA3AF" />
-          <Text style={styles.buttonText}>크루</Text>
+          <CrewIcon fill={`${segments.includes('crew')?tabBarFill.activate:tabBarFill.inactivate}`}  />
+          <Text style={[styles.buttonText, segments.includes('crew') &&  styles.currentPage]}>크루</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
@@ -53,8 +55,8 @@ function TabBar() {
             await logout();
           }}
         >
-          <ProfileIcon fill="#9CA3AF" />
-          <Text style={styles.buttonText}>프로필</Text>
+          <ProfileIcon fill={`${segments.includes('profile')?tabBarFill.activate:tabBarFill.inactivate}`}  />
+          <Text style={[styles.buttonText, segments.includes('profile') &&  styles.currentPage]}>프로필</Text>
         </Pressable>
       </View>
     </View>
