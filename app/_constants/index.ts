@@ -32,5 +32,8 @@ export const coordinates = [
     ]
 
   ];
-
+export const  tabBarFill = {
+  activate: '#6500A8',
+  inactivate: '#9CA3AF',
+}
 export const API_URL = 'http://192.168.173.58:8080/api'

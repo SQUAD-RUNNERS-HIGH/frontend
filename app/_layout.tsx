@@ -31,6 +31,8 @@ export default function TabLayout() {
             options={{ title: "signup", headerShown: false }}
           />
           <Tabs.Screen name="map" options={{ title: "map" }} />
+          <Tabs.Screen name="crew" options={{ title: "crew" }} />
+
         </Tabs>
       </LocationProvider>
     </AuthContextProvider>
