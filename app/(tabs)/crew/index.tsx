@@ -1,11 +1,13 @@
-import React from "react";
-import { View, StyleSheet, Text, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, Text, ScrollView, Modal } from "react-native";
 import MyCrew from "./_component/MyCrew";
 import Button from "@/app/_component/Button";
 import SurroundCrews from "./_component/SurroundCrews";
 import CrewRaking from "./_component/CrewRanking";
+import { CreateCrewModal } from "./_component/CreateCrewModal";
 
 export function CrewHome() {
+  const [modalVisible, setModalVisible] = useState(false);
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -16,7 +18,7 @@ export function CrewHome() {
             <Button
               fontSize={14}
               style={{ paddingHorizontal: 14, paddingVertical: 8 }}
-              onPress={() => {}}
+              onPress={() => {setModalVisible(true)}}
             >
               크루 만들기
             </Button>
@@ -39,6 +41,7 @@ export function CrewHome() {
           <CrewRaking />
         </View>
       </View>
+      <CreateCrewModal modalVisible = {modalVisible} setModalVisible={setModalVisible}/>
     </ScrollView>
   );
 }
