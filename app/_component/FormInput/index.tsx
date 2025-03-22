@@ -2,7 +2,9 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
 import { Controller, Control } from "react-hook-form";
-import Input from "./Input";
+import Input from "../Input";
+import { StringInput } from "./StringInput";
+import ImageUpload from "./ImageUpload";
 
 interface FormInputProps {
   control: Control<any>; // React Hook Form의 Control 객체 타입
@@ -11,6 +13,8 @@ interface FormInputProps {
   label: string; // 폼 제목
   type?: string;
   isRadio?: boolean;
+  isLocationInput?: boolean;
+  isImage?: boolean;
   placeholder: string;
   hideError?: boolean;
 }
@@ -23,8 +27,9 @@ const FormInput = ({
   type = "text",
   placeholder,
   isRadio,
-  hideError
-}:FormInputProps) => {
+  hideError,
+  isImage,
+}: FormInputProps) => {
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -54,18 +59,25 @@ const FormInput = ({
               </RadioButton.Group>
             );
           }
-          return (
-            <>
-              <Input
+          if (isImage) {
+            return (
+              <ImageUpload
+                field={field}
+                errorMessage={errorMessage}
                 type={type}
                 placeholder={placeholder}
-                isImg
-                value={field.value} // 빈 문자열로 초기화
-                onChange={field.onChange}
-                
+                hideError={hideError}
               />
-              {!hideError && <Text style={styles.error}>{errorMessage}</Text>}
-            </>
+            );
+          }
+          return (
+            <StringInput
+              field={field}
+              errorMessage={errorMessage}
+              type={type}
+              placeholder={placeholder}
+              hideError={hideError}
+            />
           );
         }}
       />
@@ -78,7 +90,6 @@ const styles = StyleSheet.create({
     gap: 6,
     width: "100%",
     minWidth: 320,
-    maxWidth: 500,
   },
   formTitle: {
     color: "#6B7280",
