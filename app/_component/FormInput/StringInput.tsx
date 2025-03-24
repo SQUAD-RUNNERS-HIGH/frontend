@@ -27,6 +27,7 @@ export function StringInput({
           if (typeof value === "number") {
             field.onChange(Number(value));
           }
+          field.onChange(value);
         }}
       />
       {!hideError && errorMessage && (
