@@ -22,10 +22,13 @@ export function StringInput({
         type={type}
         placeholder={placeholder}
         isImg
-        value={field.value} // 빈 문자열로 초기화
+        value={field.value} 
         onChange={(value) => {
-          if (typeof value === "number") {
+          if (!isNaN(Number(value))) {
+            console.log(typeof value)
+
             field.onChange(Number(value));
+            return;
           }
           field.onChange(value);
         }}
