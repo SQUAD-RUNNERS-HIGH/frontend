@@ -11,48 +11,27 @@ import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
 import { Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
+import { usePlacesSearch } from "../_hooks/usePlacesSearch";
 
 function Header() {
-  const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
-  const [results, setResults] = useState<Place[]>([]); // 검색 결과 리스트
-  const [selectedQuery, setSelectedQuery] = useState<string>("");
+  const {
+    searchQuery,
+    selectedQuery,
+    setSearchQuery,
+    setSelectedQuery,
+    fetchPlaces,
+    results,
+    isDropdownVisible,
+  } = usePlacesSearch();
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  const { isDropdownVisible, setIsDropdownVisible } = useLocation();
-  const fetchPlaces = async (query: string) => {
-    if (!query) {
-      setResults([]);
-      return;
-    }
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
-      query
-    )}&language=ko&region=kr&key=${
-      process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY
-    }`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === "OK") {
-        setResults(data.results);
-        setIsDropdownVisible(true);
-      } else {
-        setResults([]);
-        setIsDropdownVisible(false);
-      }
-    } catch (error) {
-      console.error("Error fetching places:", error);
-      setResults([]);
-      setIsDropdownVisible(false);
-    }
-  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (segments.includes('map') && selectedQuery !== searchQuery) {
+      if (segments.includes("map") && selectedQuery !== searchQuery) {
         fetchPlaces(searchQuery);
       }
-      if (segments.includes('crew') && selectedQuery !== searchQuery) {
+      if (segments.includes("crew") && selectedQuery !== searchQuery) {
         // 크루검색
       }
     }, 300);
@@ -70,14 +49,6 @@ function Header() {
       setShow(false);
     }
   }, [segments]);
-  useEffect(() => {
-    if (results.length > 0) {
-      setIsDropdownVisible(true);
-    }
-  }, [results]);
-  useEffect(() => {
-    setSearchQuery(selectedQuery);
-  }, [selectedQuery]);
 
   return (
     <TouchableWithoutFeedback>
