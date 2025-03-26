@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/app/_component/Button";
 import { useRouter } from "expo-router";
+import { fetchCrewCreate } from "../_lib/fetchCrewCreate";
 
 export function CreateCrewModal({
   modalVisible,
@@ -23,14 +24,14 @@ export function CreateCrewModal({
   modalVisible: boolean;
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
-  const onSubmit = (data: z.infer<typeof crewSchema>) => {
+  const onSubmit = async (data: z.infer<typeof crewSchema>) => {
     const {place: {latitude,longitude}, ...rest} = data;
-    const newData = {latitude, longitude,...rest};
-    console.log(newData);
-    // if (response?.status === 200) {
-    //   Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
-    //   router.push('/login');
-    // }
+    const apiData = {latitude, longitude,...rest};
+    const response = await fetchCrewCreate(apiData);
+    if (response?.status === 200) {
+      Alert.alert("크루가 생성되었습니다!");
+      setModalVisible(false);
+    }
   };
   const {
     control,

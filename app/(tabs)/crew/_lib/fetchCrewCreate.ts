@@ -1,0 +1,17 @@
+import axios from "axios";
+import { Alert } from "react-native";
+import { CreateCrewApi, userSignupType } from "@/app/_types";
+import { z } from "zod";
+import { crewSchema } from "./crewSchema";
+import { apiClient } from "@/api/apiClient";
+
+export async function fetchCrewCreate(data: CreateCrewApi) {
+  try {
+    const response = await apiClient.post(`/crew`, data);
+    return response;
+  } catch (error) {
+    if (error?.response) {
+      Alert.alert(error.response.data.serverErrorMessage);
+    }
+  }
+}

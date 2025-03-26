@@ -67,3 +67,12 @@ export interface CourseDetail {
   minCalorie: number;
   perimeter: number;
 }
+
+export interface CreateCrewApi {
+  name: string;
+  description: string;
+  maxCapacity: number;
+  image: string;
+  latitude: number;
+  longitude: number;
+}
