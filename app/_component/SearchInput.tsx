@@ -5,7 +5,7 @@ import { View, TextInput, StyleSheet, Image } from "react-native";
 interface SearchInputProps {
   searchQuery: string;
   setSearchQuery: React.Dispatch<SetStateAction<string>>;
-  type: string;
+  type: 'crew' | 'location' | 'chat';
 }
 const SearchInput = ({
   searchQuery,
@@ -15,9 +15,8 @@ const SearchInput = ({
   const [placeholder, setPlaceHolder] = useState<string>("");
   useEffect(() => {
     if (type === "crew") setPlaceHolder("크루를 검색하세요");
-    if (type === "map") setPlaceHolder("위치를 검색하세요");
+    if (type === "location") setPlaceHolder("위치를 검색하세요");
     if (type === "chat") setPlaceHolder("채팅 방, 채팅 내역을 검색하세요.");
-    console.log(type);
   }, [type]);
   return (
     <View style={styles.rootContainer}>

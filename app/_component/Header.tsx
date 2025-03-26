@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
-import { Place } from "../_types";
+import { location, Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
 import { usePlacesSearch } from "../_hooks/usePlacesSearch";
 
@@ -24,9 +24,11 @@ function Header() {
     isDropdownVisible,
     setIsDropdownVisible,
   } = usePlacesSearch();
+  const {setSearchedLocation} = useLocation();
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  const [type, setType] = useState<"crew" | "map" | "chat">("map");
+  const [selectedLocation,setSelectedLocation] = useState<Region | null>();
+  const [type, setType] = useState<"crew" | "location" | "chat">("location");
   useEffect(() => {
     const timer = setTimeout(() => {
       if (segments.includes("map") && selectedQuery !== searchQuery) {
@@ -54,7 +56,7 @@ function Header() {
       } else if (segments.includes("chat")) {
         setType("chat");
       } else {
-        setType("map");
+        setType("location");
       }
     } else {
       setShow(false);
@@ -62,6 +64,11 @@ function Header() {
     }
   }, [segments]);
 
+  useEffect(() => {
+    if (selectedLocation){
+      setSearchedLocation(selectedLocation);
+    }
+  }, [selectedLocation])
   return (
     <TouchableWithoutFeedback>
       <View style={[styles.rootContainer, !show && styles.hide]}>
@@ -74,11 +81,11 @@ function Header() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
-
           <Image source={require("../../assets/images/notification.png")} />
         </View>
         {isDropdownVisible && (
           <SearchDropdown
+            setSearchedLocation={setSelectedLocation}
             results={results}
             setSelectedQuery={setSelectedQuery}
           />

@@ -105,14 +105,14 @@ export const LocationProvider = ({
       value={{
         running,
         setRunning,
-        searchedLocation,
-        setSearchedLocation,
         myLocation,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
         selectedCourse,
         setSelectedCourse,
+        searchedLocation,
+        setSearchedLocation,
         isDropdownVisible,
         setIsDropdownVisible,
       }}

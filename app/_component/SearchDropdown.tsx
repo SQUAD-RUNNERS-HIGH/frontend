@@ -2,16 +2,19 @@ import React, { SetStateAction, useEffect } from "react";
 import { Text, StyleSheet, FlatList, View, Pressable, Image } from "react-native";
 import { Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
+import { Region } from "react-native-maps";
 
 interface SearchInputProps {
   results: Place[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
+  setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
 }
 const SearchDropdown = ({
   results,
   setSelectedQuery,
+  setSearchedLocation
 }: SearchInputProps) => {
-  const {setSearchedLocation, setIsDropdownVisible} = useLocation();
+  const {setIsDropdownVisible} = useLocation();
 
   return (
     <View style = {styles.dropdowncontainer} pointerEvents="box-none">
