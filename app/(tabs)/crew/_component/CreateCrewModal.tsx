@@ -24,11 +24,14 @@ export function CreateCrewModal({
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
   const onSubmit = (data: z.infer<typeof crewSchema>) => {
-      // if (response?.status === 200) {
-      //   Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
-      //   router.push('/login');
-      // }
-    };
+    const {place: {latitude,longitude}, ...rest} = data;
+    const newData = {latitude, longitude,...rest};
+    console.log(newData);
+    // if (response?.status === 200) {
+    //   Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
+    //   router.push('/login');
+    // }
+  };
   const {
     control,
     handleSubmit,
@@ -37,7 +40,6 @@ export function CreateCrewModal({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
-
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -87,9 +89,13 @@ export function CreateCrewModal({
             errorMessage={errors.place?.message}
             name="place"
             label="활동 장소"
-            placeholder="크루를 소개해주세요"
+            placeholder="위치를 입력해주세요"
+            isLocationInput
           />
-          <Button style={{ marginTop: 6, width: "100%" }} onPress={handleSubmit(onSubmit)}>
+          <Button
+            style={{ marginTop: 6, width: "100%" }}
+            onPress={handleSubmit(onSubmit)}
+          >
             크루 만들기
           </Button>
         </ScrollView>
