@@ -24,9 +24,7 @@ export function StringInput({
         isImg
         value={field.value} 
         onChange={(value) => {
-          if (!isNaN(Number(value))) {
-            console.log(typeof value)
-
+          if (!isNaN(Number(value))&&type==='number') {
             field.onChange(Number(value));
             return;
           }

@@ -7,12 +7,14 @@ import {
   Text,
   Pressable,
   ScrollView,
+  Alert,
 } from "react-native";
 import { crewSchema } from "../_lib/crewSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/app/_component/Button";
+import { useRouter } from "expo-router";
 
 export function CreateCrewModal({
   modalVisible,
@@ -21,6 +23,12 @@ export function CreateCrewModal({
   modalVisible: boolean;
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
+  const onSubmit = (data: z.infer<typeof crewSchema>) => {
+      // if (response?.status === 200) {
+      //   Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
+      //   router.push('/login');
+      // }
+    };
   const {
     control,
     handleSubmit,
@@ -29,6 +37,7 @@ export function CreateCrewModal({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
+
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -64,6 +73,7 @@ export function CreateCrewModal({
             name="maxCapacity"
             label="최대 인원"
             placeholder="최대 인원을 입력하세요"
+            type="number"
           />
           <FormInput
             control={control}
@@ -74,12 +84,14 @@ export function CreateCrewModal({
           />
           <FormInput
             control={control}
-            errorMessage={errors.description?.message}
-            name="description"
-            label="크루 설명"
+            errorMessage={errors.place?.message}
+            name="place"
+            label="활동 장소"
             placeholder="크루를 소개해주세요"
           />
-          <Button style = {{marginTop:6, width:'100%'}} onPress = {() => {}}>크루 만들기</Button>
+          <Button style={{ marginTop: 6, width: "100%" }} onPress={handleSubmit(onSubmit)}>
+            크루 만들기
+          </Button>
         </ScrollView>
       </View>
     </Modal>
@@ -111,7 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     alignItems: "center",
-    zIndex: 20,  
+    zIndex: 20,
     gap: 16,
   },
   modalTitle: {
