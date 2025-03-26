@@ -14,7 +14,7 @@ const SearchDropdown = ({
   const {setSearchedLocation, setIsDropdownVisible} = useLocation();
 
   return (
-    <View style = {styles.dropdowncontainer}>
+    <View style = {styles.dropdowncontainer} pointerEvents="box-none">
     <FlatList
       data={results}
       keyExtractor={(_,index) => index.toString()}
