@@ -5,16 +5,20 @@ import { View, TextInput, StyleSheet, Image } from "react-native";
 interface SearchInputProps {
   searchQuery: string;
   setSearchQuery: React.Dispatch<SetStateAction<string>>;
+  type: string;
 }
-const SearchInput = ({ searchQuery, setSearchQuery }: SearchInputProps) => {
-  const segments = useSegments();
-  const [placeholder,setPlaceHolder] = useState<string>('');
+const SearchInput = ({
+  searchQuery,
+  setSearchQuery,
+  type,
+}: SearchInputProps) => {
+  const [placeholder, setPlaceHolder] = useState<string>("");
   useEffect(() => {
-    if(segments.includes('crew'))
-      setPlaceHolder('크루를 검색하세요')
-    if(segments.includes('map'))
-      setPlaceHolder('위치를 검색하세요')
-  },[segments])
+    if (type === "crew") setPlaceHolder("크루를 검색하세요");
+    if (type === "map") setPlaceHolder("위치를 검색하세요");
+    if (type === "chat") setPlaceHolder("채팅 방, 채팅 내역을 검색하세요.");
+    console.log(type);
+  }, [type]);
   return (
     <View style={styles.rootContainer}>
       <View style={styles.searchContainer}>

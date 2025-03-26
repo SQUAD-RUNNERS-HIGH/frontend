@@ -22,10 +22,11 @@ function Header() {
     fetchPlaces,
     results,
     isDropdownVisible,
+    setIsDropdownVisible,
   } = usePlacesSearch();
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-
+  const [type, setType] = useState<"crew" | "map" | "chat">("map");
   useEffect(() => {
     const timer = setTimeout(() => {
       if (segments.includes("map") && selectedQuery !== searchQuery) {
@@ -45,8 +46,19 @@ function Header() {
       segments[segments.length - 1] !== "signup"
     ) {
       setShow(true);
+      setIsDropdownVisible(false);
+      setSearchQuery("");
+      setSelectedQuery("");
+      if (segments.includes("crew")) {
+        setType("crew");
+      } else if (segments.includes("chat")) {
+        setType("chat");
+      } else {
+        setType("map");
+      }
     } else {
       setShow(false);
+      setIsDropdownVisible(false);
     }
   }, [segments]);
 
@@ -58,6 +70,7 @@ function Header() {
             <Image source={require("../../assets/images/header_logo.png")} />
           </Pressable>
           <SearchInput
+            type={type}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
