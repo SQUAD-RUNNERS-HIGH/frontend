@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   Alert,
+  FlatList,
 } from "react-native";
 import { crewSchema } from "../_lib/crewSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,8 +26,11 @@ export function CreateCrewModal({
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
-    const {place: {latitude,longitude}, ...rest} = data;
-    const apiData = {latitude, longitude,...rest};
+    const {
+      place: { latitude, longitude },
+      ...rest
+    } = data;
+    const apiData = { latitude, longitude, ...rest };
     const response = await fetchCrewCreate(apiData);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
@@ -53,53 +57,62 @@ export function CreateCrewModal({
         // onPress={() => setModalVisible(false)}
       ></Pressable>
       <View style={styles.modalPosition}>
-        <ScrollView contentContainerStyle={styles.modalContainer}>
-          <Text style={styles.modalTitle}>새로운 크루 만들기</Text>
-          <FormInput
-            control={control}
-            errorMessage={errors.name?.message}
-            name="name"
-            label="크루 이름"
-            placeholder="크루 이름을 입력하세요"
-          />
-          <FormInput
-            control={control}
-            errorMessage={errors.image?.message}
-            name="image"
-            label="크루 이미지"
-            placeholder="이미지를 선택하세요"
-            isImage
-          />
-          <FormInput
-            control={control}
-            errorMessage={errors.maxCapacity?.message}
-            name="maxCapacity"
-            label="최대 인원"
-            placeholder="최대 인원을 입력하세요"
-            type="number"
-          />
-          <FormInput
-            control={control}
-            errorMessage={errors.description?.message}
-            name="description"
-            label="크루 설명"
-            placeholder="크루를 소개해주세요"
-          />
-          <FormInput
-            control={control}
-            errorMessage={errors.place?.message}
-            name="place"
-            label="활동 장소"
-            placeholder="위치를 입력해주세요"
-            isLocationInput
-          />
-          <Button
-            style={{ marginTop: 6, width: "100%" }}
-            onPress={handleSubmit(onSubmit)}
-          >
-            크루 만들기
-          </Button>
-        </ScrollView>
+        <FlatList
+          data={[{ key: "form" }]} // FlatList에 필요한 데이터 구조
+          keyExtractor={(item) => item.key}
+          contentContainerStyle={styles.modalContainer}
+          ListHeaderComponent={
+            <Text style={styles.modalTitle}>새로운 크루 만들기</Text>
+          }
+          renderItem={() => (
+            <View style={styles.formContainer}>
+              <FormInput
+                control={control}
+                errorMessage={errors.name?.message}
+                name="name"
+                label="크루 이름"
+                placeholder="크루 이름을 입력하세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.image?.message}
+                name="image"
+                label="크루 이미지"
+                placeholder="이미지를 선택하세요"
+                isImage
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.maxCapacity?.message}
+                name="maxCapacity"
+                label="최대 인원"
+                placeholder="최대 인원을 입력하세요"
+                type="number"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.description?.message}
+                name="description"
+                label="크루 설명"
+                placeholder="크루를 소개해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.place?.message}
+                name="place"
+                label="활동 장소"
+                placeholder="위치를 입력해주세요"
+                isLocationInput
+              />
+              <Button
+                style={{ marginTop: 6, width: "100%" }}
+                onPress={handleSubmit(onSubmit)}
+              >
+                크루 만들기
+              </Button>
+            </View>
+          )}
+        />
       </View>
     </Modal>
   );
@@ -131,6 +144,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     zIndex: 20,
+    gap: 16,
+  },
+  formContainer: {
     gap: 16,
   },
   modalTitle: {
