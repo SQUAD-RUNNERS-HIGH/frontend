@@ -100,6 +100,7 @@ const FormInput = ({
                   type="location"
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
+                  nonHeader
                 />
                 {isDropdownVisible && (
                   <SearchDropdown
