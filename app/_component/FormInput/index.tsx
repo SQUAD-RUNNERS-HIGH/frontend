@@ -52,7 +52,9 @@ const FormInput = ({
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
- 
+  const [dropdownHeight, setDropdownHeight] = useState<number>(0);
+  const [inputHeight, setInputHeight] = useState<number>(0);
+
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -95,11 +97,12 @@ const FormInput = ({
           }
           if (isLocationInput) {
             return (
-              <>
+              <View style = {inputHeight!==0 && {minHeight: (inputHeight + dropdownHeight)}}>
                 <SearchInput
                   type="location"
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
+                  setInputHeight={setInputHeight}
                   nonHeader
                 />
                 {isDropdownVisible && (
@@ -107,9 +110,11 @@ const FormInput = ({
                     results={results}
                     setSelectedQuery={setSelectedQuery}
                     setSearchedLocation={field.onChange}
+                    inputHeight = {inputHeight}
+                    setDropdownHeight = {setDropdownHeight}
                   />
                 )}
-              </>
+              </View>
             );
           }
           return (

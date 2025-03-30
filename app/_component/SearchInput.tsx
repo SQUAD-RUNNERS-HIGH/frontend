@@ -8,10 +8,12 @@ interface SearchInputProps {
   setSearchQuery: React.Dispatch<SetStateAction<string>>;
   type: "crew" | "location" | "chat";
   nonHeader?: boolean;
+  setInputHeight?: React.Dispatch<SetStateAction<number>>;
 }
 const SearchInput = ({
   searchQuery,
   setSearchQuery,
+  setInputHeight,
   type,
   nonHeader = false,
 }: SearchInputProps) => {
@@ -24,7 +26,14 @@ const SearchInput = ({
   }, [type]);
 
   return (
-    <View style={styles.rootContainer}>
+    <View
+      style={!nonHeader && {flex:1}}
+      onLayout={(event) => {
+        if (setInputHeight) {
+          setInputHeight(event.nativeEvent.layout.height);
+        }
+      }}
+    >
       {nonHeader ? (
         <Input
           placeholder={placeholder}
@@ -51,14 +60,6 @@ const SearchInput = ({
 };
 
 const styles = StyleSheet.create({
-  rootContainer: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#ffffff",
-  },
   searchInput: {
     height: 50,
     borderWidth: 1,

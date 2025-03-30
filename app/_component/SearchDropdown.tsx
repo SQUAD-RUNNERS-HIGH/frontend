@@ -1,5 +1,12 @@
-import React, { SetStateAction, useEffect } from "react";
-import { Text, StyleSheet, FlatList, View, Pressable, Image } from "react-native";
+import React, { SetStateAction, useEffect, useState } from "react";
+import {
+  Text,
+  StyleSheet,
+  FlatList,
+  View,
+  Pressable,
+  Image,
+} from "react-native";
 import { Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
 import { Region } from "react-native-maps";
@@ -8,55 +15,74 @@ interface SearchInputProps {
   results: Place[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
   setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
+  setDropdownHeight?: React.Dispatch<SetStateAction<number>>;
+  inputHeight? :number;
 }
 const SearchDropdown = ({
   results,
   setSelectedQuery,
-  setSearchedLocation
+  setSearchedLocation,
+  setDropdownHeight,
+  inputHeight,
 }: SearchInputProps) => {
-  const {setIsDropdownVisible} = useLocation();
-
+  const { setIsDropdownVisible } = useLocation();
   return (
-    <View style = {styles.dropdowncontainer} pointerEvents="box-none">
-    <FlatList
-      data={results}
-      keyExtractor={(_,index) => index.toString()}
-      renderItem={({item}: {item: any}) => {
-        return (
-          <Pressable
-            style={styles.resultItem}
-            onPress={() => {
-              const latitudeDelta = item.geometry.viewport.northeast.lat - item.geometry.viewport.southwest.lat;
-              const longitudeDelta = item.geometry.viewport.northeast.lng - item.geometry.viewport.southwest.lng;
-              const location = {latitude: item.geometry.location.lat,longitude: item.geometry.location.lng,latitudeDelta,longitudeDelta};
-              setSelectedQuery(item.formatted_address);
-              setSearchedLocation(location);
-              setIsDropdownVisible(false);
-            }}
-          >
-            <Image style={styles.resultIcon} source={{uri: item?.icon}} />
-            <Text style={styles.resultText}>{item.formatted_address}</Text>
-          </Pressable>
-        );
+    <View
+      style={[styles.dropdowncontainer, {top: inputHeight? inputHeight: '100%'}]}
+      pointerEvents="box-none"
+      onLayout={(event) => {
+        if (setDropdownHeight) {
+          setDropdownHeight(event.nativeEvent.layout.height);
+        }
       }}
-      style={styles.dropdown}
-      contentContainerStyle = {{flexGrow:1}}
-    />
+    >
+      <FlatList
+        data={results}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }: { item: any }) => {
+          return (
+            <Pressable
+              style={styles.resultItem}
+              onPress={() => {
+                const latitudeDelta =
+                  item.geometry.viewport.northeast.lat -
+                  item.geometry.viewport.southwest.lat;
+                const longitudeDelta =
+                  item.geometry.viewport.northeast.lng -
+                  item.geometry.viewport.southwest.lng;
+                const location = {
+                  latitude: item.geometry.location.lat,
+                  longitude: item.geometry.location.lng,
+                  latitudeDelta,
+                  longitudeDelta,
+                };
+                setSelectedQuery(item.formatted_address);
+                setSearchedLocation(location);
+                setIsDropdownVisible(false);
+              }}
+            >
+              <Image style={styles.resultIcon} source={{ uri: item?.icon }} />
+              <Text style={styles.resultText}>{item.formatted_address}</Text>
+            </Pressable>
+          );
+        }}
+        style={[styles.dropdown, {maxHeight:200} ]}
+        contentContainerStyle={{ flexGrow: 1 }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   dropdowncontainer: {
-    position: "absolute",
     width: "100%",
-    top: "100%",
-    maxHeight: 200, // 드롭다운 최대 높이 설정
-    zIndex:20,
+    maxHeight: 300, // 드롭다운 최대 높이 설정
+    zIndex: 20,
+    position: 'absolute',
   },
   dropdown: {
-    flex:1,
-    flexGrow:1,
+    flex: 1,
+    flexGrow: 1,
     borderWidth: 1,
     borderColor: "#cccccc",
     borderRadius: 8,
