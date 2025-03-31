@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
 import { Controller, Control } from "react-hook-form";
-import Input from "./Input";
+import Input from "../Input";
+import { StringInput } from "./StringInput";
+import ImageUpload from "./ImageUpload";
+import SearchInput from "../SearchInput";
+import { usePlacesSearch } from "@/app/_hooks/usePlacesSearch";
+import SearchDropdown from "../SearchDropdown";
+import { location } from "@/app/_types";
 
 interface FormInputProps {
   control: Control<any>; // React Hook Form의 Control 객체 타입
@@ -11,6 +17,8 @@ interface FormInputProps {
   label: string; // 폼 제목
   type?: string;
   isRadio?: boolean;
+  isLocationInput?: boolean;
+  isImage?: boolean;
   placeholder: string;
   hideError?: boolean;
 }
@@ -23,8 +31,30 @@ const FormInput = ({
   type = "text",
   placeholder,
   isRadio,
-  hideError
-}:FormInputProps) => {
+  hideError,
+  isImage,
+  isLocationInput,
+}: FormInputProps) => {
+  const {
+    searchQuery,
+    selectedQuery,
+    setSearchQuery,
+    setSelectedQuery,
+    fetchPlaces,
+    results,
+    isDropdownVisible,
+  } = usePlacesSearch();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (selectedQuery !== searchQuery) {
+        fetchPlaces(searchQuery);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  const [dropdownHeight, setDropdownHeight] = useState<number>(0);
+  const [inputHeight, setInputHeight] = useState<number>(0);
+
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -54,18 +84,47 @@ const FormInput = ({
               </RadioButton.Group>
             );
           }
-          return (
-            <>
-              <Input
+          if (isImage) {
+            return (
+              <ImageUpload
+                field={field}
+                errorMessage={errorMessage}
                 type={type}
                 placeholder={placeholder}
-                isImg
-                value={field.value} // 빈 문자열로 초기화
-                onChange={field.onChange}
-                
+                hideError={hideError}
               />
-              {!hideError && <Text style={styles.error}>{errorMessage}</Text>}
-            </>
+            );
+          }
+          if (isLocationInput) {
+            return (
+              <View style = {inputHeight!==0 && {minHeight: (inputHeight + dropdownHeight)}}>
+                <SearchInput
+                  type="location"
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  setInputHeight={setInputHeight}
+                  nonHeader
+                />
+                {isDropdownVisible && (
+                  <SearchDropdown
+                    results={results}
+                    setSelectedQuery={setSelectedQuery}
+                    setSearchedLocation={field.onChange}
+                    inputHeight = {inputHeight}
+                    setDropdownHeight = {setDropdownHeight}
+                  />
+                )}
+              </View>
+            );
+          }
+          return (
+            <StringInput
+              field={field}
+              errorMessage={errorMessage}
+              type={type}
+              placeholder={placeholder}
+              hideError={hideError}
+            />
           );
         }}
       />
@@ -78,7 +137,6 @@ const styles = StyleSheet.create({
     gap: 6,
     width: "100%",
     minWidth: 320,
-    maxWidth: 500,
   },
   formTitle: {
     color: "#6B7280",

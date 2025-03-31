@@ -9,50 +9,32 @@ import { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import SearchDropdown from "./SearchDropdown";
 import { useSegments } from "expo-router";
-import { Place } from "../_types";
+import { location, Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
+import { usePlacesSearch } from "../_hooks/usePlacesSearch";
 
 function Header() {
-  const [searchQuery, setSearchQuery] = useState(""); // 입력된 검색어
-  const [results, setResults] = useState<Place[]>([]); // 검색 결과 리스트
-  const [selectedQuery, setSelectedQuery] = useState<string>("");
+  const {
+    searchQuery,
+    selectedQuery,
+    setSearchQuery,
+    setSelectedQuery,
+    fetchPlaces,
+    results,
+    isDropdownVisible,
+    setIsDropdownVisible,
+  } = usePlacesSearch();
+  const {setSearchedLocation} = useLocation();
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  const { isDropdownVisible, setIsDropdownVisible } = useLocation();
-  const fetchPlaces = async (query: string) => {
-    if (!query) {
-      setResults([]);
-      return;
-    }
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
-      query
-    )}&language=ko&region=kr&key=${
-      process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY
-    }`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.status === "OK") {
-        setResults(data.results);
-        setIsDropdownVisible(true);
-      } else {
-        setResults([]);
-        setIsDropdownVisible(false);
-      }
-    } catch (error) {
-      console.error("Error fetching places:", error);
-      setResults([]);
-      setIsDropdownVisible(false);
-    }
-  };
-
+  const [selectedLocation,setSelectedLocation] = useState<Region | null>();
+  const [type, setType] = useState<"crew" | "location" | "chat">("location");
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (segments.includes('map') && selectedQuery !== searchQuery) {
+      if (segments.includes("map") && selectedQuery !== searchQuery) {
         fetchPlaces(searchQuery);
       }
-      if (segments.includes('crew') && selectedQuery !== searchQuery) {
+      if (segments.includes("crew") && selectedQuery !== searchQuery) {
         // 크루검색
       }
     }, 300);
@@ -66,19 +48,27 @@ function Header() {
       segments[segments.length - 1] !== "signup"
     ) {
       setShow(true);
+      setIsDropdownVisible(false);
+      setSearchQuery("");
+      setSelectedQuery("");
+      if (segments.includes("crew")) {
+        setType("crew");
+      } else if (segments.includes("chat")) {
+        setType("chat");
+      } else {
+        setType("location");
+      }
     } else {
       setShow(false);
+      setIsDropdownVisible(false);
     }
   }, [segments]);
-  useEffect(() => {
-    if (results.length > 0) {
-      setIsDropdownVisible(true);
-    }
-  }, [results]);
-  useEffect(() => {
-    setSearchQuery(selectedQuery);
-  }, [selectedQuery]);
 
+  useEffect(() => {
+    if (selectedLocation){
+      setSearchedLocation(selectedLocation);
+    }
+  }, [selectedLocation])
   return (
     <TouchableWithoutFeedback>
       <View style={[styles.rootContainer, !show && styles.hide]}>
@@ -87,14 +77,15 @@ function Header() {
             <Image source={require("../../assets/images/header_logo.png")} />
           </Pressable>
           <SearchInput
+            type={type}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
-
           <Image source={require("../../assets/images/notification.png")} />
         </View>
         {isDropdownVisible && (
           <SearchDropdown
+            setSearchedLocation={setSelectedLocation}
             results={results}
             setSelectedQuery={setSelectedQuery}
           />

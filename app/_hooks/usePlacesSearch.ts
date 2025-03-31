@@ -1,0 +1,54 @@
+import { useState, useEffect } from "react";
+import { Place } from "../_types";
+
+export const usePlacesSearch = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState<Place[]>([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [selectedQuery, setSelectedQuery] = useState<string>('');
+  const fetchPlaces = async (query: string) => {
+    if (!query) {
+      setResults([]);
+      return;
+    }
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+      query
+    )}&language=ko&region=kr&key=${process.env.EXPO_PUBLIC_GOOGLE_PLACE_API_KEY}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === "OK") {
+        setResults(data.results);
+        setIsDropdownVisible(true);
+      } else {
+        setResults([]);
+        setIsDropdownVisible(false);
+      }
+    } catch (error) {
+      console.error("Error fetching places:", error);
+      setResults([]);
+      setIsDropdownVisible(false);
+    }
+  };
+  useEffect(() => {
+    setSearchQuery(selectedQuery);
+    setIsDropdownVisible(false);
+  },[selectedQuery])
+  useEffect(() => {
+    if (results.length > 0) {
+      setIsDropdownVisible(true);
+    }
+  }, [results]);
+
+  return {
+    searchQuery,
+    selectedQuery,
+    results,
+    isDropdownVisible,
+    setSearchQuery,
+    setIsDropdownVisible,
+    setSelectedQuery,
+    fetchPlaces, // 호출은 외부에서 결정
+  };
+};

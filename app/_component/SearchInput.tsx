@@ -1,49 +1,65 @@
 import { useSegments } from "expo-router";
 import React, { SetStateAction, useEffect, useState } from "react";
 import { View, TextInput, StyleSheet, Image } from "react-native";
+import Input from "./Input";
 
 interface SearchInputProps {
   searchQuery: string;
   setSearchQuery: React.Dispatch<SetStateAction<string>>;
+  type: "crew" | "location" | "chat";
+  nonHeader?: boolean;
+  setInputHeight?: React.Dispatch<SetStateAction<number>>;
 }
-const SearchInput = ({ searchQuery, setSearchQuery }: SearchInputProps) => {
-  const segments = useSegments();
-  const [placeholder,setPlaceHolder] = useState<string>('');
+const SearchInput = ({
+  searchQuery,
+  setSearchQuery,
+  setInputHeight,
+  type,
+  nonHeader = false,
+}: SearchInputProps) => {
+  const [placeholder, setPlaceHolder] = useState<string>("");
+
   useEffect(() => {
-    if(segments.includes('crew'))
-      setPlaceHolder('크루를 검색하세요')
-    if(segments.includes('map'))
-      setPlaceHolder('위치를 검색하세요')
-  },[segments])
+    if (type === "crew") setPlaceHolder("크루를 검색하세요");
+    if (type === "location") setPlaceHolder("위치를 검색하세요");
+    if (type === "chat") setPlaceHolder("채팅 방, 채팅 내역을 검색하세요.");
+  }, [type]);
+
   return (
-    <View style={styles.rootContainer}>
-      <View style={styles.searchContainer}>
-        <Image
-          style={{ width: 20, height: 20 }}
-          source={require("../../assets/images/search.png")}
-        />
-        <TextInput
-          onChangeText={setSearchQuery}
-          value={searchQuery} // 숫자일 경우 문자열로 변환
+    <View
+      style={!nonHeader && {flex:1}}
+      onLayout={(event) => {
+        if (setInputHeight) {
+          setInputHeight(event.nativeEvent.layout.height);
+        }
+      }}
+    >
+      {nonHeader ? (
+        <Input
           placeholder={placeholder}
-          placeholderTextColor="#737373"
-          // onBlur={handleBlur}
-          style={styles.input}
+          value={searchQuery}
+          onChange={setSearchQuery}
         />
-      </View>
+      ) : (
+        <View style={[styles.searchContainer]}>
+          <Image
+            style={{ width: 20, height: 20 }}
+            source={require("../../assets/images/search.png")}
+          />
+          <TextInput
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            placeholder={placeholder}
+            placeholderTextColor="#737373"
+            style={styles.input}
+          />
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  rootContainer: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#ffffff",
-  },
   searchInput: {
     height: 50,
     borderWidth: 1,
@@ -53,7 +69,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   searchContainer: {
-    // paddingVertical: 6,
     backgroundColor: "#E2E2E2",
     paddingHorizontal: 12,
     alignItems: "center",
@@ -66,7 +81,7 @@ const styles = StyleSheet.create({
   input: {
     color: "#737373",
     fontSize: 14,
-    fontWeight: 400,
+    fontWeight: "400",
     alignItems: "center",
     fontFamily: "Open Sans",
     flex: 1,
