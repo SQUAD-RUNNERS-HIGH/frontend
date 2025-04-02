@@ -23,20 +23,7 @@ export function RunningModal({
   const { location, setSelectedCourse, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
-  const [backPressCount, setBackPressCount] = useState<number>(0);
   const progress = Math.min(seconds / dummyData, 1);
-  const confirmExit = () => {
-    return new Promise((resolve) => {
-      Alert.alert(
-        "러닝 종료", // 제목
-        "정말 러닝을 종료하시겠습니까?", // 메시지
-        [
-          { text: "아니요", style: "cancel", onPress: () => resolve(false) }, // 취소 버튼
-          { text: "예", onPress: () => resolve(true) }, // 종료 버튼
-        ]
-      );
-    });
-  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -46,29 +33,7 @@ export function RunningModal({
 
     return () => clearInterval(interval);
   }, []);
-  useEffect(() => {
-    const onBackPress = () => {
-      if (backPressCount === 1) {
-        console.log("aa");
-        setRunning(false);
-        setSelectedCourse("");
-        return true;
-      }
-      setBackPressCount((prev) => prev + 1);
-
-      ToastAndroid.show(
-        "한 번 더 누르면 러닝이 종료됩니다.",
-        ToastAndroid.SHORT
-      );
-
-      setTimeout(() => setBackPressCount(0), 2000); // 2초 내에 다시 누르지 않으면 초기화
-      return true;
-    };
-
-    BackHandler.addEventListener("hardwareBackPress", onBackPress);
-    return () =>
-      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
-  }, [backPressCount]);
+  
   return (
     <>
       <View style={styles.infoContainer}>

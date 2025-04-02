@@ -1,27 +1,39 @@
-import { StyleSheet, View } from "react-native";
+import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
 import { RunningModal } from "./RunningModal";
 import { useLocation } from "../../_hooks/useLocation";
+import { useBackHandler } from "@/app/_hooks/useBackHandler";
 
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const {running, selectedCourse} = useLocation();
-
+  const { running, selectedCourse, setRunning, setSelectedCourse } =
+    useLocation();
 
   useEffect(() => {
-    if (selectedCourse !== '') {
+    if (selectedCourse !== "") {
       setTheme("info");
     }
   }, [selectedCourse]);
+  useBackHandler(running, setRunning, setSelectedCourse, theme, setTheme);
+
   return (
     <>
-      {selectedCourse !== '' && (
-        <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === 'running' && running && <RunningModal setTheme={setTheme}/>}
-          {theme === "info" && !running && <InfoModal  setTheme={setTheme} />}
-          {theme === "select" && !running && <SelectedModal setTheme={setTheme} />}
+      {selectedCourse !== "" && (
+        <View
+          style={[
+            styles.rootContainer,
+            running && styles.runningModalBackground,
+          ]}
+        >
+          {theme === "running" && running && (
+            <RunningModal setTheme={setTheme} />
+          )}
+          {theme === "info" && !running && <InfoModal setTheme={setTheme} />}
+          {theme === "select" && !running && (
+            <SelectedModal setTheme={setTheme} />
+          )}
         </View>
       )}
     </>
@@ -40,7 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: "12px 12px 0px 0px",
   },
   runningModalBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   container: {
     flexDirection: "row",
@@ -53,7 +65,7 @@ const styles = StyleSheet.create({
   info: {
     color: "#6B7280",
   },
-  value: {  
+  value: {
     color: "#000000",
     fontWeight: 600,
   },
