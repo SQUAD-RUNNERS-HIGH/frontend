@@ -9,6 +9,7 @@ export function Modal() {
   const [theme, setTheme] = useState<string>("info");
   const {running, selectedCourse} = useLocation();
 
+
   useEffect(() => {
     if (selectedCourse !== '') {
       setTheme("info");
@@ -18,9 +19,9 @@ export function Modal() {
     <>
       {selectedCourse !== '' && (
         <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === 'running' && running && <RunningModal />}
+          {theme === 'running' && running && <RunningModal setTheme={setTheme}/>}
           {theme === "info" && !running && <InfoModal  setTheme={setTheme} />}
-          {theme === "select"&& !running && <SelectedModal setTheme={setTheme} />}
+          {theme === "select" && !running && <SelectedModal setTheme={setTheme} />}
         </View>
       )}
     </>
