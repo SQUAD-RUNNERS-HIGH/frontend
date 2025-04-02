@@ -14,7 +14,7 @@ export function InfoModal({
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const {selectedCourse} = useLocation();
+  const {selectedCourse, setRunning} = useLocation();
   async function updateDetail() {
     setLoading(true);
     const detail = await fetchCourseDetail(selectedCourse);
@@ -105,10 +105,16 @@ export function InfoModal({
             <Button style={{ flex: 1 }} onPress={() => {}}>
               같이 뛰기
             </Button>
+            <Button style={{ flex: 1 }} onPress={() => {
+                setTheme("select");
+              }}>
+              경쟁자와 뛰기
+            </Button>
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setTheme("select");
+                setRunning(true);
+                setTheme('running');
               }}
             >
               혼자 뛰기

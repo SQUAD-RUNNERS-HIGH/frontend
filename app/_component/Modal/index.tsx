@@ -18,9 +18,9 @@ export function Modal() {
     <>
       {selectedCourse !== '' && (
         <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === "info" && <InfoModal  setTheme={setTheme} />}
-          {theme === "select" && <SelectedModal setTheme={setTheme} />}
-          {theme === 'running' && <RunningModal />}
+          {theme === 'running' && running && <RunningModal />}
+          {theme === "info" && !running && <InfoModal  setTheme={setTheme} />}
+          {theme === "select"&& !running && <SelectedModal setTheme={setTheme} />}
         </View>
       )}
     </>
