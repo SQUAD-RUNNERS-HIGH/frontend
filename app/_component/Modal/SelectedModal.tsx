@@ -1,10 +1,19 @@
-import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import Button from "../Button";
 import { Ionicons } from "@expo/vector-icons";
 import { SetStateAction, useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface competitor {
   historyId: string;
@@ -16,16 +25,34 @@ export function SelectedModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const [competitors, setCompetitors] = useState<competitor[]>([]);
-  async function updateCompetitors() {
-    const data = await fetchPersonRanks(selectedCourse);
-    setCompetitors(data?.personalRunningTimes);
-  }
-  useEffect(() => {
-    updateCompetitors();
-  }, []);
   const [selectedId, setSelectedId] = useState<string>("");
   const { setRunning, selectedCourse } = useLocation();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: ['personalRanks', selectedCourse],
+    queryFn: fetchPersonRanks,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+  });
+  const seen = new Set();
+  const competitors =
+    data?.pages
+      .flatMap((page) => page.items.personalRunningTimes)
+      .filter((item) => {
+        if (seen.has(item.historyId)) return false;
+        seen.add(item.historyId);
+        return true;
+      }) || [];
+    const loadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
   return (
     <>
       <View style={styles.container}>
@@ -45,30 +72,36 @@ export function SelectedModal({
             <Text>이전에 러닝을 했던 경쟁자가 없습니다.</Text>
           </View>
         ) : (
-          <ScrollView
-            style={styles.competitorContainer}
-            contentContainerStyle={{ gap: 16 }}
-          >
-            {competitors?.map((competitor) => (
-              <View key={competitor.historyId} style={styles.competitor}>
-                <Text style={styles.name}>{competitor.userName}</Text>
-                <View style={styles.checkContainer}>
-                  <Text style={styles.name}>{competitor.runningTime}</Text>
-                  <Checkbox
-                    style={styles.checkBox}
-                    value={selectedId === competitor.historyId}
-                    onValueChange={() => {
-                      if (selectedId === competitor.historyId) {
-                        setSelectedId("");
-                      } else {
-                        setSelectedId(competitor.historyId);
-                      }
-                    }}
-                  />
+          <FlatList
+          style={styles.competitorContainer}
+          data={competitors}
+          keyExtractor={(item) => item.historyId}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? <ActivityIndicator style={{ margin: 20 }} /> : null
+          }
+          renderItem={({ item: competitor }) => (
+            <View style={styles.competitor}>
+              <Text style={styles.name}>{competitor.userName}</Text>
+              <View style={styles.checkContainer}>
+                <Text style={styles.name}>{competitor.runningTime}</Text>
+                <Checkbox
+                  style={styles.checkBox}
+                  value={selectedId === competitor.historyId}
+                  onValueChange={() => {
+                    if (selectedId === competitor.historyId) {
+                      setSelectedId('');
+                    } else {
+                      setSelectedId(competitor.historyId);
+                    }
+                  }}
+                />
                 </View>
               </View>
-            ))}
-          </ScrollView>
+            )}
+          />
         )}
         <View style={styles.buttonContainer}>
           <Button
