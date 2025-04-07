@@ -12,6 +12,7 @@ import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
 import { convertSpeedToPace } from "@/app/_lib/convertSpeedToPace";
 import { ProgressBar } from "react-native-paper";
+import { apiClient } from "@/api/apiClient";
 
 const dummyData = 120;
 
@@ -20,10 +21,22 @@ export function RunningModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const { location, setSelectedCourse, setRunning } = useLocation();
+  const { location, selectedCourse, setSelectedCourse, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const progress = Math.min(seconds / dummyData, 1);
+  const confirmExit = () => {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "러닝 종료", // 제목
+        "정말 러닝을 종료하시겠습니까?", // 메시지
+        [
+          { text: "아니요", style: "cancel", onPress: () => resolve(false) }, // 취소 버튼
+          { text: "예", onPress: () => resolve(true) }, // 종료 버튼
+        ]
+      );
+    });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
