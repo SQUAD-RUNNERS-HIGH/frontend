@@ -21,10 +21,14 @@ export function RunningModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const { location, selectedCourse, setSelectedCourse, setRunning } = useLocation();
+  const { location, selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const progress = Math.min(seconds / dummyData, 1);
+  const fetchTestData = async () => {
+    const data = await apiClient.post(`/test-data/${selectedCourse}`);
+    return data;
+  }
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -39,7 +43,10 @@ export function RunningModal({
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    if(running === 'solo') {
+      const data = fetchTestData();
+    }
+      const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
       setSpeed(convertSpeedToPace(location?.speed));
     }, 1000);
@@ -79,7 +86,7 @@ export function RunningModal({
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              setRunning(false);
+              setRunning('');
               setSelectedCourse("");
             }
           }}
