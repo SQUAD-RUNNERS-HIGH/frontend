@@ -143,9 +143,8 @@ const styles = StyleSheet.create({
   },
   competitorContainer: {
     width: "100%",
-    minHeight: 61,
-    maxHeight: 228,
-    height: "100%",
+    minHeight: 40,
+    maxHeight: 220,
     flexDirection: "column",
     marginTop: 20,
   },
