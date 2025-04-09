@@ -15,11 +15,6 @@ import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-interface competitor {
-  historyId: string;
-  userName: string;
-  runningTime: string;
-}
 export function SelectedModal({
   setTheme,
 }: {
@@ -27,28 +22,25 @@ export function SelectedModal({
 }) {
   const [selectedId, setSelectedId] = useState<string>("");
   const { setRunning, selectedCourse } = useLocation();
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ['personalRanks', selectedCourse],
-    queryFn: fetchPersonRanks,
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteQuery({
+      queryKey: ["personalRanks", selectedCourse],
+      queryFn: fetchPersonRanks,
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => lastPage?.nextPage,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 5,
+    });
   const seen = new Set();
   const competitors =
     data?.pages
-      .flatMap((page) => page.items.personalRunningTimes)
+      .flatMap((page) => page?.items.personalRunningTimes)
       .filter((item) => {
         if (seen.has(item.historyId)) return false;
         seen.add(item.historyId);
         return true;
       }) || [];
-    const loadMore = () => {
+  const loadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
@@ -73,31 +65,33 @@ export function SelectedModal({
           </View>
         ) : (
           <FlatList
-          style={styles.competitorContainer}
-          data={competitors}
-          keyExtractor={(item) => item.historyId}
-          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isFetchingNextPage ? <ActivityIndicator style={{ margin: 20 }} /> : null
-          }
-          renderItem={({ item: competitor }) => (
-            <View style={styles.competitor}>
-              <Text style={styles.name}>{competitor.userName}</Text>
-              <View style={styles.checkContainer}>
-                <Text style={styles.name}>{competitor.runningTime}</Text>
-                <Checkbox
-                  style={styles.checkBox}
-                  value={selectedId === competitor.historyId}
-                  onValueChange={() => {
-                    if (selectedId === competitor.historyId) {
-                      setSelectedId('');
-                    } else {
-                      setSelectedId(competitor.historyId);
-                    }
-                  }}
-                />
+            style={styles.competitorContainer}
+            data={competitors}
+            keyExtractor={(item) => item.historyId}
+            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator style={{ margin: 20 }} />
+              ) : null
+            }
+            renderItem={({ item: competitor }) => (
+              <View style={styles.competitor}>
+                <Text style={styles.name}>{competitor.userName}</Text>
+                <View style={styles.checkContainer}>
+                  <Text style={styles.name}>{competitor.runningTime}</Text>
+                  <Checkbox
+                    style={styles.checkBox}
+                    value={selectedId === competitor.historyId}
+                    onValueChange={() => {
+                      if (selectedId === competitor.historyId) {
+                        setSelectedId("");
+                      } else {
+                        setSelectedId(competitor.historyId);
+                      }
+                    }}
+                  />
                 </View>
               </View>
             )}
