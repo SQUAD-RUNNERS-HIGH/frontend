@@ -24,14 +24,14 @@ export function Modal() {
         <View
           style={[
             styles.rootContainer,
-            running && styles.runningModalBackground,
+            running !== '' && styles.runningModalBackground,
           ]}
         >
-          {theme === "running" && running && (
+          {theme === "running" && running !== '' && (
             <RunningModal setTheme={setTheme} />
           )}
-          {theme === "info" && !running && <InfoModal setTheme={setTheme} />}
-          {theme === "select" && !running && (
+          {theme === "info" && running === '' && <InfoModal setTheme={setTheme} />}
+          {theme === "select" && running === '' && (
             <SelectedModal setTheme={setTheme} />
           )}
         </View>

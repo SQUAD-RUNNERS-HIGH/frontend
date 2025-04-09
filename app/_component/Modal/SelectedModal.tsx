@@ -108,7 +108,7 @@ export function SelectedModal({
             style={{ flex: 1 }}
             onPress={() => {
               setTheme("running");
-              setRunning(true);
+              setRunning(selectedId);
             }}
           >
             시작 하기

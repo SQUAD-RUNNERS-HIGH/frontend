@@ -113,7 +113,7 @@ export function InfoModal({
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setRunning(true);
+                setRunning('solo');
                 setTheme('running');
               }}
             >

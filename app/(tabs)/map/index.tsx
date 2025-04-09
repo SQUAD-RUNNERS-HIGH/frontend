@@ -45,7 +45,7 @@ export default function Index() {
   }, []);
   useEffect(() => {
     if (selectedCourse === "") {
-      setRunning(false);
+      setRunning('');
     }
   }, [selectedCourse]);
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running && myLocation) {
+    if (running !== '' && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: myLocation?.latitude,

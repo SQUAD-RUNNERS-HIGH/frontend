@@ -18,10 +18,10 @@ interface LocationContextType {
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
-  running: boolean;
+  running: string;
   searchedLocation: Region | null;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
-  setRunning: React.Dispatch<SetStateAction<boolean>>;
+  setRunning: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
   setSelectedCourse: React.Dispatch<SetStateAction<string>>;
   isDropdownVisible: boolean;
@@ -47,7 +47,7 @@ export const LocationProvider = ({
   const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [isDropdownVisible,setIsDropdownVisible] = useState<boolean>(false);
-  const [running, setRunning] = useState<boolean>(false);
+  const [running, setRunning] = useState<string>('');
 
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
