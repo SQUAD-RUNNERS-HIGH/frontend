@@ -7,12 +7,14 @@ import {
   Alert,
 } from "react-native";
 import Button from "../Button";
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useCallback, useEffect, useState } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
 import { convertSpeedToPace } from "@/app/_lib/convertSpeedToPace";
 import { ProgressBar } from "react-native-paper";
 import { apiClient } from "@/api/apiClient";
+import { useStomp } from "@/app/_hooks/useStomp";
+import { location } from "@/app/_types";
 
 const dummyData = 120;
 
@@ -21,14 +23,21 @@ export function RunningModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const { location, selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
+  const { myLocation, setMyLocation, setCorrectedLocation, selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const progress = Math.min(seconds / dummyData, 1);
+  const [receivedLocation, setReceivedLocation] = useState<location>();
+  // STOMP 메시지 수신 처리
+  const handleMessage = useCallback((data: location) => {
+    setCorrectedLocation((prev) => ({...prev, latitude: data?.latitude, longitude: data?.longitude}));
+  }, []);
+  const {sendLocation} = useStomp(selectedCourse,handleMessage);
   const fetchTestData = async () => {
     const data = await apiClient.post(`/test-data/${selectedCourse}`);
     return data;
   }
+
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -49,10 +58,15 @@ export function RunningModal({
       const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
       setSpeed(convertSpeedToPace(location?.speed));
+      sendLocation({latitude: myLocation?.latitude, longitude: myLocation?.longitude});
+
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
+  useEffect(() => {
+
+  },[myLocation])
   
   return (
     <>

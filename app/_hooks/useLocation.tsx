@@ -20,12 +20,19 @@ interface LocationContextType {
   stopLocationTracking: () => void;
   running: string;
   searchedLocation: Region | null;
+  correctedLocation: Location.LocationObjectCoords | null;
+  setCorrectedLocation: React.Dispatch<
+  SetStateAction<Location.LocationObjectCoords | null>
+>;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
   setRunning: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
   setSelectedCourse: React.Dispatch<SetStateAction<string>>;
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
+  setMyLocation: React.Dispatch<
+    SetStateAction<Location.LocationObjectCoords | null>
+  >;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -45,10 +52,11 @@ export const LocationProvider = ({
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
   const prevLocationRef = useRef<LocationObjectCoords | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
-  const [isDropdownVisible,setIsDropdownVisible] = useState<boolean>(false);
-  const [running, setRunning] = useState<string>('');
-
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
+  const [running, setRunning] = useState<string>("");
+  const [correctedLocation, setCorrectedLocation] =
+    useState<Location.LocationObjectCoords | null>(null);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -106,6 +114,9 @@ export const LocationProvider = ({
         running,
         setRunning,
         myLocation,
+        setMyLocation,
+        correctedLocation,
+        setCorrectedLocation,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
