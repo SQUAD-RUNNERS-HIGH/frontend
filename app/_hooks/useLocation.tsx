@@ -11,6 +11,7 @@ import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { fetchUserLocation } from "../(tabs)/map/_lib/fetchUserLocation";
 import { Region } from "react-native-maps";
+import { CourseResponse } from "../_types";
 
 // 타입 정의
 interface LocationContextType {
@@ -21,6 +22,8 @@ interface LocationContextType {
   running: string;
   searchedLocation: Region | null;
   correctedLocation: Location.LocationObjectCoords | null;
+  currentCourses: CourseResponse[] | null;
+  setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null >>;
   setCorrectedLocation: React.Dispatch<
   SetStateAction<Location.LocationObjectCoords | null>
 >;
@@ -57,6 +60,7 @@ export const LocationProvider = ({
   const [running, setRunning] = useState<string>("");
   const [correctedLocation, setCorrectedLocation] =
     useState<Location.LocationObjectCoords | null>(null);
+  const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(null);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -116,6 +120,8 @@ export const LocationProvider = ({
         myLocation,
         setMyLocation,
         correctedLocation,
+        currentCourses,
+        setCurrentCourses,
         setCorrectedLocation,
         permissionStatus,
         startLocationTracking,

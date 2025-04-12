@@ -18,6 +18,8 @@ export default function Index() {
   const [region, setRegion] = useState<Region>();
   const {
     selectedCourse,
+    currentCourses,
+    setCurrentCourses,
     searchedLocation,
     myLocation,
     correctedLocation,
@@ -29,7 +31,6 @@ export default function Index() {
     stopLocationTracking,
   } = useLocation();
   const mapRef = useRef<MapView>(null);
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -58,7 +59,7 @@ export default function Index() {
     async function updateCourses() {
       if (region) {
         const response = await fetchCourses(region);
-        setCourses(response.courseResponses);
+        setCurrentCourses(response.courseResponses);
       }
     }
     updateCourses();
@@ -156,7 +157,7 @@ export default function Index() {
                   source={require("@/assets/images/marker.png")}
                 />
               </Marker>
-              {courses?.map((course, index) => {
+              {currentCourses?.map((course, index) => {
                 if (!course) return;
                 const courseStart: LatLng = {
                   longitude: course?.coordinates[0][0][0],
@@ -171,7 +172,7 @@ export default function Index() {
                       setSelectedCourse(course.courseId);
                       setIsDropdownVisible(false);
                       if (mapRef.current) {
-                        const formattedCoordinates = courses[
+                        const formattedCoordinates = currentCourses[
                           index
                         ].coordinates[0].map(([lng, lat]) => ({
                           latitude: lat,
@@ -195,7 +196,7 @@ export default function Index() {
               {/* 선택된 코스의 Polyline 그리기 */}
               {selectedCourse !== "" && (
                 <Polyline
-                  coordinates={courses
+                  coordinates={currentCourses
                     ?.find((course) => course.courseId === selectedCourse)
                     .coordinates[0].map(([longitude, latitude]) => ({
                       latitude,
