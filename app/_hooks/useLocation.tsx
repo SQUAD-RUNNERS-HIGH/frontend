@@ -9,7 +9,6 @@ import React, {
 import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
-import { fetchUserLocation } from "../(tabs)/map/_lib/fetchUserLocation";
 import { Region } from "react-native-maps";
 import { CourseResponse } from "../_types";
 
@@ -69,21 +68,6 @@ export const LocationProvider = ({
       }
     }
   };
-  async function onChangeLoation() {
-    if (!myLocation) return;
-
-    const { latitude, longitude } = myLocation;
-    const prevLocation = prevLocationRef.current;
-
-    if (
-      !prevLocation ||
-      prevLocation.latitude !== latitude ||
-      prevLocation.longitude !== longitude
-    ) {
-      await fetchUserLocation({ latitude, longitude });
-    }
-    prevLocationRef.current = myLocation; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
-  }
   // 위치 추적 시작
   const startLocationTracking = async () => {
     const sub = await Location.watchPositionAsync(
@@ -109,9 +93,7 @@ export const LocationProvider = ({
   useEffect(() => {
     askPermission();
   }, []);
-  useEffect(() => {
-    onChangeLoation();
-  }, [myLocation]);
+
   return (
     <LocationContext.Provider
       value={{
