@@ -8,6 +8,8 @@ export interface userSignupType {
     height: number;
     weight: number;
   };
+  latitude: number;
+  longitude: number;
 };
 export interface location {
   latitude: number;

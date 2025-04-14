@@ -30,7 +30,7 @@ export default function Signup() {
   });
   const router = useRouter();
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
-    const { gender, age, height, weight, ...rest } = data;
+    const { gender, age, height, weight, place: {latitude, longitude}, ...rest } = data;
     const newData: userSignupType = {
       ...rest,
       physical: {
@@ -39,6 +39,8 @@ export default function Signup() {
         height,
         weight,
       },
+      latitude,
+      longitude
     };
     const response = await fetchSignup(newData);
     if (response?.status === 200) {
@@ -118,6 +120,14 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 name="gender"
                 label="성별"
                 placeholder="성별을 입력해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.gender?.message}
+                isLocationInput
+                name="place"
+                label="주소"
+                placeholder="주소를 입력해주세요"
               />
               <View style={styles.buttonview}>
                 <Button onPress={handleSubmit(onSubmit)} disabled={!isValid}>회원가입</Button>
