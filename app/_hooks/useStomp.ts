@@ -1,14 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Client, IMessage } from '@stomp/stompjs';
+import { useLocation } from './useLocation';
+import { location } from "@/app/_types";
 
-type LocationData = {
-  longitude: number;
-  latitude: number;
-};
 
-export function useStomp(courseId: string, onMessage: (data: LocationData) => void) {
+export function useStomp() {
   const clientRef = useRef<Client | null>(null);
-
+  const { selectedCourse, setCorrectedLocation} = useLocation();
+  const handleMessage = useCallback((data: location) => {
+    setCorrectedLocation((prev) => ({...prev, latitude: data?.latitude, longitude: data?.longitude}));
+  }, []);
   useEffect(() => {
     const client = new Client({
       brokerURL: 'ws://runners-high.shop/running',
@@ -30,8 +31,8 @@ export function useStomp(courseId: string, onMessage: (data: LocationData) => vo
       console.log('Client Connected?', clientRef.current?.connected); // 여기서 true여야 정상
       // 개인 위치 응답 구독
       client.subscribe('/user/queue/reply', (message: IMessage) => {
-        const data: LocationData = JSON.parse(message.body);
-        onMessage(data);
+        const data: location = JSON.parse(message.body);
+        handleMessage(data);
         console.log('connect');
       });
     };
@@ -53,12 +54,12 @@ export function useStomp(courseId: string, onMessage: (data: LocationData) => vo
     return () => {
       client.deactivate();
     };
-  }, [courseId, onMessage]);
+  }, [selectedCourse, handleMessage]);
 
-  const sendLocation = (location: LocationData) => {
+  const sendLocation = (location: location) => {
     if (clientRef.current && clientRef.current?.connected) {
       clientRef.current.publish({
-        destination: `/app/${courseId}`,
+        destination: `/app/${selectedCourse}`,
         body: JSON.stringify(location),
       });
     } else {

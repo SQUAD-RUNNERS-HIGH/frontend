@@ -53,7 +53,6 @@ export const LocationProvider = ({
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
-  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [running, setRunning] = useState<string>("");

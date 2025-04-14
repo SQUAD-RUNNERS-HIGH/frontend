@@ -2,19 +2,16 @@ import {
   StyleSheet,
   View,
   Text,
-  BackHandler,
-  ToastAndroid,
   Alert,
 } from "react-native";
 import Button from "../Button";
-import { SetStateAction, useCallback, useEffect, useState } from "react";
+import { SetStateAction, useEffect } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
-import { convertSpeedToPace } from "@/app/_lib/convertSpeedToPace";
 import { ProgressBar } from "react-native-paper";
 import { apiClient } from "@/api/apiClient";
 import { useStomp } from "@/app/_hooks/useStomp";
-import { location } from "@/app/_types";
+import { useRunning } from "@/app/_hooks/useRunning";
 
 const dummyData = 120;
 
@@ -23,21 +20,16 @@ export function RunningModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const { myLocation, setMyLocation, setCorrectedLocation, selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
-  const [seconds, setSeconds] = useState(0);
-  const [speed, setSpeed] = useState<string>("00'00\"");
-  const progress = Math.min(seconds / dummyData, 1);
-  const [receivedLocation, setReceivedLocation] = useState<location>();
-  // STOMP 메시지 수신 처리
-  const handleMessage = useCallback((data: location) => {
-    setCorrectedLocation((prev) => ({...prev, latitude: data?.latitude, longitude: data?.longitude}));
-  }, []);
-  const {sendLocation} = useStomp(selectedCourse,handleMessage);
+  const { selectedCourse, setSelectedCourse, running, setRunning, correctedLocation } = useLocation();
+ 
+
+  const {sendLocation} = useStomp();
+  const {seconds, speed, savedRecord} = useRunning(sendLocation);
+  console.log(savedRecord);
   const fetchTestData = async () => {
     const data = await apiClient.post(`/test-data/${selectedCourse}`);
     return data;
   }
-
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -55,19 +47,10 @@ export function RunningModal({
     if(running === 'solo') {
       const data = fetchTestData();
     }
-      const interval = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-      setSpeed(convertSpeedToPace(location?.speed));
-      sendLocation({latitude: myLocation?.latitude, longitude: myLocation?.longitude});
-
-    }, 1000);
-
-    return () => clearInterval(interval);
+      
   }, []);
-  useEffect(() => {
 
-  },[myLocation])
-  
+  const progress = Math.min(seconds / dummyData, 1);
   return (
     <>
       <View style={styles.infoContainer}>
@@ -84,7 +67,7 @@ export function RunningModal({
           <Text style={styles.key}>속도</Text>
         </View>
       </View>
-      {progress < 1 ? (
+      {running !== 'solo' && (<> {(progress < 1) ? (
         <ProgressBar
           progress={progress}
           color="#6200ee"
@@ -94,7 +77,7 @@ export function RunningModal({
         <Text style={{ textAlign: "center" }}>
           경쟁 러너의 러닝이 끝났습니다.
         </Text>
-      )}
+      )}</>)}
       <View style={styles.buttonContainer}>
         <Button
           onPress={async () => {
