@@ -20,7 +20,7 @@ export function RunningModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const { selectedCourse, setSelectedCourse, running, setRunning, correctedLocation } = useLocation();
+  const { selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
  
 
   const {sendLocation} = useStomp();
@@ -83,6 +83,7 @@ export function RunningModal({
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
+              Alert.alert('sss',`${savedRecord}`);
               setRunning('');
               setSelectedCourse("");
             }

@@ -7,7 +7,8 @@ import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import MyLocation from "@/assets/images/svg/Mylocation";
 
 export const useRunning = (sendLocation: (location: location) => void) => {
-  const { selectedCourse, correctedLocation, currentCourses, myLocation } = useLocation();
+  const { selectedCourse, runningLocation, currentCourses, myLocation } =
+    useLocation();
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -30,11 +31,10 @@ export const useRunning = (sendLocation: (location: location) => void) => {
     }
     const interval = setInterval(() => {
       setSeconds((prev) => prev + 1);
-      if(myLocation) {
+      if (myLocation) {
         sendLocation(myLocation);
       }
       setSpeed(convertSpeedToPace(myLocation?.speed));
-      
     }, 1000);
 
     return () => clearInterval(interval);
@@ -46,10 +46,19 @@ export const useRunning = (sendLocation: (location: location) => void) => {
     }
   }, [currentCourse]);
   useEffect(() => {
-    if (correctedLocation) {
+    if (runningLocation) {
       if (prevLocation.current) {
-        const distance = getDistance(prevLocation.current, correctedLocation);
-   
+        const distance = getDistance(
+          {
+            latitude: prevLocation.current.latitude,
+            longitude: prevLocation.current.longitude,
+          },
+          {
+            latitude: runningLocation?.latitude,
+            longitude: runningLocation?.longitude,
+          }
+        );
+
         setTraveledDistance((prev) => {
           const newTraveledDistance = prev + distance;
           // 진행률 계산
@@ -57,15 +66,17 @@ export const useRunning = (sendLocation: (location: location) => void) => {
           return newTraveledDistance;
         });
       }
-  
-      prevLocation.current = correctedLocation;
+
+      prevLocation.current = runningLocation;
     }
-  }, [correctedLocation]);
-  
+  }, [runningLocation]);
+
   useEffect(() => {
-              const progress = totalDistance ? (traveledDistance / totalDistance) * 100 : 0;
+    const progress = totalDistance
+      ? (traveledDistance / totalDistance) * 100
+      : 0;
 
     setSavedRecord((prev) => [...prev, Number(progress.toFixed(2))]);
-  },[traveledDistance])
+  }, [traveledDistance]);
   return { seconds, speed, totalDistance, traveledDistance, savedRecord };
 };

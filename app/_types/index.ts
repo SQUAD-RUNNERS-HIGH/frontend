@@ -1,3 +1,5 @@
+import { LocationObjectCoords } from "expo-location/build/Location.types";
+
 export interface userSignupType {
   loginId: string;
   password: string;
@@ -15,11 +17,14 @@ export interface location {
   latitude: number;
   longitude: number;
 }
+export interface socketMessage extends LocationObjectCoords {
+  status: 'ONGOING' | 'ESCAPED';
+}
+
 export interface userLoginType {
   loginId: string;
   password: string;
 }
-
 export interface location {
   latitude: number;
   longitude: number;

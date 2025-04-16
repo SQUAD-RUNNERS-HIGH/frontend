@@ -10,22 +10,20 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { Region } from "react-native-maps";
-import { CourseResponse } from "../_types";
+import { CourseResponse, runningLocation } from "../_types";
 
 // 타입 정의
 interface LocationContextType {
-  myLocation: Location.LocationObjectCoords | null;
+  myLocation: LocationObjectCoords | null;
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
   running: string;
   searchedLocation: Region | null;
-  correctedLocation: Location.LocationObjectCoords | null;
   currentCourses: CourseResponse[] | null;
+  runningLocation: runningLocation | null;
+  setRunningLocation: React.Dispatch<SetStateAction<runningLocation | null>>;
   setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null >>;
-  setCorrectedLocation: React.Dispatch<
-  SetStateAction<Location.LocationObjectCoords | null>
->;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
   setRunning: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
@@ -33,7 +31,7 @@ interface LocationContextType {
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
   setMyLocation: React.Dispatch<
-    SetStateAction<Location.LocationObjectCoords | null>
+    SetStateAction<LocationObjectCoords | null>
   >;
 }
 
@@ -48,7 +46,7 @@ export const LocationProvider = ({
 }) => {
   const [searchedLocation, setSearchedLocation] = useState<Region | null>(null);
   const [myLocation, setMyLocation] =
-    useState<Location.LocationObjectCoords | null>(null);
+    useState<LocationObjectCoords | null>(null);
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
@@ -56,8 +54,7 @@ export const LocationProvider = ({
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [running, setRunning] = useState<string>("");
-  const [correctedLocation, setCorrectedLocation] =
-    useState<Location.LocationObjectCoords | null>(null);
+  const [runningLocation, setRunningLocation] = useState<runningLocation | null>(null);
   const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(null);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
@@ -100,10 +97,10 @@ export const LocationProvider = ({
         setRunning,
         myLocation,
         setMyLocation,
-        correctedLocation,
+        runningLocation,
+        setRunningLocation,
         currentCourses,
         setCurrentCourses,
-        setCorrectedLocation,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,

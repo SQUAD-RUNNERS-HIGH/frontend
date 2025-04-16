@@ -22,7 +22,7 @@ export default function Index() {
     setCurrentCourses,
     searchedLocation,
     myLocation,
-    correctedLocation,
+    runningLocation,
     running,
     setSelectedCourse,
     setIsDropdownVisible,
@@ -67,19 +67,19 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running !== "" && correctedLocation && myLocation) {
+    if (running !== "" && runningLocation && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: correctedLocation?.latitude,
-          longitude: correctedLocation?.longitude,
+          latitude: runningLocation?.latitude,
+          longitude: runningLocation?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: correctedLocation?.heading, // 방향 (나아가는 방향)
-        altitude: correctedLocation?.altitude, // 고도
+        heading: runningLocation?.heading, // 방향 (나아가는 방향)
+        altitude: runningLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
-  }, [running, myLocation, correctedLocation]);
+  }, [running, myLocation, runningLocation]);
 
   // 위치 추적 시작
 
@@ -141,12 +141,12 @@ export default function Index() {
               <Marker
                 coordinate={{
                   latitude:
-                    (running && correctedLocation)
-                      ? correctedLocation?.latitude
+                    (running && runningLocation)
+                      ? runningLocation?.latitude
                       : myLocation?.latitude,
                   longitude:
-                    (running && correctedLocation)
-                      ? correctedLocation?.longitude
+                    (running && runningLocation)
+                      ? runningLocation?.longitude
                       : myLocation?.longitude,
                 }}
                 style={{ zIndex: 3 }}
