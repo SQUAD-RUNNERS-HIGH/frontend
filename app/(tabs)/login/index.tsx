@@ -34,11 +34,10 @@ export default function Login() {
   const router = useRouter();
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const response = await fetchLogin(data);
-
     if (response?.status === 200) {
       await authenticate(
-        response?.data.data.accessToken,
-        response?.data.data.refreshToken
+        response?.data.data.tokenResponse.accessToken,
+        response?.data.data.tokenResponse.refreshToken,
       );
       router.push("/map");
     }
