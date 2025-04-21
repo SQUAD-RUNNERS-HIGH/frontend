@@ -1,4 +1,11 @@
+// schemas/locationSchema.ts
 import { z } from "zod";
+
+export const userLocationSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+  specificLocation: z.string(),
+});
 
 export const signUpSchema = z.object({
   loginId: z.string().min(2, "아이디는 최소 2글자여야 합니다."),
@@ -29,10 +36,5 @@ export const signUpSchema = z.object({
     .positive("양수만 입력 가능합니다.")
     .int("정수만 입력 가능합니다."), // 문자열을 숫자로 변환,
   gender: z.enum(["MALE", "FEMALE"]),
-  place: z.object({
-      latitude: z.number(),
-      longitude: z.number(),
-      latitudeDelta: z.number(),
-      longitudeDelta: z.number(),
-    })
+  userLocation: userLocationSchema
 });

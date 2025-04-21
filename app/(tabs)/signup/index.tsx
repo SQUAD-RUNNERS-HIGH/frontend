@@ -23,14 +23,14 @@ export default function Signup() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, },
   } = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     mode: "onChange",
   });
   const router = useRouter();
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
-    const { gender, age, height, weight, place: {latitude, longitude}, ...rest } = data;
+    const { gender, age, height, weight, ...rest } = data;
     const newData: userSignupType = {
       ...rest,
       physical: {
@@ -39,8 +39,6 @@ export default function Signup() {
         height,
         weight,
       },
-      latitude,
-      longitude
     };
     const response = await fetchSignup(newData);
     if (response?.status === 200) {
@@ -123,9 +121,9 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
               />
               <FormInput
                 control={control}
-                errorMessage={errors.gender?.message}
+                errorMessage={errors.userLocation?.message}
                 isLocationInput
-                name="place"
+                name="userLocation"
                 label="주소"
                 placeholder="주소를 입력해주세요"
               />

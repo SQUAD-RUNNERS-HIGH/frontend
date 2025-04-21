@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Alert } from "react-native";
 import { userSignupType } from "@/app/_types";
+import { signUpSchema } from "./signUpSchema";
 
 export async function fetchSignup(data: userSignupType) {
   try {

@@ -10,20 +10,36 @@ import {
 import { Place } from "../_types";
 import { useLocation } from "../_hooks/useLocation";
 import { Region } from "react-native-maps";
+import { z } from "zod";
+import { userLocationSchema } from "../(tabs)/signup/_lib/signUpSchema";
 
-interface SearchInputProps {
+interface BaseProps {
   results: Place[];
   setSelectedQuery: React.Dispatch<SetStateAction<string>>;
-  setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
   setDropdownHeight?: React.Dispatch<SetStateAction<number>>;
-  inputHeight? :number;
+  inputHeight?: number;
 }
+
+interface FormProps extends BaseProps {
+  form: true;
+  setSearchedLocation:  React.Dispatch<SetStateAction<z.infer<typeof userLocationSchema>>> ;
+
+}
+
+interface NonFormProps extends BaseProps {
+  form?: false;
+  setSearchedLocation: React.Dispatch<SetStateAction<Region>>; // 또는 다른 타입
+}
+
+type SearchInputProps = FormProps | NonFormProps;
+
 const SearchDropdown = ({
   results,
   setSelectedQuery,
   setSearchedLocation,
   setDropdownHeight,
   inputHeight,
+  form
 }: SearchInputProps) => {
   const { setIsDropdownVisible } = useLocation();
   return (
@@ -44,6 +60,11 @@ const SearchDropdown = ({
             <Pressable
               style={styles.resultItem}
               onPress={() => {
+              if(form) {
+                setSearchedLocation({latitude: item.geometry.location.lat,
+                  longitude: item.geometry.location.lng, specificLocation: item.formatted_address});
+              }
+              else{
                 const latitudeDelta =
                   item.geometry.viewport.northeast.lat -
                   item.geometry.viewport.southwest.lat;
@@ -56,10 +77,12 @@ const SearchDropdown = ({
                   latitudeDelta,
                   longitudeDelta,
                 };
-                setSelectedQuery(item.formatted_address);
                 setSearchedLocation(location);
+
+              }
+                setSelectedQuery(item.formatted_address);
                 setIsDropdownVisible(false);
-              }}
+            }}
             >
               <Image style={styles.resultIcon} source={{ uri: item?.icon }} />
               <Text style={styles.resultText}>{item.formatted_address}</Text>
