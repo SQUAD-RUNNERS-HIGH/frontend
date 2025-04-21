@@ -10,14 +10,17 @@ export interface userSignupType {
     height: number;
     weight: number;
   };
-  latitude: number;
-  longitude: number;
+  userLocation :{
+    latitude: number;
+    longitude: number;
+    specificLocation: string;
+  }
 };
 export interface location {
   latitude: number;
   longitude: number;
 }
-export interface socketMessage extends LocationObjectCoords {
+export interface runningLocation extends LocationObjectCoords {
   status: 'ONGOING' | 'ESCAPED';
 }
 
@@ -82,4 +85,10 @@ export interface CreateCrewApi {
   image: string;
   latitude: number;
   longitude: number;
+}
+
+export interface runningRecord {
+  progress: number[];
+  runningTime: number;
+  courseId: string;
 }
