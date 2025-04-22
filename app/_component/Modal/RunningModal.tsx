@@ -12,11 +12,12 @@ import { ProgressBar } from "react-native-paper";
 import { apiClient } from "@/api/apiClient";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { useRunning } from "@/app/_hooks/useRunning";
+import BlinkingText from "../BlinkingText";
 
 const dummyData = 120;
 
 export function RunningModal() {
-  const { selectedCourse, running, stopRunning } = useLocation();
+  const { selectedCourse, running, stopRunning, runningLocation } = useLocation();
   const {sendLocation} = useStomp();
   const {seconds, speed } = useRunning(sendLocation);
   const fetchTestData = async () => {
@@ -71,7 +72,7 @@ export function RunningModal() {
           경쟁 러너의 러닝이 끝났습니다.
         </Text>
       )}</>)}
-      <Text style = {styles.courseMessage}>코스에서 벗어났습니다.</Text>
+     {runningLocation?.runningStatus === 'ESCAPED' &&  (<BlinkingText>코스에서 벗어났습니다.</BlinkingText>)}
       <View style={styles.buttonContainer}>
         <Button
           onPress={async () => {
