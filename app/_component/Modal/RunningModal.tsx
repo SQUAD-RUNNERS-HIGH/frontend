@@ -15,17 +15,10 @@ import { useRunning } from "@/app/_hooks/useRunning";
 
 const dummyData = 120;
 
-export function RunningModal({
-  setTheme,
-}: {
-  setTheme: React.Dispatch<SetStateAction<string>>;
-}) {
-  const { selectedCourse, setSelectedCourse, running, setRunning } = useLocation();
- 
-
+export function RunningModal() {
+  const { selectedCourse, running, stopRunning } = useLocation();
   const {sendLocation} = useStomp();
-  const {seconds, speed, savedRecord} = useRunning(sendLocation);
-  console.log(savedRecord);
+  const {seconds, speed } = useRunning(sendLocation);
   const fetchTestData = async () => {
     const data = await apiClient.post(`/test-data/${selectedCourse}`);
     return data;
@@ -78,14 +71,13 @@ export function RunningModal({
           경쟁 러너의 러닝이 끝났습니다.
         </Text>
       )}</>)}
+      <Text style = {styles.courseMessage}>코스에서 벗어났습니다.</Text>
       <View style={styles.buttonContainer}>
         <Button
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              Alert.alert('sss',`${savedRecord}`);
-              setRunning('');
-              setSelectedCourse("");
+              stopRunning();
             }
           }}
         >
@@ -124,4 +116,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 16,
   },
+  courseMessage: {
+    width: '100%',
+    textAlign: 'center',
+    color:'red',
+  }
 });

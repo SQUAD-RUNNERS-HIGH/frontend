@@ -1,24 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "./useLocation";
 import { useEffect, useRef, useState } from "react";
 import { getDistance, getPathLength } from "geolib";
 import { location } from "../_types";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
-import MyLocation from "@/assets/images/svg/Mylocation";
 
 export const useRunning = (sendLocation: (location: location) => void) => {
-  const { selectedCourse, runningLocation, currentCourses, myLocation } =
+  const { selectedCourse, runningLocation, currentCourses, myLocation, setRunningRecord } =
     useLocation();
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
-  const [savedRecord, setSavedRecord] = useState<number[]>([]);
+  const [progress, setProgress] = useState<number[]>([]);
   const [traveledDistance, setTraveledDistance] = useState(0); // 유저 실제 이동 거리 (m)
   const prevLocation = useRef<location | null>(null);
-  // const progress = Math.min(seconds / dummyData, 1);
-
   useEffect(() => {
+    if(selectedCourse) {
+      setRunningRecord({ runningTime: 0, progress: [], courseId: selectedCourse})
+    }
     if (currentCourses) {
       setCurrentCourse(
         currentCourses
@@ -39,12 +38,14 @@ export const useRunning = (sendLocation: (location: location) => void) => {
 
     return () => clearInterval(interval);
   }, []);
+
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
       const total = getPathLength(currentCourse);
       setTotalDistance(total);
     }
   }, [currentCourse]);
+
   useEffect(() => {
     if (runningLocation) {
       if (prevLocation.current) {
@@ -58,15 +59,16 @@ export const useRunning = (sendLocation: (location: location) => void) => {
             longitude: runningLocation?.longitude,
           }
         );
-
         setTraveledDistance((prev) => {
           const newTraveledDistance = prev + distance;
           // 진행률 계산
           // 진행률 저장 (savedRecord는 배열로 저장한다고 가정)
           return newTraveledDistance;
         });
-      }
+      } 
+      else {
 
+      }
       prevLocation.current = runningLocation;
     }
   }, [runningLocation]);
@@ -75,8 +77,15 @@ export const useRunning = (sendLocation: (location: location) => void) => {
     const progress = totalDistance
       ? (traveledDistance / totalDistance) * 100
       : 0;
-
-    setSavedRecord((prev) => [...prev, Number(progress.toFixed(2))]);
+    if (seconds % 2===0) {
+      setProgress((prev) => [...prev, Number(progress.toFixed(2))]);
+    }
   }, [traveledDistance]);
-  return { seconds, speed, totalDistance, traveledDistance, savedRecord };
+
+  useEffect(() => {
+    console.log('progress',progress);
+    setRunningRecord({ runningTime: seconds, progress: progress, courseId: selectedCourse})
+  }, [seconds, progress]);
+
+  return { seconds, speed, totalDistance, traveledDistance };
 };

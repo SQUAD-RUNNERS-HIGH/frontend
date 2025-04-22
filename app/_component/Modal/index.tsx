@@ -28,7 +28,7 @@ export function Modal() {
           ]}
         >
           {theme === "running" && running !== '' && (
-            <RunningModal setTheme={setTheme} />
+            <RunningModal />
           )}
           {theme === "info" && running === '' && <InfoModal setTheme={setTheme} />}
           {theme === "select" && running === '' && (

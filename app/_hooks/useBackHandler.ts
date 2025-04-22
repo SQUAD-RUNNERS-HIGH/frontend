@@ -1,9 +1,11 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { BackHandler, ToastAndroid } from "react-native";
+import { useLocation } from "./useLocation";
 
 export const useBackHandler = (running, setRunning, setSelectedCourse, theme, setTheme) => {
   const [backPressCount, setBackPressCount] = useState(0);
   const timeoutRef = useRef(null);
+  const { stopRunning } = useLocation();
 
   const backPressCases = useCallback(() => {
     if (theme === "info") {
@@ -23,8 +25,7 @@ export const useBackHandler = (running, setRunning, setSelectedCourse, theme, se
   
   const onBackPress = useCallback(() => {
     if (running!=='' && backPressCount === 1) {
-      setRunning('');
-      setSelectedCourse("");
+      stopRunning();
       return true;
     }
     backPressCases();
@@ -34,6 +35,7 @@ export const useBackHandler = (running, setRunning, setSelectedCourse, theme, se
   
     return true;
   }, [backPressCases, running, setRunning, setSelectedCourse, backPressCount]);
+
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => {

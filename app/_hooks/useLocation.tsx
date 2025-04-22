@@ -10,7 +10,8 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { Region } from "react-native-maps";
-import { CourseResponse, runningLocation } from "../_types";
+import { CourseResponse, runningLocation, runningRecord } from "../_types";
+import { fetchSaveRecord } from "../(tabs)/map/_lib/fetchSaveRecord";
 
 // 타입 정의
 interface LocationContextType {
@@ -23,16 +24,17 @@ interface LocationContextType {
   currentCourses: CourseResponse[] | null;
   runningLocation: runningLocation | null;
   setRunningLocation: React.Dispatch<SetStateAction<runningLocation | null>>;
-  setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null >>;
+  setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null>>;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
   setRunning: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
   setSelectedCourse: React.Dispatch<SetStateAction<string>>;
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
-  setMyLocation: React.Dispatch<
-    SetStateAction<LocationObjectCoords | null>
-  >;
+  setMyLocation: React.Dispatch<SetStateAction<LocationObjectCoords | null>>;
+  stopRunning: () => void;
+  runningRecord: runningRecord | null;
+  setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -45,8 +47,9 @@ export const LocationProvider = ({
   children: React.ReactNode;
 }) => {
   const [searchedLocation, setSearchedLocation] = useState<Region | null>(null);
-  const [myLocation, setMyLocation] =
-    useState<LocationObjectCoords | null>(null);
+  const [myLocation, setMyLocation] = useState<LocationObjectCoords | null>(
+    null
+  );
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
@@ -54,8 +57,14 @@ export const LocationProvider = ({
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [running, setRunning] = useState<string>("");
-  const [runningLocation, setRunningLocation] = useState<runningLocation | null>(null);
-  const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(null);
+  const [runningLocation, setRunningLocation] =
+    useState<runningLocation | null>(null);
+  const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(
+    null
+  );
+  const [runningRecord, setRunningRecord] = useState<runningRecord | null>(
+    null
+  );
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -86,6 +95,19 @@ export const LocationProvider = ({
       setSubscription(null);
     }
   };
+
+  // 러닝 종료
+  const stopRunning = async () => {
+    if (!runningRecord) {
+      Alert.alert("러닝기록을 로드하는데 실패했습니다.");
+    } else {
+      Alert.alert(`${runningRecord?.progress}`);
+      await fetchSaveRecord(runningRecord);
+
+    }
+    setRunning("");
+    setSelectedCourse("");
+  };
   useEffect(() => {
     askPermission();
   }, []);
@@ -104,12 +126,16 @@ export const LocationProvider = ({
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
+        stopRunning,
         selectedCourse,
         setSelectedCourse,
         searchedLocation,
         setSearchedLocation,
         isDropdownVisible,
         setIsDropdownVisible,
+        runningRecord,
+        setRunningRecord,
+
       }}
     >
       {children}
