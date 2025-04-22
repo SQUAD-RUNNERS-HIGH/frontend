@@ -72,7 +72,7 @@ export function RunningModal() {
           경쟁 러너의 러닝이 끝났습니다.
         </Text>
       )}</>)}
-     {runningLocation?.runningStatus === 'ESCAPED' &&  (<BlinkingText>코스에서 벗어났습니다.</BlinkingText>)}
+     {runningLocation?.runningStatus === 'ESCAPED' &&  (<BlinkingText vibrate>코스에서 벗어났습니다.</BlinkingText>)}
       <View style={styles.buttonContainer}>
         <Button
           onPress={async () => {
