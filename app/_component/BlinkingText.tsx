@@ -1,19 +1,35 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, Text, View, StyleSheet, Vibration } from "react-native";
+import * as Speech from 'expo-speech';
 
 interface BlinkingTextProps {
   children: string;
   vibrate?: boolean;
-  tts?: boolean
+  tts?: boolean;
 }
 const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
   const opacity = useRef(new Animated.Value(1)).current;
+  const [voices, setVoices] = useState();
   useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (vibrate) {
-      Vibration.vibrate([0, 500, 1000, 500,1000],true);
+      Vibration.vibrate([0, 500, 2000], true);
     }
-    return () => {Vibration.cancel()}
+    if (tts) {
+      Speech.speak(children, {voice: 'ko-KR-SMTl01'});
+      interval = setInterval(() => {
+      Speech.speak(children, {voice: 'ko-KR-SMTl01'});
+      }, 5000);
+    }
+    return () => {
+      Vibration.cancel();
+      Speech.stop();
+      if(interval) {
+        clearInterval(interval)
+      }
+    };
   }, []);
+  console.log(voices);
   useEffect(() => {
     const blink = Animated.loop(
       Animated.sequence([
@@ -43,7 +59,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "red",
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
