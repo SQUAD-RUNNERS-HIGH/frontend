@@ -1,17 +1,29 @@
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "./useLocation";
+import { fetchCompetitor } from "../(tabs)/map/_lib/fetchCompetitor";
 import { useEffect, useRef, useState } from "react";
 import { getDistance, getPathLength } from "geolib";
 import { location } from "../_types";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
-
-export const useRunning = (sendLocation: (location: location) => void) => {
+import { useStomp } from "./useStomp";
+export const useCompetitorRunning = () => {
   const {
+    running,
     selectedCourse,
     runningLocation,
     currentCourses,
     myLocation,
     setRunningRecord,
   } = useLocation();
+  const { sendLocation } = useStomp();
+  const {
+    data,
+    isSuccess: loadingCompetitorRecord,
+    error: errorCompetitorRecord,
+  } = useQuery({
+    queryKey: ["courseHistory", running, selectedCourse],
+    queryFn: () => fetchCompetitor(running, selectedCourse),
+  });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -19,14 +31,9 @@ export const useRunning = (sendLocation: (location: location) => void) => {
   const [progress, setProgress] = useState<number[]>([]);
   const [traveledDistance, setTraveledDistance] = useState(0); // 유저 실제 이동 거리 (m)
   const prevLocation = useRef<location | null>(null);
+  const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
+  const [winning, setWinning] = useState<boolean>(true);
   useEffect(() => {
-    if (selectedCourse) {
-      setRunningRecord({
-        runningTime: 0,
-        progress: [],
-        courseId: selectedCourse,
-      });
-    }
     if (currentCourses) {
       setCurrentCourse(
         currentCourses
@@ -37,16 +44,26 @@ export const useRunning = (sendLocation: (location: location) => void) => {
           }))
       );
     }
-    const interval = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-      if (myLocation) {
-        sendLocation(myLocation);
+    if (loadingCompetitorRecord) {
+      if (selectedCourse) {
+        setRunningRecord({
+          runningTime: 0,
+          progress: [],
+          courseId: selectedCourse,
+        });
       }
-      setSpeed(convertSpeedToPace(myLocation?.speed));
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+      const interval = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+        if (myLocation) {
+          sendLocation(myLocation);
+        }
+        setSpeed(convertSpeedToPace(myLocation?.speed));
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [loadingCompetitorRecord]);
 
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
@@ -54,7 +71,6 @@ export const useRunning = (sendLocation: (location: location) => void) => {
       setTotalDistance(total);
     }
   }, [currentCourse]);
-
   useEffect(() => {
     if (runningLocation) {
       if (prevLocation.current) {
@@ -71,8 +87,6 @@ export const useRunning = (sendLocation: (location: location) => void) => {
           );
           setTraveledDistance((prev) => {
             const newTraveledDistance = prev + distance;
-            // 진행률 계산
-            // 진행률 저장 (savedRecord는 배열로 저장한다고 가정)
             return newTraveledDistance;
           });
         }
@@ -80,24 +94,33 @@ export const useRunning = (sendLocation: (location: location) => void) => {
       prevLocation.current = runningLocation;
     }
   }, [runningLocation]);
-
   useEffect(() => {
-    const progress = totalDistance
+    const newProgress = totalDistance
       ? (traveledDistance / totalDistance) * 100
       : 0;
-    if (seconds % 2 === 0) {
-      setProgress((prev) => [...prev, Number(progress.toFixed(2))]);
-    }
-  }, [traveledDistance]);
+    setProgress((prev) => [...prev, Number(newProgress.toFixed(2))]);
+  }, [traveledDistance, seconds]);
 
   useEffect(() => {
-    console.log("progress", progress);
-    setRunningRecord({
-      runningTime: seconds,
-      progress: progress,
-      courseId: selectedCourse,
-    });
-  }, [seconds, progress]);
+    if (data && seconds > 0 && seconds - 1 < data?.progress.length) {
+      const competitorProgress = data?.progress[seconds - 1] ?? 0;
+      const competitorDistance = totalDistance * (Math.min(competitorProgress, 100)/100);
+      setWinning(traveledDistance >= competitorDistance);
+      setDistanceToCompetitor(Math.abs(competitorDistance - traveledDistance));
+  
+      setRunningRecord({
+        runningTime: seconds,
+        progress: [...progress, Number(((traveledDistance / totalDistance) * 100).toFixed(2))],
+        courseId: selectedCourse,
+      });
+    }
+  }, [progress]);
 
-  return { seconds, speed, totalDistance, traveledDistance };
+  return {
+    speed,
+    seconds,
+    winning,
+    distanceToCompetitor,
+    loadingCompetitorRecord,
+  };
 };
