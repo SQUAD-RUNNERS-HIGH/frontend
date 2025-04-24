@@ -18,7 +18,7 @@ export const useCompetitorRunning = () => {
   const { sendLocation } = useStomp();
   const {
     data,
-    isSuccess: loadingCompetitorRecord,
+    isSuccess: completeCompetitorRecord,
     error: errorCompetitorRecord,
   } = useQuery({
     queryKey: ["courseHistory", running, selectedCourse],
@@ -29,6 +29,7 @@ export const useCompetitorRunning = () => {
   const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [progress, setProgress] = useState<number[]>([]);
+  const [competitorProgress, setCompetitorProgress] = useState<number>(0);
   const [traveledDistance, setTraveledDistance] = useState(0); // 유저 실제 이동 거리 (m)
   const prevLocation = useRef<location | null>(null);
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
@@ -44,7 +45,7 @@ export const useCompetitorRunning = () => {
           }))
       );
     }
-    if (loadingCompetitorRecord) {
+    if (completeCompetitorRecord) {
       if (selectedCourse) {
         setRunningRecord({
           runningTime: 0,
@@ -63,7 +64,7 @@ export const useCompetitorRunning = () => {
 
       return () => clearInterval(interval);
     }
-  }, [loadingCompetitorRecord]);
+  }, [completeCompetitorRecord]);
 
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
@@ -103,10 +104,11 @@ export const useCompetitorRunning = () => {
 
   useEffect(() => {
     if (data && seconds > 0 && seconds - 1 < data?.progress.length) {
-      const competitorProgress = data?.progress[seconds - 1] ?? 0;
-      const competitorDistance = totalDistance * (Math.min(competitorProgress, 100)/100);
-      setWinning(traveledDistance >= competitorDistance);
-      setDistanceToCompetitor(Math.abs(competitorDistance - traveledDistance));
+      const newCompetitorProgress = data?.progress[seconds - 1] ?? 0;
+      const newCompetitorDistance = totalDistance * (Math.min(newCompetitorProgress, 100)/100);
+      setCompetitorProgress(newCompetitorProgress);
+      setWinning(traveledDistance >= newCompetitorDistance);
+      setDistanceToCompetitor(Math.abs(newCompetitorDistance - traveledDistance));
   
       setRunningRecord({
         runningTime: seconds,
@@ -117,10 +119,12 @@ export const useCompetitorRunning = () => {
   }, [progress]);
 
   return {
+    data,
     speed,
     seconds,
     winning,
     distanceToCompetitor,
-    loadingCompetitorRecord,
+    competitorProgress,
+    completeCompetitorRecord,
   };
 };
