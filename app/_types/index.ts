@@ -21,7 +21,7 @@ export interface location {
   longitude: number;
 }
 export interface runningLocation extends LocationObjectCoords {
-  status: 'ONGOING' | 'ESCAPED';
+  runningStatus: 'ONGOING' | 'ESCAPED';
 }
 
 export interface userLoginType {
