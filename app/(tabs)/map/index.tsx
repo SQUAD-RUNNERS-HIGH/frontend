@@ -122,7 +122,7 @@ export default function Index() {
               }
             }}
             onPress={() => {
-              if (selectedCourse !== "" && region) {
+              if (selectedCourse !== "" && region && !isRunning) {
                 setSelectedCourse("");
                 mapRef.current?.animateToRegion(region);
               }
