@@ -24,6 +24,7 @@ export const useCompetitorRunning = () => {
   } = useQuery({
     queryKey: ["courseHistory", runningInfo, selectedCourse],
     queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
+    staleTime:100000
   });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);

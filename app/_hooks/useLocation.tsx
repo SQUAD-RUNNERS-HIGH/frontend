@@ -12,6 +12,7 @@ import { LocationObjectCoords } from "expo-location";
 import { Region } from "react-native-maps";
 import { CourseResponse, runningLocation, runningRecord } from "../_types";
 import { fetchSaveRecord } from "../(tabs)/map/_lib/fetchSaveRecord";
+import { Client } from "@stomp/stompjs";
 
 // 타입 정의
 interface LocationContextType {
@@ -35,10 +36,12 @@ interface LocationContextType {
   stopRunning: () => void;
   runningRecord: runningRecord | null;
   setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
-  preRunning : boolean;
-  setPreRunning : React.Dispatch<SetStateAction<boolean>>;
+  preRunning: boolean;
+  setPreRunning: React.Dispatch<SetStateAction<boolean>>;
   isRunning: boolean;
   setIsRunning: React.Dispatch<SetStateAction<boolean>>;
+  client: Client | null;
+  setClient: React.Dispatch<SetStateAction<Client | null>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -63,6 +66,8 @@ export const LocationProvider = ({
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [runningInfo, setRunningInfo] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
+
+  const [client, setClient] = useState<Client | null>(null);
   const [runningLocation, setRunningLocation] =
     useState<runningLocation | null>(null);
   const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(
@@ -146,7 +151,9 @@ export const LocationProvider = ({
         runningRecord,
         setRunningRecord,
         preRunning,
-        setPreRunning
+        setPreRunning,
+        client,
+        setClient,
       }}
     >
       {children}

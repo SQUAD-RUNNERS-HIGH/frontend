@@ -17,7 +17,6 @@ const CompetitorRunning = () => {
     competitorProgress,
     completeCompetitorRecord,
   } = useCompetitorRunning();
-  console.log(distanceToCompetitor);
   return (
     <>
       {completeCompetitorRecord &&
@@ -44,13 +43,11 @@ const CompetitorRunning = () => {
               코스에서 벗어났습니다.
             </BlinkingText>
           )}
-          {runningLocation?.runningStatus === "ONGOING" && (
-            <RunningText
-              seconds={seconds}
-              distance={distanceToCompetitor}
-              winning={winning}
-            />
-          )}
+         {
+          runningLocation?.runningStatus === "ONGOING" && (
+            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning}/>
+          )
+         }
         </>
       ) : (
         <></>
@@ -64,13 +61,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusTextContainer: {
-    width: "100%",
-    alignItems: "center",
-    marginTop: -12,
-    marginBottom: -12,
+    width: '100%',
+    alignItems:'center',
+    marginTop:-12,
+    marginBottom:-12,
   },
   statusText: {
-    fontSize: 14,
-  },
+    fontSize:14,
+  }
 });
 export default CompetitorRunning;

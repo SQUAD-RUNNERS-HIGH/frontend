@@ -101,10 +101,11 @@ export function SelectedModal({
           <Button
             style={{ flex: 1 }}
             onPress={() => {
-              setRunningInfo(selectedId);
+              if(selectedId) 
+                setRunningInfo(selectedId);
             }}
           >
-            시작 하기
+            선택 하기
           </Button>
         </View>
       </View>
