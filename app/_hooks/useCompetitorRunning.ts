@@ -15,6 +15,8 @@ export const useCompetitorRunning = () => {
     myLocation,
     setRunningRecord,
     preRunning,
+    setRunDistance,
+    runDistance
   } = useLocation();
   const { sendLocation } = useStomp();
   const {
@@ -90,7 +92,7 @@ export const useCompetitorRunning = () => {
               longitude: runningLocation?.longitude,
             }
           );
-          setTraveledDistance((prev) => {
+          setRunDistance((prev) => {
             const newTraveledDistance = prev + distance;
             return newTraveledDistance;
           });

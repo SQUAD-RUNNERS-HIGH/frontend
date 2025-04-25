@@ -6,7 +6,7 @@ import { apiClient } from "@/api/apiClient";
 import CompetitorRunning from "./CompetitorRunning";
 
 export function RunningModal() {
-  const { selectedCourse, runningInfo, stopRunning } = useLocation();
+  const { selectedCourse, runningInfo,  setRunningInfo, setIsRunning } = useLocation();
   const fetchTestData = async () => {
     const data = await apiClient.post(`/test-data/${selectedCourse}`);
     return data;
@@ -31,7 +31,7 @@ export function RunningModal() {
 
   return (
     <>
-      {runningInfo !== "solo" && (
+      {runningInfo !== "solo" && runningInfo !=='finish' && (
         <>
           <CompetitorRunning />
         </>
@@ -42,7 +42,8 @@ export function RunningModal() {
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              stopRunning();
+              setRunningInfo('finish');
+              setIsRunning(false);           
             }
           }}
         >

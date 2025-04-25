@@ -33,7 +33,6 @@ interface LocationContextType {
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
   setMyLocation: React.Dispatch<SetStateAction<LocationObjectCoords | null>>;
-  stopRunning: () => void;
   runningRecord: runningRecord | null;
   setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
   preRunning: boolean;
@@ -42,6 +41,8 @@ interface LocationContextType {
   setIsRunning: React.Dispatch<SetStateAction<boolean>>;
   client: Client | null;
   setClient: React.Dispatch<SetStateAction<Client | null>>;
+  runDistance: number;
+  setRunDistance: React.Dispatch<SetStateAction<number>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -66,7 +67,7 @@ export const LocationProvider = ({
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [runningInfo, setRunningInfo] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
-
+  const [runDistance, setRunDistance] = useState<number>(0);
   const [client, setClient] = useState<Client | null>(null);
   const [runningLocation, setRunningLocation] =
     useState<runningLocation | null>(null);
@@ -108,19 +109,7 @@ export const LocationProvider = ({
     }
   };
 
-  // 러닝 종료
-  const stopRunning = async () => {
-    if (!runningRecord) {
-      Alert.alert("러닝기록을 로드하는데 실패했습니다.");
-    } else {
-      Alert.alert(`${runningRecord?.progress}`);
-      if (runningRecord?.progress.length >= 30) {
-        await fetchSaveRecord(runningRecord);
-      }
-    }
-    setRunningInfo("");
-    setSelectedCourse("");
-  };
+
   useEffect(() => {
     askPermission();
   }, []);
@@ -141,7 +130,6 @@ export const LocationProvider = ({
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
-        stopRunning,
         selectedCourse,
         setSelectedCourse,
         searchedLocation,
@@ -154,6 +142,8 @@ export const LocationProvider = ({
         setPreRunning,
         client,
         setClient,
+        runDistance,
+        setRunDistance,
       }}
     >
       {children}

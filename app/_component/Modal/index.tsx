@@ -7,16 +7,25 @@ import { useBackHandler } from "@/app/_hooks/useBackHandler";
 import { RunningModal } from "./RunningModal";
 import { PreRunOverlay } from "../PreRunOverlay";
 import PrepareRunModal from "./PrepareRunModal";
+import ResultModal from "./ResultModal";
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const { isRunning, selectedCourse, setIsRunning, setSelectedCourse, preRunning, setPreRunning, runningInfo } =
-    useLocation();
+  const {
+    isRunning,
+    selectedCourse,
+    runningRecord,
+    setSelectedCourse,
+    preRunning,
+    setPreRunning,
+    runningInfo,
+  } = useLocation();
   useEffect(() => {
     if (selectedCourse !== "") {
       setTheme("info");
     }
   }, [selectedCourse]);
-  useBackHandler( setSelectedCourse, theme, setTheme);
+  useBackHandler(setSelectedCourse, theme, setTheme);
+  console.log(runningInfo);
   return (
     <>
       {selectedCourse !== "" && (
@@ -35,12 +44,20 @@ export function Modal() {
               <SelectedModal setTheme={setTheme} />
             )}
           </View>
-          { isRunning && preRunning && (
+          {isRunning && preRunning && (
             <PreRunOverlay
-              onFinish={() => {setPreRunning(false)}}
+              onFinish={() => {
+                setPreRunning(false);
+              }}
             />
           )}
-          {!isRunning && runningInfo!=='' && <PrepareRunModal />}
+          {!isRunning && runningInfo !== "" && runningInfo !== "finish" && (
+            <PrepareRunModal />
+          )}
+          {!isRunning &&
+            runningInfo === "finish" &&
+            runningRecord &&
+            runningRecord?.progress.length >= 2 && <ResultModal />}
         </>
       )}
     </>

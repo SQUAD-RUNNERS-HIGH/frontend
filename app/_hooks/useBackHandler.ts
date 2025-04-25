@@ -5,7 +5,7 @@ import { useLocation } from "./useLocation";
 export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
   const [backPressCount, setBackPressCount] = useState(0);
   const timeoutRef = useRef(null);
-  const { isRunning,setIsRunning, stopRunning } = useLocation();
+  const { isRunning,setIsRunning, setRunningInfo } = useLocation();
 
   const backPressCases = useCallback(() => {
     if (theme === "info") {
@@ -25,7 +25,8 @@ export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
   
   const onBackPress = useCallback(() => {
     if (isRunning && backPressCount === 1) {
-      stopRunning();
+      setRunningInfo('finish')
+      setIsRunning(false);
       return true;
     }
     backPressCases();

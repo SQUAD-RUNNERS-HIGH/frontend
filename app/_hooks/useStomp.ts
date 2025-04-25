@@ -6,8 +6,14 @@ import * as Sentry from "@sentry/react-native";
 
 export function useStomp() {
   const clientRef = useRef<Client | null>(null);
-  const { isRunning, client, setClient, selectedCourse, setRunningLocation } =
-    useLocation();
+  const {
+    isRunning,
+    client,
+    setClient,
+    selectedCourse,
+    setRunningLocation,
+    runningInfo,
+  } = useLocation();
   const [connected, setConnected] = useState(false);
   const handleMessage = useCallback((data) => {
     setRunningLocation((prev) => ({
@@ -79,10 +85,10 @@ export function useStomp() {
     }
   }, [client]);
   useEffect(() => {
-    if (!isRunning) {
+    if (!isRunning && runningInfo === "finish") {
       disconnect();
     }
-  }, [isRunning]);
+  }, [runningInfo, isRunning]);
   const sendLocation = (location: location) => {
     if (clientRef.current && clientRef.current?.connected) {
       clientRef.current.publish({
@@ -97,5 +103,6 @@ export function useStomp() {
   return {
     sendLocation,
     connected,
+    disconnect,
   };
 }

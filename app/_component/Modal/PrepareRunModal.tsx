@@ -35,7 +35,7 @@ const PrepareRunModal = () => {
     queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
     staleTime: 100000,
   });
-  const { connected, sendLocation } = useStomp();
+  const { connected, sendLocation, disconnect } = useStomp();
   const [totalDistance, setTotalDistance] = useState<number>();
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const {
@@ -46,7 +46,7 @@ const PrepareRunModal = () => {
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => fetchCourseDetail(selectedCourse),
     enabled: !!selectedCourse, // selectedCourse가 있을 때만 실행,
-    staleTime: 6000,
+    staleTime: 100000,
   });
   useEffect(() => {
     if (currentCourses) {
@@ -82,11 +82,17 @@ const PrepareRunModal = () => {
       animationType="slide" // fade, slide, none 가능
       transparent={true} // 배경을 투명하게 설정
       visible={runningInfo !== ""}
-      onRequestClose={() => setRunningInfo("")} // 안드로이드 뒤로가기 대응
+      onRequestClose={() => {
+        setRunningInfo("");
+        disconnect();
+      }} // 안드로이드 뒤로가기 대응
     >
       <Pressable
         style={styles.modalOverlay}
-        onPress={() => setRunningInfo("")}
+        onPress={() => {
+          setRunningInfo("");
+          disconnect();
+        }}
       ></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
@@ -122,7 +128,9 @@ const PrepareRunModal = () => {
               </Button>
             </>
           ) : (
-            <Text style={styles.courseText}>현재 위치가 코스에서 떨어져있습니다.</Text>
+            <Text style={styles.courseText}>
+              현재 위치가 코스에서 떨어져있습니다.
+            </Text>
           )}
         </View>
       </View>
@@ -187,9 +195,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "red",
     textAlign: "center",
-    marginTop:12,
-    marginBottom:12,
-
+    marginTop: 12,
+    marginBottom: 12,
   },
 });
 

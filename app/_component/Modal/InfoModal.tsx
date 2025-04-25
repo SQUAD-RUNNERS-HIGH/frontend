@@ -19,7 +19,7 @@ export function InfoModal({
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => fetchCourseDetail(selectedCourse),
     enabled: !!selectedCourse, // selectedCourse가 있을 때만 실행,
-    staleTime: 6000,
+    staleTime: 100000,
   });
   return (
     <>
