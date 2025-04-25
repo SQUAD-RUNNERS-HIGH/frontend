@@ -13,7 +13,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
-import { useInfiniteQuery,useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 export function SelectedModal({
   setTheme,
@@ -22,7 +22,7 @@ export function SelectedModal({
 }) {
   const [selectedId, setSelectedId] = useState<string>("");
   const { setRunningInfo, selectedCourse, setPreRunning } = useLocation();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status,  } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],
       queryFn: fetchPersonRanks,
@@ -97,17 +97,18 @@ export function SelectedModal({
             )}
           />
         )}
-        <View style={styles.buttonContainer}>
-          <Button
-            style={{ flex: 1 }}
-            onPress={() => {
-              if(selectedId) 
-                setRunningInfo(selectedId);
-            }}
-          >
-            선택 하기
-          </Button>
-        </View>
+        {competitors.length > 0 && (
+          <View style={styles.buttonContainer}>
+            <Button
+              style={{ flex: 1 }}
+              onPress={() => {
+                if (selectedId) setRunningInfo(selectedId);
+              }}
+            >
+              선택 하기
+            </Button>
+          </View>
+        )}
       </View>
     </>
   );
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    paddingVertical: 32,
+    paddingVertical: 50,
   },
   name: {
     fontFamily: "Roboto",
