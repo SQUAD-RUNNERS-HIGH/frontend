@@ -46,6 +46,7 @@ export const PreRunOverlay = ({ onFinish }: { onFinish: () => void }) => {
       <Animated.Text
         style={[
           styles.text,
+          index === countdownArray.length-1 && {color: '#0000ff'},
           {
             opacity,
             transform: [{ scale }],
@@ -74,5 +75,6 @@ const styles = StyleSheet.create({
     fontSize: 100,
     color: "white",
     fontWeight: "bold",
+    marginTop:-24,
   },
 });
