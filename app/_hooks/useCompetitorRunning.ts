@@ -40,7 +40,7 @@ export const useCompetitorRunning = () => {
     if (selectedCourse) {
       setRunningRecord({
         runningTime: 0,
-        progress: [],
+        progress: [0],
         courseId: selectedCourse,
       });
     }
@@ -53,15 +53,6 @@ export const useCompetitorRunning = () => {
             longitude,
           }))
       );
-    }
-    if (completeCompetitorRecord) {
-      if (selectedCourse) {
-        setRunningRecord({
-          runningTime: 0,
-          progress: [],
-          courseId: selectedCourse,
-        });
-      }
     }
   }, [completeCompetitorRecord]);
   useEffect(() => {
