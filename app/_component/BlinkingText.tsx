@@ -13,7 +13,7 @@ const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (vibrate) {
-      Vibration.vibrate([0, 500, 2000], true);
+      // Vibration.vibrate([0, 500, 2000], true);
     }
     if (tts) {
       Speech.speak(children, {voice: 'ko-KR-SMTl01'});
@@ -22,14 +22,17 @@ const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
       }, 5000);
     }
     return () => {
-      Vibration.cancel();
-      Speech.stop();
+      if(vibrate) {
+        Vibration.cancel();
+      }
+      if (tts) {
+        Speech.stop();
+      }
       if(interval) {
         clearInterval(interval)
       }
     };
   }, []);
-  console.log(voices);
   useEffect(() => {
     const blink = Animated.loop(
       Animated.sequence([
