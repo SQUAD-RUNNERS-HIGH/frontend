@@ -39,8 +39,7 @@ interface LocationContextType {
   setPreRunning: React.Dispatch<SetStateAction<boolean>>;
   isRunning: boolean;
   setIsRunning: React.Dispatch<SetStateAction<boolean>>;
-  client: Client | null;
-  setClient: React.Dispatch<SetStateAction<Client | null>>;
+  client: React.MutableRefObject<Client | null>;
   runDistance: number;
   setRunDistance: React.Dispatch<SetStateAction<number>>;
 }
@@ -68,7 +67,7 @@ export const LocationProvider = ({
   const [runningInfo, setRunningInfo] = useState<string>("");
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [runDistance, setRunDistance] = useState<number>(0);
-  const [client, setClient] = useState<Client | null>(null);
+  const client= useRef<Client | null>(null);
   const [runningLocation, setRunningLocation] =
     useState<runningLocation | null>(null);
   const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(
@@ -109,7 +108,14 @@ export const LocationProvider = ({
     }
   };
 
-
+  useEffect(() => {
+    if (client.current && !isRunning) {
+      if (runningInfo === "" || runningInfo === "finish") {
+        client.current.deactivate();
+        client.current = null;
+      }
+    }
+  }, [runningInfo, isRunning]);
   useEffect(() => {
     askPermission();
   }, []);
@@ -141,7 +147,6 @@ export const LocationProvider = ({
         preRunning,
         setPreRunning,
         client,
-        setClient,
         runDistance,
         setRunDistance,
       }}

@@ -16,16 +16,19 @@ export function Modal() {
     runningRecord,
     setSelectedCourse,
     preRunning,
+    client,
     setPreRunning,
     runningInfo,
   } = useLocation();
+
   useEffect(() => {
     if (selectedCourse !== "") {
       setTheme("info");
     }
   }, [selectedCourse]);
+  console.log(client.current);
+
   useBackHandler(setSelectedCourse, theme, setTheme);
-  console.log(runningInfo);
   return (
     <>
       {selectedCourse !== "" && (

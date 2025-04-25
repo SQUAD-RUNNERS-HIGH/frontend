@@ -5,15 +5,8 @@ import { location } from "@/app/_types";
 import * as Sentry from "@sentry/react-native";
 
 export function useStomp() {
-  const clientRef = useRef<Client | null>(null);
-  const {
-    isRunning,
-    client,
-    setClient,
-    selectedCourse,
-    setRunningLocation,
-    runningInfo,
-  } = useLocation();
+  const { client, selectedCourse, setRunningLocation, runningInfo } =
+    useLocation();
   const [connected, setConnected] = useState(false);
   const handleMessage = useCallback((data) => {
     setRunningLocation((prev) => ({
@@ -29,14 +22,8 @@ export function useStomp() {
     //   longitude: prev.longitude + 0.0001,
     // }));
   }, []);
-  const disconnect = () => {
-    if (client) {
-      client.deactivate();
-      setClient(null);
-    }
-  };
   useEffect(() => {
-    if (!client) {
+    if (!client.current && runningInfo !== "" && runningInfo !== "finish") {
       const newClient = new Client({
         brokerURL: "wss://runners-high.shop/running",
         reconnectDelay: 5000,
@@ -46,14 +33,13 @@ export function useStomp() {
         heartbeatOutgoing: 10000,
         debug: (str) => console.log(`[STOMP DEBUG] ${str}`),
       });
-      setClient(newClient);
+      client.current = newClient;
     }
   }, [selectedCourse, handleMessage]);
   useEffect(() => {
-    if (client) {
-      client.activate();
-      clientRef.current = client;
-      client.onStompError = (frame) => {
+    if (client.current) {
+      client.current.activate();
+      client.current.onStompError = (frame) => {
         Sentry.captureMessage(`stomp failed: ${frame.headers["message"]}`);
 
         console.error(
@@ -61,48 +47,43 @@ export function useStomp() {
           frame.headers["message"]
         );
       };
-      client.onConnect = () => {
-        // Sentry.captureMessage("Client Connected?", clientRef.current?.connected); // 여기서 true여야 정상
-        console.log("Client Connected?", clientRef.current?.connected); // 여기서 true여야 정상
+      client.current.onConnect = () => {
+        // Sentry.captureMessage("client.current Connected?", clientRef.current?.connected); // 여기서 true여야 정상
+        console.log("client.current Connected?", client.current?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
-        client.subscribe("/user/queue/reply", (message: IMessage) => {
+        client.current?.subscribe("/user/queue/reply", (message: IMessage) => {
           const data: location = JSON.parse(message.body);
           handleMessage(data);
         });
         setConnected(true);
       };
-      (client.onDisconnect = () => {}),
-        (client.onWebSocketClose = (event: CloseEvent) => {
+      (client.current.onDisconnect = () => {}),
+        (client.current.onWebSocketClose = (event: CloseEvent) => {
           console.warn("[STOMP] WebSocket closed:", event);
           console.warn("[STOMP] Code:", event.code);
           console.warn("[STOMP] Reason:", event.reason);
           console.warn("[STOMP] WasClean:", event.wasClean);
         });
-      client.onWebSocketError = (event) => {
+      client.current.onWebSocketError = (event) => {
         console.error("[STOMP] WebSsocket error:", event);
         Sentry.captureException(event);
       };
     }
-  }, [client]);
-  useEffect(() => {
-    if (!isRunning && runningInfo === "finish") {
-      disconnect();
-    }
-  }, [runningInfo, isRunning]);
+  }, [client.current]);
+
   const sendLocation = (location: location) => {
-    if (clientRef.current && clientRef.current?.connected) {
-      clientRef.current.publish({
+    if (client.current && client.current?.connected) {
+      client.current.publish({
         destination: `/app/course/${selectedCourse}`,
         body: JSON.stringify(location),
       });
     } else {
-      console.warn("STOMP client not connected");
+      console.warn("STOMP client.current not connected");
     }
   };
 
   return {
     sendLocation,
     connected,
-    disconnect,
   };
 }

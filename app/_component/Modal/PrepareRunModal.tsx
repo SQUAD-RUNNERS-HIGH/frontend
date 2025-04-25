@@ -25,6 +25,7 @@ const PrepareRunModal = () => {
     currentCourses,
     setIsRunning,
     setPreRunning,
+    client,
   } = useLocation();
   const {
     data,
@@ -35,7 +36,7 @@ const PrepareRunModal = () => {
     queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
     staleTime: 100000,
   });
-  const { connected, sendLocation, disconnect } = useStomp();
+  const { connected, sendLocation } = useStomp();
   const [totalDistance, setTotalDistance] = useState<number>();
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const {
@@ -68,15 +69,10 @@ const PrepareRunModal = () => {
   }, [courseCoordinates]);
 
   useEffect(() => {
-    if (connected && myLocation) {
+    if (client.current && myLocation) {
       sendLocation(myLocation);
     }
   }, [myLocation]);
-  useEffect(() => {
-    if (runningLocation) {
-      console.log(runningLocation);
-    }
-  }, [runningLocation]);
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -84,14 +80,12 @@ const PrepareRunModal = () => {
       visible={runningInfo !== ""}
       onRequestClose={() => {
         setRunningInfo("");
-        disconnect();
       }} // 안드로이드 뒤로가기 대응
     >
       <Pressable
         style={styles.modalOverlay}
         onPress={() => {
           setRunningInfo("");
-          disconnect();
         }}
       ></Pressable>
       <View style={styles.modalPosition}>
@@ -111,26 +105,34 @@ const PrepareRunModal = () => {
               <ActivityIndicator size="large" color="#0000ff" />
             </View>
           )}
-          {runningLocation?.runningStatus === "ONGOING" ? (
+          {connected ? (
             <>
-              <Text style={[styles.modalDepscription2, { fontWeight: 700 }]}>
-                {data?.competitorUserName}님과 러닝을 시작합니다.
-              </Text>
+              {runningLocation?.runningStatus === "ONGOING" ? (
+                <>
+                  <Text
+                    style={[styles.modalDepscription2, { fontWeight: 700 }]}
+                  >
+                    {data?.competitorUserName}님과 러닝을 시작합니다.
+                  </Text>
 
-              <Button
-                style={{ marginTop: 6, width: "100%" }}
-                onPress={() => {
-                  setPreRunning(true);
-                  setIsRunning(true);
-                }}
-              >
-                러닝 시작!
-              </Button>
+                  <Button
+                    style={{ marginTop: 6, width: "100%" }}
+                    onPress={() => {
+                      setPreRunning(true);
+                      setIsRunning(true);
+                    }}
+                  >
+                    러닝 시작!
+                  </Button>
+                </>
+              ) : (
+                <Text style={styles.courseText}>
+                  현재 위치가 코스에서 떨어져있습니다.
+                </Text>
+              )}
             </>
           ) : (
-            <Text style={styles.courseText}>
-              현재 위치가 코스에서 떨어져있습니다.
-            </Text>
+            <Text>서버와 연결하는 중...</Text>
           )}
         </View>
       </View>
