@@ -9,7 +9,6 @@ interface BlinkingTextProps {
 }
 const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
   const opacity = useRef(new Animated.Value(1)).current;
-  const [voices, setVoices] = useState();
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (vibrate) {
