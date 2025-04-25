@@ -100,7 +100,7 @@ export const useCompetitorRunning = () => {
       ? (traveledDistance / totalDistance) * 100
       : 0;
     setProgress((prev) => [...prev, Number(newProgress.toFixed(2))]);
-  }, [traveledDistance, seconds]);
+  }, [seconds]);
 
   useEffect(() => {
     if (data && seconds > 0 && seconds - 1 < data?.progress.length) {
@@ -112,7 +112,7 @@ export const useCompetitorRunning = () => {
   
       setRunningRecord({
         runningTime: seconds,
-        progress: [...progress, Number(((traveledDistance / totalDistance) * 100).toFixed(2))],
+        progress: progress,
         courseId: selectedCourse,
       });
     }
