@@ -2,13 +2,13 @@ import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
-import { RunningModal } from "./RunningModal";
 import { useLocation } from "../../_hooks/useLocation";
 import { useBackHandler } from "@/app/_hooks/useBackHandler";
-
+import { RunningModal } from "./RunningModal";
+import { PreRunOverlay } from "../PreRunOverlay";
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const { running, selectedCourse, setRunning, setSelectedCourse } =
+  const { running, selectedCourse, setRunning, setSelectedCourse, preRunning, setPreRunning } =
     useLocation();
 
   useEffect(() => {
@@ -21,20 +21,27 @@ export function Modal() {
   return (
     <>
       {selectedCourse !== "" && (
-        <View
-          style={[
-            styles.rootContainer,
-            running !== '' && styles.runningModalBackground,
-          ]}
-        >
-          {theme === "running" && running !== '' && (
-            <RunningModal />
+        <>
+          <View
+            style={[
+              styles.rootContainer,
+              running !== "" && styles.runningModalBackground,
+            ]}
+          >
+            {theme === "running" && running !== "" && <RunningModal />}
+            {theme === "info" && running === "" && (
+              <InfoModal setTheme={setTheme} />
+            )}
+            {theme === "select" && running === "" && (
+              <SelectedModal setTheme={setTheme} />
+            )}
+          </View>
+          {theme === "running" && running !== "" && preRunning && (
+            <PreRunOverlay
+              onFinish={() => {setPreRunning(false)}}
+            />
           )}
-          {theme === "info" && running === '' && <InfoModal setTheme={setTheme} />}
-          {theme === "select" && running === '' && (
-            <SelectedModal setTheme={setTheme} />
-          )}
-        </View>
+        </>
       )}
     </>
   );

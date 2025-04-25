@@ -34,7 +34,9 @@ interface LocationContextType {
   setMyLocation: React.Dispatch<SetStateAction<LocationObjectCoords | null>>;
   stopRunning: () => void;
   runningRecord: runningRecord | null;
-  setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>
+  setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
+  preRunning : boolean;
+  setPreRunning : React.Dispatch<SetStateAction<boolean>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -65,6 +67,7 @@ export const LocationProvider = ({
   const [runningRecord, setRunningRecord] = useState<runningRecord | null>(
     null
   );
+  const [preRunning, setPreRunning] = useState<boolean>(false);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -102,8 +105,9 @@ export const LocationProvider = ({
       Alert.alert("러닝기록을 로드하는데 실패했습니다.");
     } else {
       Alert.alert(`${runningRecord?.progress}`);
-      await fetchSaveRecord(runningRecord);
-
+      if (runningRecord?.progress.length >= 30) {
+        await fetchSaveRecord(runningRecord);
+      }
     }
     setRunning("");
     setSelectedCourse("");
@@ -135,7 +139,8 @@ export const LocationProvider = ({
         setIsDropdownVisible,
         runningRecord,
         setRunningRecord,
-
+        preRunning,
+        setPreRunning
       }}
     >
       {children}

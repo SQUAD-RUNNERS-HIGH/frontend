@@ -13,7 +13,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery,useQuery } from "@tanstack/react-query";
 
 export function SelectedModal({
   setTheme,
@@ -21,8 +21,8 @@ export function SelectedModal({
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { setRunning, selectedCourse } = useLocation();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+  const { setRunning, selectedCourse, setPreRunning } = useLocation();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status,  } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],
       queryFn: fetchPersonRanks,
@@ -103,6 +103,7 @@ export function SelectedModal({
             onPress={() => {
               setTheme("running");
               setRunning(selectedId);
+              setPreRunning(true);
             }}
           >
             시작 하기
