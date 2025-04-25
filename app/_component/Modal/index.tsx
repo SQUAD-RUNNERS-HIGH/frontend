@@ -6,9 +6,10 @@ import { useLocation } from "../../_hooks/useLocation";
 import { useBackHandler } from "@/app/_hooks/useBackHandler";
 import { RunningModal } from "./RunningModal";
 import { PreRunOverlay } from "../PreRunOverlay";
+import PrepareRunModal from "./PrepareRunModal";
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const { isRunning, selectedCourse, setIsRunning, setSelectedCourse, preRunning, setPreRunning } =
+  const { isRunning, selectedCourse, setIsRunning, setSelectedCourse, preRunning, setPreRunning, runningInfo } =
     useLocation();
   useEffect(() => {
     if (selectedCourse !== "") {
@@ -16,7 +17,6 @@ export function Modal() {
     }
   }, [selectedCourse]);
   useBackHandler( setSelectedCourse, theme, setTheme);
-
   return (
     <>
       {selectedCourse !== "" && (
@@ -40,6 +40,7 @@ export function Modal() {
               onFinish={() => {setPreRunning(false)}}
             />
           )}
+          {!isRunning && runningInfo!=='' && <PrepareRunModal />}
         </>
       )}
     </>
