@@ -5,6 +5,7 @@ import { useCompetitorRunning } from "@/app/_hooks/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
+import { RunningText } from "../../RunningText";
 const CompetitorRunning = () => {
   const { runningLocation, runningRecord } = useLocation();
   const {
@@ -16,11 +17,13 @@ const CompetitorRunning = () => {
     competitorProgress,
     completeCompetitorRecord,
   } = useCompetitorRunning();
-  console.log(runningRecord);
-  console.log(seconds);
+  console.log(distanceToCompetitor);
   return (
     <>
-      {completeCompetitorRecord && data && runningRecord && runningRecord?.progress.length>=1 ? (
+      {completeCompetitorRecord &&
+      data &&
+      runningRecord &&
+      runningRecord?.progress.length >= 1 ? (
         <>
           <RunningInfo seconds={seconds} rest={2.5} speed={speed} />
           <ProgressList
@@ -41,6 +44,13 @@ const CompetitorRunning = () => {
               코스에서 벗어났습니다.
             </BlinkingText>
           )}
+          {runningLocation?.runningStatus === "ONGOING" && (
+            <RunningText
+              seconds={seconds}
+              distance={distanceToCompetitor}
+              winning={winning}
+            />
+          )}
         </>
       ) : (
         <></>
@@ -52,6 +62,15 @@ const styles = StyleSheet.create({
   progressBar: {
     height: 16,
     borderRadius: 12,
+  },
+  statusTextContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: -12,
+    marginBottom: -12,
+  },
+  statusText: {
+    fontSize: 14,
   },
 });
 export default CompetitorRunning;
