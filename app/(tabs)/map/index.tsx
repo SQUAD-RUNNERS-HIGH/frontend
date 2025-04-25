@@ -23,10 +23,10 @@ export default function Index() {
     searchedLocation,
     myLocation,
     runningLocation,
-    running,
+    isRunning,
     setSelectedCourse,
     setIsDropdownVisible,
-    setRunning,
+    setIsRunning,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
@@ -47,7 +47,7 @@ export default function Index() {
   }, []);
   useEffect(() => {
     if (selectedCourse === "") {
-      setRunning("");
+      setIsRunning(false);
     }
   }, [selectedCourse]);
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running !== "" && runningLocation && myLocation) {
+    if (isRunning && runningLocation && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: runningLocation?.latitude,
@@ -79,10 +79,9 @@ export default function Index() {
         zoom: 18, // 줌 레벨
       });
     }
-  }, [running, myLocation, runningLocation]);
+  }, [isRunning, myLocation, runningLocation]);
 
   // 위치 추적 시작
-
   useEffect(() => {
     startLocationTracking();
     return () => {
@@ -141,11 +140,11 @@ export default function Index() {
               <Marker
                 coordinate={{
                   latitude:
-                    (running && runningLocation)
+                    (isRunning && runningLocation)
                       ? runningLocation?.latitude
                       : myLocation?.latitude,
                   longitude:
-                    (running && runningLocation)
+                    (isRunning && runningLocation)
                       ? runningLocation?.longitude
                       : myLocation?.longitude,
                 }}

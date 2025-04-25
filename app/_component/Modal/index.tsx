@@ -8,15 +8,14 @@ import { RunningModal } from "./RunningModal";
 import { PreRunOverlay } from "../PreRunOverlay";
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const { running, selectedCourse, setRunning, setSelectedCourse, preRunning, setPreRunning } =
+  const { isRunning, selectedCourse, setIsRunning, setSelectedCourse, preRunning, setPreRunning } =
     useLocation();
-
   useEffect(() => {
     if (selectedCourse !== "") {
       setTheme("info");
     }
   }, [selectedCourse]);
-  useBackHandler(running, setRunning, setSelectedCourse, theme, setTheme);
+  useBackHandler( setSelectedCourse, theme, setTheme);
 
   return (
     <>
@@ -25,18 +24,18 @@ export function Modal() {
           <View
             style={[
               styles.rootContainer,
-              running !== "" && styles.runningModalBackground,
+              isRunning && styles.runningModalBackground,
             ]}
           >
-            {theme === "running" && running !== "" && <RunningModal />}
-            {theme === "info" && running === "" && (
+            {isRunning && <RunningModal />}
+            {theme === "info" && !isRunning && (
               <InfoModal setTheme={setTheme} />
             )}
-            {theme === "select" && running === "" && (
+            {theme === "select" && !isRunning && (
               <SelectedModal setTheme={setTheme} />
             )}
           </View>
-          {theme === "running" && running !== "" && preRunning && (
+          { isRunning && preRunning && (
             <PreRunOverlay
               onFinish={() => {setPreRunning(false)}}
             />

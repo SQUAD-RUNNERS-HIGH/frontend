@@ -8,7 +8,7 @@ import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
 export const useCompetitorRunning = () => {
   const {
-    running,
+    runningInfo,
     selectedCourse,
     runningLocation,
     currentCourses,
@@ -22,8 +22,8 @@ export const useCompetitorRunning = () => {
     isSuccess: completeCompetitorRecord,
     error: errorCompetitorRecord,
   } = useQuery({
-    queryKey: ["courseHistory", running, selectedCourse],
-    queryFn: () => fetchCompetitor(running, selectedCourse),
+    queryKey: ["courseHistory", runningInfo, selectedCourse],
+    queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
   });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
@@ -54,7 +54,7 @@ export const useCompetitorRunning = () => {
           }))
       );
     }
-  }, [completeCompetitorRecord]);
+  }, []);
   useEffect(() => {
     if (completeCompetitorRecord && !preRunning) {
       // ✅ 조건 추가

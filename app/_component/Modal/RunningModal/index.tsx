@@ -2,15 +2,11 @@ import { StyleSheet, View, Text, Alert } from "react-native";
 import Button from "../../Button";
 import React, { SetStateAction, useEffect } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
-import { formatTime } from "@/app/_lib/formatTime";
-import { ProgressBar } from "react-native-paper";
 import { apiClient } from "@/api/apiClient";
 import CompetitorRunning from "./CompetitorRunning";
 
-
 export function RunningModal() {
-  const { selectedCourse, running, stopRunning } =
-    useLocation();
+  const { selectedCourse, runningInfo, stopRunning } = useLocation();
   const fetchTestData = async () => {
     const data = await apiClient.post(`/test-data/${selectedCourse}`);
     return data;
@@ -28,14 +24,14 @@ export function RunningModal() {
     });
   };
   useEffect(() => {
-    if (running === "solo") {
+    if (runningInfo === "solo") {
       const data = fetchTestData();
     }
   }, []);
 
   return (
     <>
-      {running !== "solo" && (
+      {runningInfo !== "solo" && (
         <>
           <CompetitorRunning />
         </>

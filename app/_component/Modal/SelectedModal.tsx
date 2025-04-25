@@ -21,7 +21,7 @@ export function SelectedModal({
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { setRunning, selectedCourse, setPreRunning } = useLocation();
+  const { setRunningInfo, selectedCourse, setPreRunning } = useLocation();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status,  } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],
@@ -101,9 +101,7 @@ export function SelectedModal({
           <Button
             style={{ flex: 1 }}
             onPress={() => {
-              setTheme("running");
-              setRunning(selectedId);
-              setPreRunning(true);
+              setRunningInfo(selectedId);
             }}
           >
             시작 하기

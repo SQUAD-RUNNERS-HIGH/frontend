@@ -19,14 +19,14 @@ interface LocationContextType {
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
-  running: string;
+  runningInfo: string;
   searchedLocation: Region | null;
   currentCourses: CourseResponse[] | null;
   runningLocation: runningLocation | null;
   setRunningLocation: React.Dispatch<SetStateAction<runningLocation | null>>;
   setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null>>;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
-  setRunning: React.Dispatch<SetStateAction<string>>;
+  setRunningInfo: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
   setSelectedCourse: React.Dispatch<SetStateAction<string>>;
   isDropdownVisible: boolean;
@@ -37,6 +37,8 @@ interface LocationContextType {
   setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
   preRunning : boolean;
   setPreRunning : React.Dispatch<SetStateAction<boolean>>;
+  isRunning: boolean;
+  setIsRunning: React.Dispatch<SetStateAction<boolean>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -52,13 +54,15 @@ export const LocationProvider = ({
   const [myLocation, setMyLocation] = useState<LocationObjectCoords | null>(
     null
   );
+
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
-  const [running, setRunning] = useState<string>("");
+  const [runningInfo, setRunningInfo] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
   const [runningLocation, setRunningLocation] =
     useState<runningLocation | null>(null);
   const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(
@@ -81,8 +85,8 @@ export const LocationProvider = ({
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: running ? 500 : 3000, // 3초마다 업데이트
-        distanceInterval: running ? 1 : 5, // 5m 이동마다 업데이트
+        timeInterval: runningInfo ? 500 : 3000, // 3초마다 업데이트
+        distanceInterval: runningInfo ? 1 : 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setMyLocation(newLocation.coords);
@@ -109,7 +113,7 @@ export const LocationProvider = ({
         await fetchSaveRecord(runningRecord);
       }
     }
-    setRunning("");
+    setRunningInfo("");
     setSelectedCourse("");
   };
   useEffect(() => {
@@ -119,8 +123,10 @@ export const LocationProvider = ({
   return (
     <LocationContext.Provider
       value={{
-        running,
-        setRunning,
+        isRunning,
+        setIsRunning,
+        runningInfo,
+        setRunningInfo,
         myLocation,
         setMyLocation,
         runningLocation,

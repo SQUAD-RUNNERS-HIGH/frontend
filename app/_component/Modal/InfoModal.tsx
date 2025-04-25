@@ -14,7 +14,7 @@ export function InfoModal({
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const {selectedCourse, setRunning} = useLocation();
+  const {selectedCourse, setRunningInfo} = useLocation();
   async function updateDetail() {
     setLoading(true);
     const detail = await fetchCourseDetail(selectedCourse);
@@ -113,7 +113,7 @@ export function InfoModal({
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setRunning('solo');
+                setRunningInfo('solo');
                 setTheme('running');
               }}
             >
