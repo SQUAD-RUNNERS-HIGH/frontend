@@ -34,6 +34,8 @@ export const useCompetitorRunning = () => {
   const prevLocation = useRef<location | null>(null);
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
   const [winning, setWinning] = useState<boolean>(true);
+
+  console.log(seconds);
   useEffect(() => {
     if (currentCourses) {
       setCurrentCourse(
@@ -109,13 +111,12 @@ export const useCompetitorRunning = () => {
       setCompetitorProgress(newCompetitorProgress);
       setWinning(traveledDistance >= newCompetitorDistance);
       setDistanceToCompetitor(Math.abs(newCompetitorDistance - traveledDistance));
-  
-      setRunningRecord({
-        runningTime: seconds,
-        progress: progress,
-        courseId: selectedCourse,
-      });
     }
+    setRunningRecord({
+      runningTime: seconds,
+      progress: progress,
+      courseId: selectedCourse,
+    });
   }, [progress]);
 
   return {
