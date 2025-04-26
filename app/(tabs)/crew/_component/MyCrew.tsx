@@ -1,13 +1,20 @@
 import { View, StyleSheet, Text } from "react-native";
+import { fetchMyCrew } from "../_lib/fetchMyCrew";
+import { useQuery } from "@tanstack/react-query";
 
-function Mycrew() {
+interface MyCrewType {
+  crewName: string;
+  numberOfParticipants: number;
+}
+function Mycrew({crewName, numberOfParticipants}: MyCrewType) {
+  
   return (
     <View style = {styles.container}>
       <View style={styles.crewInfo}>
         <View style={styles.image}></View>
         <View>
-          <Text style={styles.crewTitle}>러닝 메이트</Text>
-          <Text style={styles.crewMember}>멤버 24명</Text>
+          <Text style={styles.crewTitle}>{crewName}</Text>
+          <Text style={styles.crewMember}>멤버 {numberOfParticipants}명</Text>
         </View>
       </View>
       <Text style={styles.role}>리더</Text>
