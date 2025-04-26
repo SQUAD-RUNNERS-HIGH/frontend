@@ -9,7 +9,7 @@ import { PreRunOverlay } from "../PreRunOverlay";
 import PrepareRunModal from "./PrepareRunModal";
 import ResultModal from "./ResultModal";
 export function Modal() {
-  const [theme, setTheme] = useState<string>("info");
+  const [theme, setTheme] = useState<string>("");
   const {
     isRunning,
     selectedCourse,
@@ -20,13 +20,14 @@ export function Modal() {
     setPreRunning,
     runningInfo,
   } = useLocation();
-
   useEffect(() => {
-    if (selectedCourse !== "") {
+    if (selectedCourse !== "" && !runningInfo.includes("solo")) {
       setTheme("info");
     }
-  }, [selectedCourse]);
-  console.log(client.current);
+    if (selectedCourse === "solo" && runningInfo.includes("solo")) {
+      setTheme("");
+    }
+  }, [selectedCourse, runningInfo]);
 
   useBackHandler(setSelectedCourse, theme, setTheme);
   return (
@@ -39,29 +40,29 @@ export function Modal() {
               isRunning && styles.runningModalBackground,
             ]}
           >
-            {isRunning && <RunningModal />}
             {theme === "info" && !isRunning && (
               <InfoModal setTheme={setTheme} />
             )}
             {theme === "select" && !isRunning && (
               <SelectedModal setTheme={setTheme} />
             )}
+            {isRunning && <RunningModal />}
           </View>
-          {isRunning && preRunning && (
-            <PreRunOverlay
-              onFinish={() => {
-                setPreRunning(false);
-              }}
-            />
+
+          {!isRunning && runningInfo.includes("Finish") && runningRecord && (
+            <ResultModal />
           )}
-          {!isRunning && runningInfo !== "" && runningInfo !== "finish" && (
-            <PrepareRunModal />
-          )}
-          {!isRunning &&
-            runningInfo === "finish" &&
-            runningRecord &&
-            runningRecord?.progress.length >= 2 && <ResultModal />}
         </>
+      )}
+      {isRunning && preRunning && (
+        <PreRunOverlay
+          onFinish={() => {
+            setPreRunning(false);
+          }}
+        />
+      )}
+      {!isRunning && runningInfo !== "" && !runningInfo.includes("Finish") && (
+        <PrepareRunModal />
       )}
     </>
   );

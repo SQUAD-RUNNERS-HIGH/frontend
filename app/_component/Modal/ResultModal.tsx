@@ -5,9 +5,21 @@ import { location } from "@/app/_types";
 import { useQuery } from "@tanstack/react-query";
 import { getPathLength } from "geolib";
 import { useEffect, useState } from "react";
-import { Modal, Pressable, View, StyleSheet, Text, ActivityIndicator, Alert } from "react-native";
+import {
+  Modal,
+  Pressable,
+  View,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import Button from "../Button";
 import { fetchSaveRecord } from "@/app/(tabs)/map/_lib/fetchSaveRecord";
+import FormInput from "../FormInput";
+import Input from "../Input";
+import { isCompetitorRunningRecord, isSoloRunningRecord } from "@/app/_lib/discriminateRecordType";
+import { fetchSaveCourses } from "@/app/(tabs)/map/_lib/fetchSaveCourse";
 
 const ResultModal = () => {
   const {
@@ -15,16 +27,16 @@ const ResultModal = () => {
     setRunningInfo,
     selectedCourse,
     runningRecord,
+    setRunningRecord,
     runDistance,
     currentCourses,
     setSelectedCourse,
   } = useLocation();
-
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (currentCourses) {
+    if (currentCourses && selectedCourse !== 'solo') {
       setCourseCoordinates(
         currentCourses
           .find((course) => course.courseId === selectedCourse)
@@ -40,7 +52,12 @@ const ResultModal = () => {
     if (runningRecord) {
       setIsLoading(true);
       try {
-        await fetchSaveRecord(runningRecord);
+        if (runningInfo === "competitorFinish"&& isCompetitorRunningRecord(runningRecord)) {
+          await fetchSaveRecord(runningRecord);
+        }
+        if (runningInfo === "soloFinish"&& isSoloRunningRecord(runningRecord)) {
+          await fetchSaveCourses({courseName:runningRecord?.courseName, coordinates: runningRecord?.coordinates});
+        }
         setRunningInfo("");
         setSelectedCourse("");
       } catch (error) {
@@ -61,6 +78,21 @@ const ResultModal = () => {
       <Pressable style={styles.modalOverlay}></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
+          {runningInfo === "soloFinish" &&   runningRecord && isSoloRunningRecord(runningRecord) && (
+            <Input
+              type="text"
+              onChange={(text) => {
+                if (isSoloRunningRecord(runningRecord)) {
+                  setRunningRecord((prev) => ({
+                    ...prev,
+                    courseName: text,
+                  }));
+                }
+              }}
+              value={runningRecord?.courseName}
+              placeholder="코스 이름을 입력하세요."
+            />
+          )}
           <Text style={styles.modalDepscription2}>
             <Text style={{ fontWeight: "500" }}>
               {Number(runningRecord?.runningTime).toFixed(0)}초
@@ -75,7 +107,11 @@ const ResultModal = () => {
           </Text>
 
           {isLoading ? (
-            <ActivityIndicator size="large" color="#000" style={{ marginTop: 16 }} />
+            <ActivityIndicator
+              size="large"
+              color="#000"
+              style={{ marginTop: 16 }}
+            />
           ) : (
             <>
               <Button
@@ -102,7 +138,6 @@ const ResultModal = () => {
 };
 
 export default ResultModal;
-
 
 const styles = StyleSheet.create({
   modalOverlay: {

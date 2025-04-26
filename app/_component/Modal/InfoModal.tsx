@@ -14,11 +14,11 @@ export function InfoModal({
 }) {
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const {selectedCourse, setRunningInfo, setIsRunning} = useLocation();
+  const {selectedCourse, setRunningInfo, runningInfo} = useLocation();
   const { data: detail, isLoading, error } = useQuery({
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => fetchCourseDetail(selectedCourse),
-    enabled: !!selectedCourse, // selectedCourse가 있을 때만 실행,
+    enabled: !!(selectedCourse && selectedCourse!=='solo' && runningInfo !=='solo'), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
   return (
@@ -109,8 +109,6 @@ export function InfoModal({
               style={{ flex: 1 }}
               onPress={() => {
                 setRunningInfo('solo');
-                setTheme('running');
-                setIsRunning(true);
               }}
             >
               혼자 뛰기

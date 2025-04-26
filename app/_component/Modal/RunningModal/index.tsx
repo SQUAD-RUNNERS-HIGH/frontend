@@ -4,6 +4,7 @@ import React, { SetStateAction, useEffect } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { apiClient } from "@/api/apiClient";
 import CompetitorRunning from "./CompetitorRunning";
+import SoloRunning from "./SoloRunning";
 
 export function RunningModal() {
   const { selectedCourse, runningInfo,  setRunningInfo, setIsRunning } = useLocation();
@@ -24,16 +25,21 @@ export function RunningModal() {
     });
   };
   useEffect(() => {
-    if (runningInfo === "solo") {
+    if (runningInfo !== "solo" && runningInfo!=='crew' ) {
       const data = fetchTestData();
     }
   }, []);
 
   return (
     <>
-      {runningInfo !== "solo" && runningInfo !=='finish' && (
+      {runningInfo !== "solo" && runningInfo!=='crew' && runningInfo !=='finish' && (
         <>
           <CompetitorRunning />
+        </>
+      )}
+      {runningInfo === "solo" && (
+        <>
+          <SoloRunning />
         </>
       )}
 
@@ -42,7 +48,12 @@ export function RunningModal() {
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              setRunningInfo('finish');
+              if(runningInfo === 'solo') {
+                setRunningInfo('soloFinish');
+              }
+              if(runningInfo !== 'solo' && runningInfo !== 'crew') {
+                setRunningInfo('competitorFinish');
+              }
               setIsRunning(false);           
             }
           }}

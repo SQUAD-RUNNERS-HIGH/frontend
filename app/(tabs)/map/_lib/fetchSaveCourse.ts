@@ -1,15 +1,14 @@
 import { apiClient } from "@/api/apiClient";
-import { CourseDetail, competitorRunningRecord } from "@/app/_types";
+import { CourseDetail } from "@/app/_types";
 import { Alert } from "react-native";
 
-export async function fetchSaveRecord({progress, runningTime, courseId}: competitorRunningRecord) {
+export async function fetchSaveCourses({courseName, coordinates}:{courseName:string; coordinates: [number,number][][]}) {
   try {
     const response = await apiClient.post(
-      `${process.env.EXPO_PUBLIC_API_URL}/personal/history`,
+      `${process.env.EXPO_PUBLIC_API_URL}/courses`,
   {
-    progress,
-    runningTime,
-    courseId
+    courseName,
+    coordinates,
   });
     return response?.data.data;
   } catch (error) {

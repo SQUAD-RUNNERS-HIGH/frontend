@@ -14,6 +14,7 @@ import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 import { CourseResponse } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
+import RunningInfo from "@/app/_component/Modal/RunningModal/RunningInfo";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const {
@@ -22,7 +23,9 @@ export default function Index() {
     setCurrentCourses,
     searchedLocation,
     myLocation,
+    runningInfo,
     runningLocation,
+    setRunningInfo,
     isRunning,
     setSelectedCourse,
     setIsDropdownVisible,
@@ -67,7 +70,7 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (isRunning && runningLocation && myLocation) {
+    if (isRunning && runningLocation&&myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: runningLocation?.latitude,
@@ -76,6 +79,18 @@ export default function Index() {
         pitch: 0, // 기울기 (0~90도)
         heading: runningLocation?.heading, // 방향 (나아가는 방향)
         altitude: runningLocation?.altitude, // 고도
+        zoom: 18, // 줌 레벨
+      });
+    }
+    if (isRunning && !runningLocation&& myLocation) {
+      mapRef.current?.animateCamera({
+        center: {
+          latitude: myLocation?.latitude,
+          longitude: myLocation?.longitude,
+        },
+        pitch: 0, // 기울기 (0~90도)
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
@@ -193,7 +208,7 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== "" && (
+              {selectedCourse !== "" && selectedCourse !=='solo' && runningInfo !== 'solo' && (
                 <Polyline
                   coordinates={currentCourses
                     ?.find((course) => course.courseId === selectedCourse)
@@ -226,6 +241,38 @@ export default function Index() {
                   { duration: 1000 }
                 );
               }
+              setRunningInfo('solo');
+              setSelectedCourse('solo');
+            }}
+            style={[
+              styles.runningContainer,
+              selectedCourse !== "" && selectedCourse !== 'solo' && {display:'none'},
+            ]}
+          >
+            <Image
+      source={require('@/assets/images/solo_running.png')}
+      style={{ width: 14, height: 14 }}
+    />
+          </Pressable>
+        )}
+        {myLocation && (
+          <Pressable
+            onPress={async () => {
+              const currentCamera = await mapRef.current?.getCamera();
+              if (currentCamera) {
+                const { center, zoom, ...rest } = currentCamera;
+                mapRef.current?.animateCamera(
+                  {
+                    center: {
+                      longitude: myLocation?.longitude,
+                      latitude: myLocation?.latitude,
+                    },
+                    zoom,
+                    ...rest,
+                  },
+                  { duration: 1000 }
+                );
+              }
             }}
             style={[
               styles.locationContainer,
@@ -235,6 +282,7 @@ export default function Index() {
             <MyLocation />
           </Pressable>
         )}
+        
         <Modal />
       </View>
     </ProtectedRoute>
@@ -260,6 +308,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 38,
     right: 17,
+  },
+  runningContainer: {
+    backgroundColor: "white",
+    zIndex: 2,
+    padding: 17,
+    position: "absolute",
+    bottom: 38,
+    left: 17,
   },
   whenModal: {
     bottom: 268,

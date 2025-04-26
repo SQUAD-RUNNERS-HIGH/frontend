@@ -87,8 +87,14 @@ export interface CreateCrewApi {
   longitude: number;
 }
 
-export interface runningRecord {
+export interface competitorRunningRecord {
   progress: number[];
   runningTime: number;
   courseId: string;
+}
+
+export interface soloRunningRecord {
+  runningTime: number;
+  coordinates: [number,number][][];
+  courseName: string;
 }
