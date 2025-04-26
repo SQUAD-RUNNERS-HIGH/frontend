@@ -11,8 +11,15 @@ import {
 import * as Clipboard from "expo-clipboard";
 
 const queryClient = new QueryClient();
+import * as Sentry from '@sentry/react-native';
 
-export default function TabLayout() {
+Sentry.init({
+  dsn: 'https://80009cc741bd92843277d20ecf1a31dc@o4509099095293952.ingest.us.sentry.io/4509099096145920',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
+export default Sentry.wrap(function TabLayout() {
 
   const onCopy = async (text: string) => {
     try {
@@ -58,4 +65,4 @@ export default function TabLayout() {
       <DevToolsBubble onCopy={onCopy} />
     </QueryClientProvider>
   );
-}
+});
