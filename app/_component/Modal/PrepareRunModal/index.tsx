@@ -5,39 +5,14 @@ import { location } from "@/app/_types";
 import { useQuery } from "@tanstack/react-query";
 import { getPathLength } from "geolib";
 import { useEffect, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  View,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-} from "react-native";
-import Button from "../Button";
+import { Modal, Pressable, View, StyleSheet } from "react-native";
+import PrepareCompetitor from "./PrepareCompetitor";
+import PrepareSolo from "./PrepareSolo";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 const PrepareRunModal = () => {
-  const {
-    runningInfo,
-    setRunningInfo,
-    selectedCourse,
-    myLocation,
-    runningLocation,
-    currentCourses,
-    setIsRunning,
-    setPreRunning,
-    client,
-  } = useLocation();
-  const {
-    data,
-    isSuccess: completeCompetitorRecord,
-    error: errorCompetitorRecord,
-  } = useQuery({
-    queryKey: ["courseHistory", runningInfo, selectedCourse],
-    queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
-    staleTime: 100000,
-  });
-  const { connected, sendLocation } = useStomp();
-  const [totalDistance, setTotalDistance] = useState<number>();
+  const { runningInfo, setRunningInfo, selectedCourse, currentCourses } =
+    useLocation();
+  const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const {
     data: detail,
@@ -50,6 +25,13 @@ const PrepareRunModal = () => {
     staleTime: 100000,
   });
   useEffect(() => {
+    if (courseCoordinates) {
+      const total = getPathLength(courseCoordinates);
+      setTotalDistance(total);
+    }
+  }, [courseCoordinates]);
+
+  useEffect(() => {
     if (currentCourses) {
       setCourseCoordinates(
         currentCourses
@@ -61,18 +43,7 @@ const PrepareRunModal = () => {
       );
     }
   }, [selectedCourse]);
-  useEffect(() => {
-    if (courseCoordinates) {
-      const total = getPathLength(courseCoordinates);
-      setTotalDistance(total);
-    }
-  }, [courseCoordinates]);
 
-  useEffect(() => {
-    if (client.current && myLocation) {
-      sendLocation(myLocation);
-    }
-  }, [myLocation]);
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -90,50 +61,15 @@ const PrepareRunModal = () => {
       ></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
-          {completeCompetitorRecord ? (
-            <>
-              <Text style={styles.modalDepscription}>{detail?.courseName}</Text>
-              <Text style={styles.modalDepscription2}>
-                {Number(totalDistance).toFixed(0)}m
-              </Text>
-              <Text style={styles.modalDepscription2}>
-                {Number(data?.runningTime).toFixed(0)}초 동안 뛰었어요.
-              </Text>
-            </>
-          ) : (
-            <View style={styles.spinnerContainer}>
-              <ActivityIndicator size="large" color="#0000ff" />
-            </View>
-          )}
-          {connected ? (
-            <>
-              {runningLocation?.runningStatus === "ONGOING" ? (
-                <>
-                  <Text
-                    style={[styles.modalDepscription2, { fontWeight: 700 }]}
-                  >
-                    {data?.competitorUserName}님과 러닝을 시작합니다.
-                  </Text>
-
-                  <Button
-                    style={{ marginTop: 6, width: "100%" }}
-                    onPress={() => {
-                      setPreRunning(true);
-                      setIsRunning(true);
-                    }}
-                  >
-                    러닝 시작!
-                  </Button>
-                </>
-              ) : (
-                <Text style={styles.courseText}>
-                  현재 위치가 코스에서 떨어져있습니다.
-                </Text>
-              )}
-            </>
-          ) : (
-            <Text>서버와 연결하는 중...</Text>
-          )}
+          {runningInfo === "solo" && <PrepareSolo />}
+          {runningInfo !== "" &&
+            runningInfo !== "solo" &&
+            runningInfo !== "crew" && (
+              <PrepareCompetitor
+                courseName={detail?.courseName}
+                totalDistance={totalDistance}
+              />
+            )}
         </View>
       </View>
     </Modal>

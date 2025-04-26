@@ -109,8 +109,6 @@ export function InfoModal({
               style={{ flex: 1 }}
               onPress={() => {
                 setRunningInfo('solo');
-                setTheme('running');
-                setIsRunning(true);
               }}
             >
               혼자 뛰기

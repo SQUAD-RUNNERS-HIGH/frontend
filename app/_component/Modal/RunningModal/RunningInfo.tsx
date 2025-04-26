@@ -1,3 +1,4 @@
+import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -7,14 +8,15 @@ interface RunningInfoProps {
   speed: string;
 }
 const RunningInfo = ({seconds, rest, speed}: RunningInfoProps) => {
+  const {runningInfo} = useLocation();
   return (<View style={styles.infoContainer}>
           <View style={styles.info}>
             <Text style={styles.value}>{formatTime(seconds)}</Text>
             <Text style={styles.key}>경과시간</Text>
           </View>
           <View style={styles.info}>
-            <Text style={styles.value}>2.5 km</Text>
-            <Text style={styles.key}>남은 거리</Text>
+            <Text style={styles.value}>{rest}km</Text>
+            <Text style={styles.key}>{`${runningInfo === 'solo' ? '뛴 ':'남은 '}`}거리</Text>
           </View>
           <View style={styles.info}>
             <Text style={styles.value}>{speed}</Text>

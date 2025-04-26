@@ -10,8 +10,7 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { Region } from "react-native-maps";
-import { CourseResponse, runningLocation, runningRecord } from "../_types";
-import { fetchSaveRecord } from "../(tabs)/map/_lib/fetchSaveRecord";
+import { CourseResponse, runningLocation, soloRunningRecord, competitorRunningRecord } from "../_types";
 import { Client } from "@stomp/stompjs";
 
 // 타입 정의
@@ -33,8 +32,8 @@ interface LocationContextType {
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
   setMyLocation: React.Dispatch<SetStateAction<LocationObjectCoords | null>>;
-  runningRecord: runningRecord | null;
-  setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
+  runningRecord: soloRunningRecord | competitorRunningRecord | null;
+  setRunningRecord: React.Dispatch<SetStateAction<soloRunningRecord | competitorRunningRecord | null>>;
   preRunning: boolean;
   setPreRunning: React.Dispatch<SetStateAction<boolean>>;
   isRunning: boolean;

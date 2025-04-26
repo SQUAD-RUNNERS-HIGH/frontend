@@ -26,7 +26,6 @@ export function Modal() {
       setTheme("info");
     }
   }, [selectedCourse]);
-  console.log(client.current);
 
   useBackHandler(setSelectedCourse, theme, setTheme);
   return (
@@ -39,13 +38,13 @@ export function Modal() {
               isRunning && styles.runningModalBackground,
             ]}
           >
-            {isRunning && <RunningModal />}
             {theme === "info" && !isRunning && (
               <InfoModal setTheme={setTheme} />
             )}
             {theme === "select" && !isRunning && (
               <SelectedModal setTheme={setTheme} />
             )}
+            {isRunning && <RunningModal />}
           </View>
           {isRunning && preRunning && (
             <PreRunOverlay
@@ -54,13 +53,12 @@ export function Modal() {
               }}
             />
           )}
-          {!isRunning && runningInfo !== "" && runningInfo !== "finish" && (
+          {!isRunning && runningInfo !== "" && !runningInfo.includes('Finish') && (
             <PrepareRunModal />
           )}
           {!isRunning &&
-            runningInfo === "finish" &&
-            runningRecord &&
-            runningRecord?.progress.length >= 2 && <ResultModal />}
+            runningInfo.includes("Finish") &&
+            runningRecord && <ResultModal />}
         </>
       )}
     </>
