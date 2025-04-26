@@ -19,7 +19,7 @@ export const useSoloRunning = () => {
       setRunningRecord({
         runningTime: 0,
         courseName: "",
-        coordinates: [[[myLocation?.latitude, myLocation?.longitude]]],
+        coordinates: [[[myLocation?.longitude, myLocation?.latitude ]]],
       });
     }
     if (!preRunning && myLocation) {
@@ -46,8 +46,9 @@ export const useSoloRunning = () => {
       if (runningRecord) {
         const newRunningRecord = [...runningRecord.coordinates[0]]; // 복사
         newRunningRecord.push([
-          progress[progress.length - 1].latitude,
           progress[progress.length - 1].longitude,
+          progress[progress.length - 1].latitude
+          
         ]);
         setRunningRecord({
           runningTime: seconds,
