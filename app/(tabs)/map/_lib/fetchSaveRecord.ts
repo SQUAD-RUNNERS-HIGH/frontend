@@ -1,8 +1,8 @@
 import { apiClient } from "@/api/apiClient";
-import { CourseDetail, runningRecord } from "@/app/_types";
+import { CourseDetail, competitorRunningRecord } from "@/app/_types";
 import { Alert } from "react-native";
 
-export async function fetchSaveRecord({progress, runningTime, courseId}: runningRecord) {
+export async function fetchSaveRecord({progress, runningTime, courseId}: competitorRunningRecord) {
   try {
     const response = await apiClient.post(
       `${process.env.EXPO_PUBLIC_API_URL}/personal/history`,
