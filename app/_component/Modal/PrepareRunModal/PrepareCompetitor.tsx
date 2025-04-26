@@ -14,7 +14,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Button from "../../Button";
-const PrepareCompetitor = ({totalDistance, courseName}: {totalDistance: number; courseName: string}) => {
+const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
+  
   const {
     myLocation,
     runningLocation,
@@ -24,6 +25,18 @@ const PrepareCompetitor = ({totalDistance, courseName}: {totalDistance: number; 
     setPreRunning,
     client,
   } = useLocation();
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["courseDetail", selectedCourse],
+    queryFn: () => {
+      return fetchCourseDetail(selectedCourse);
+    },    
+    enabled: !!(selectedCourse && selectedCourse!=='solo' && runningInfo !=='solo'), // selectedCourse가 있을 때만 실행,
+    staleTime: 100000,
+  });
   const {
     data,
     isSuccess: completeCompetitorRecord,
@@ -44,7 +57,7 @@ const PrepareCompetitor = ({totalDistance, courseName}: {totalDistance: number; 
     <>
       {completeCompetitorRecord ? (
         <>
-          <Text style={styles.modalDepscription}>{courseName}</Text>
+          <Text style={styles.modalDepscription}>{detail?.courseName}</Text>
           <Text style={styles.modalDepscription2}>
             {Number(totalDistance).toFixed(0)}m
           </Text>

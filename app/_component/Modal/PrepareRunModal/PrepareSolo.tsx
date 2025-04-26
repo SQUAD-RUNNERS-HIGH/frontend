@@ -2,7 +2,7 @@ import { Text, StyleSheet, View } from "react-native";
 import Button from "../../Button";
 import { useLocation } from "@/app/_hooks/useLocation";
 const PrepareSolo = () => {
-  const { setPreRunning, setIsRunning, setRunningInfo } = useLocation();
+  const { setPreRunning, setIsRunning, setRunningInfo, selectedCourse, setSelectedCourse } = useLocation();
   return (
     <>
       <Text style={styles.modalDepscription2}>
@@ -22,6 +22,9 @@ const PrepareSolo = () => {
       <Button
         onPress={() => {
           setRunningInfo('');
+          if(selectedCourse === 'solo'){
+            setSelectedCourse('');
+          }
         }}
         style = {styles.button}
       >

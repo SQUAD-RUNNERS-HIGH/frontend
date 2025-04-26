@@ -36,7 +36,7 @@ const ResultModal = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (currentCourses) {
+    if (currentCourses && selectedCourse !== 'solo') {
       setCourseCoordinates(
         currentCourses
           .find((course) => course.courseId === selectedCourse)

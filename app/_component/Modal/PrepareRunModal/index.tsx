@@ -14,25 +14,16 @@ const PrepareRunModal = () => {
     useLocation();
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
-  const {
-    data: detail,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["courseDetail", selectedCourse],
-    queryFn: () => fetchCourseDetail(selectedCourse),
-    enabled: !!selectedCourse, // selectedCourse가 있을 때만 실행,
-    staleTime: 100000,
-  });
+ 
   useEffect(() => {
-    if (courseCoordinates) {
+    if (courseCoordinates && runningInfo !== 'solo') {
       const total = getPathLength(courseCoordinates);
       setTotalDistance(total);
     }
   }, [courseCoordinates]);
 
   useEffect(() => {
-    if (currentCourses) {
+    if (currentCourses && runningInfo !== 'solo') {
       setCourseCoordinates(
         currentCourses
           .find((course) => course.courseId === selectedCourse)
@@ -66,7 +57,6 @@ const PrepareRunModal = () => {
             runningInfo !== "solo" &&
             runningInfo !== "crew" && (
               <PrepareCompetitor
-                courseName={detail?.courseName}
                 totalDistance={totalDistance}
               />
             )}

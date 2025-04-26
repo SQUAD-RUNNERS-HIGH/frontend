@@ -9,7 +9,7 @@ import { PreRunOverlay } from "../PreRunOverlay";
 import PrepareRunModal from "./PrepareRunModal";
 import ResultModal from "./ResultModal";
 export function Modal() {
-  const [theme, setTheme] = useState<string>("info");
+  const [theme, setTheme] = useState<string>("");
   const {
     isRunning,
     selectedCourse,
@@ -20,12 +20,14 @@ export function Modal() {
     setPreRunning,
     runningInfo,
   } = useLocation();
-
   useEffect(() => {
-    if (selectedCourse !== "") {
+    if (selectedCourse !== "" && !runningInfo.includes("solo")) {
       setTheme("info");
     }
-  }, [selectedCourse]);
+    if (selectedCourse === "solo" && runningInfo.includes("solo")) {
+      setTheme("");
+    }
+  }, [selectedCourse, runningInfo]);
 
   useBackHandler(setSelectedCourse, theme, setTheme);
   return (
@@ -46,20 +48,21 @@ export function Modal() {
             )}
             {isRunning && <RunningModal />}
           </View>
-          {isRunning && preRunning && (
-            <PreRunOverlay
-              onFinish={() => {
-                setPreRunning(false);
-              }}
-            />
+
+          {!isRunning && runningInfo.includes("Finish") && runningRecord && (
+            <ResultModal />
           )}
-          {!isRunning && runningInfo !== "" && !runningInfo.includes('Finish') && (
-            <PrepareRunModal />
-          )}
-          {!isRunning &&
-            runningInfo.includes("Finish") &&
-            runningRecord && <ResultModal />}
         </>
+      )}
+      {isRunning && preRunning && (
+        <PreRunOverlay
+          onFinish={() => {
+            setPreRunning(false);
+          }}
+        />
+      )}
+      {!isRunning && runningInfo !== "" && !runningInfo.includes("Finish") && (
+        <PrepareRunModal />
       )}
     </>
   );
