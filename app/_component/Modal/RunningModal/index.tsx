@@ -25,7 +25,7 @@ export function RunningModal() {
     });
   };
   useEffect(() => {
-    if (runningInfo === "solo") {
+    if (runningInfo !== "solo" && runningInfo!=='crew' ) {
       const data = fetchTestData();
     }
   }, []);
