@@ -241,13 +241,18 @@ export default function Index() {
                   { duration: 1000 }
                 );
               }
+              setRunningInfo('solo');
+              setSelectedCourse('solo');
             }}
             style={[
-              styles.locationContainer,
-              selectedCourse !== "" && styles.whenModal,
+              styles.runningContainer,
+              selectedCourse !== "" && selectedCourse !== 'solo' && {display:'none'},
             ]}
           >
-            <MyLocation />
+            <Image
+      source={require('@/assets/images/solo_running.png')}
+      style={{ width: 14, height: 14 }}
+    />
           </Pressable>
         )}
         {myLocation && (
@@ -268,17 +273,16 @@ export default function Index() {
                   { duration: 1000 }
                 );
               }
-              setRunningInfo('solo');
-              setSelectedCourse('solo');
             }}
             style={[
-              styles.runningContainer,
-              selectedCourse !== "" && selectedCourse !== 'solo' && {display:'none'},
+              styles.locationContainer,
+              selectedCourse !== "" && styles.whenModal,
             ]}
           >
             <MyLocation />
           </Pressable>
         )}
+        
         <Modal />
       </View>
     </ProtectedRoute>
