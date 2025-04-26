@@ -1,21 +1,27 @@
 import Button from "@/app/_component/Button";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import Crew from "./Crew";
-import { useEffect, useState } from "react";
 import { fetchSurroundCrews } from "../../_lib/fetchSurroundCrews";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 function SurroundCrews() {
-  const [surroundCrews,setSurroundCrews] = useState([]);
-  useEffect(() => {
-    const response = fetchSurroundCrews();
-    response.then((data) => {setSurroundCrews(data)})
-  },[])
+   const { data: surroundCrews, } =
+      useInfiniteQuery({
+        queryKey: ["surroundCrews"],
+        queryFn: fetchSurroundCrews,
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => lastPage?.page+1,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 5,
+      });
+      console.log(surroundCrews?.pages);
+  const flatContents = surroundCrews?.pages?.flatMap((page) => page.data.content) ?? [];
+
   return (
     <View style = {styles.container}>
-      {surroundCrews?.map((crew) => (
+      {flatContents.map((crew,index) => (
         <Crew
-          key={crew.id}
-          id={crew.id}
+          key={index}
           name={crew.name}
           description={crew.description}
           userCount={crew.userCount}

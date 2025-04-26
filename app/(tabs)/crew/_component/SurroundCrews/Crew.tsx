@@ -2,12 +2,10 @@ import Button from "@/app/_component/Button";
 import { View, StyleSheet, Text } from "react-native";
 
 function Crew({
-  id,
   name,
   description,
   userCount,
 }: {
-  id: number;
   name: string;
   description: string;
   userCount: number;
