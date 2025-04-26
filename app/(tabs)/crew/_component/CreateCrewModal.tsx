@@ -26,12 +26,7 @@ export function CreateCrewModal({
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
-    const {
-      place: { latitude, longitude },
-      ...rest
-    } = data;
-    const apiData = { latitude, longitude, ...rest };
-    const response = await fetchCrewCreate(apiData);
+    const response = await fetchCrewCreate(data);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
       setModalVisible(false);
@@ -41,10 +36,12 @@ export function CreateCrewModal({
     control,
     handleSubmit,
     formState: { errors, isValid },
+    watch
   } = useForm<z.infer<typeof crewSchema>>({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
+  console.log(watch())
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -98,8 +95,8 @@ export function CreateCrewModal({
               />
               <FormInput
                 control={control}
-                errorMessage={errors.place?.message}
-                name="place"
+                errorMessage={errors.crewLocation?.message}
+                name="crewLocation"
                 label="활동 장소"
                 placeholder="위치를 입력해주세요"
                 isLocationInput

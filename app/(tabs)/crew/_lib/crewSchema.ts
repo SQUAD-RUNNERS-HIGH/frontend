@@ -10,10 +10,9 @@ export const crewSchema = z.object({
     .min(2, "크루 최대인원은 최소 2명은 되어야한다.")
     .max(20, "크루 최대인원은 최대 20명 까지 가능합니다."),
   image: z.string(),
-  place: z.object({
+  crewLocation: z.object({
     latitude: z.number(),
     longitude: z.number(),
-    latitudeDelta: z.number(),
-    longitudeDelta: z.number(),
+    specificLocation: z.string(),
   })
 });
