@@ -9,23 +9,39 @@ import React, {
 import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
-import { fetchUserLocation } from "../(tabs)/map/_lib/fetchUserLocation";
 import { Region } from "react-native-maps";
+import { CourseResponse, runningLocation, runningRecord } from "../_types";
+import { fetchSaveRecord } from "../(tabs)/map/_lib/fetchSaveRecord";
+import { Client } from "@stomp/stompjs";
 
 // 타입 정의
 interface LocationContextType {
-  myLocation: Location.LocationObjectCoords | null;
+  myLocation: LocationObjectCoords | null;
   permissionStatus: Location.LocationPermissionResponse | null;
   startLocationTracking: () => void;
   stopLocationTracking: () => void;
-  running: boolean;
+  runningInfo: string;
   searchedLocation: Region | null;
+  currentCourses: CourseResponse[] | null;
+  runningLocation: runningLocation | null;
+  setRunningLocation: React.Dispatch<SetStateAction<runningLocation | null>>;
+  setCurrentCourses: React.Dispatch<SetStateAction<CourseResponse[] | null>>;
   setSearchedLocation: React.Dispatch<SetStateAction<Region | null>>;
-  setRunning: React.Dispatch<SetStateAction<boolean>>;
+  setRunningInfo: React.Dispatch<SetStateAction<string>>;
   selectedCourse: string;
   setSelectedCourse: React.Dispatch<SetStateAction<string>>;
   isDropdownVisible: boolean;
   setIsDropdownVisible: React.Dispatch<SetStateAction<boolean>>;
+  setMyLocation: React.Dispatch<SetStateAction<LocationObjectCoords | null>>;
+  runningRecord: runningRecord | null;
+  setRunningRecord: React.Dispatch<SetStateAction<runningRecord | null>>;
+  preRunning: boolean;
+  setPreRunning: React.Dispatch<SetStateAction<boolean>>;
+  isRunning: boolean;
+  setIsRunning: React.Dispatch<SetStateAction<boolean>>;
+  client: React.MutableRefObject<Client | null>;
+  runDistance: number;
+  setRunDistance: React.Dispatch<SetStateAction<number>>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -38,17 +54,29 @@ export const LocationProvider = ({
   children: React.ReactNode;
 }) => {
   const [searchedLocation, setSearchedLocation] = useState<Region | null>(null);
-  const [myLocation, setMyLocation] =
-    useState<Location.LocationObjectCoords | null>(null);
+  const [myLocation, setMyLocation] = useState<LocationObjectCoords | null>(
+    null
+  );
+
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
-  const prevLocationRef = useRef<LocationObjectCoords | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<string>('');
-  const [isDropdownVisible,setIsDropdownVisible] = useState<boolean>(false);
-  const [running, setRunning] = useState<boolean>(false);
-
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
+  const [runningInfo, setRunningInfo] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [runDistance, setRunDistance] = useState<number>(0);
+  const client= useRef<Client | null>(null);
+  const [runningLocation, setRunningLocation] =
+    useState<runningLocation | null>(null);
+  const [currentCourses, setCurrentCourses] = useState<CourseResponse[] | null>(
+    null
+  );
+  const [runningRecord, setRunningRecord] = useState<runningRecord | null>(
+    null
+  );
+  const [preRunning, setPreRunning] = useState<boolean>(false);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
@@ -57,28 +85,13 @@ export const LocationProvider = ({
       }
     }
   };
-  async function onChangeLoation() {
-    if (!myLocation) return;
-
-    const { latitude, longitude } = myLocation;
-    const prevLocation = prevLocationRef.current;
-
-    if (
-      !prevLocation ||
-      prevLocation.latitude !== latitude ||
-      prevLocation.longitude !== longitude
-    ) {
-      await fetchUserLocation({ latitude, longitude });
-    }
-    prevLocationRef.current = myLocation; // 현재 location을 저장하여 다음에 비교할 수 있도록 설정
-  }
   // 위치 추적 시작
   const startLocationTracking = async () => {
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: running ? 500 : 3000, // 3초마다 업데이트
-        distanceInterval: running ? 1 : 5, // 5m 이동마다 업데이트
+        timeInterval: runningInfo ? 500 : 3000, // 3초마다 업데이트
+        distanceInterval: runningInfo ? 1 : 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setMyLocation(newLocation.coords);
@@ -94,18 +107,32 @@ export const LocationProvider = ({
       setSubscription(null);
     }
   };
+
+  useEffect(() => {
+    if (client.current && !isRunning) {
+      if (runningInfo === "" || runningInfo === "finish") {
+        client.current.deactivate();
+        client.current = null;
+      }
+    }
+  }, [runningInfo, isRunning]);
   useEffect(() => {
     askPermission();
   }, []);
-  useEffect(() => {
-    onChangeLoation();
-  }, [myLocation]);
+
   return (
     <LocationContext.Provider
       value={{
-        running,
-        setRunning,
+        isRunning,
+        setIsRunning,
+        runningInfo,
+        setRunningInfo,
         myLocation,
+        setMyLocation,
+        runningLocation,
+        setRunningLocation,
+        currentCourses,
+        setCurrentCourses,
         permissionStatus,
         startLocationTracking,
         stopLocationTracking,
@@ -115,6 +142,13 @@ export const LocationProvider = ({
         setSearchedLocation,
         isDropdownVisible,
         setIsDropdownVisible,
+        runningRecord,
+        setRunningRecord,
+        preRunning,
+        setPreRunning,
+        client,
+        runDistance,
+        setRunDistance,
       }}
     >
       {children}

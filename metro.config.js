@@ -1,3 +1,4 @@
+
 const {
   getSentryExpoConfig
 } = require("@sentry/react-native/metro");

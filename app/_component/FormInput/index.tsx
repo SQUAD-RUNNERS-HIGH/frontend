@@ -8,7 +8,6 @@ import ImageUpload from "./ImageUpload";
 import SearchInput from "../SearchInput";
 import { usePlacesSearch } from "@/app/_hooks/usePlacesSearch";
 import SearchDropdown from "../SearchDropdown";
-import { location } from "@/app/_types";
 
 interface FormInputProps {
   control: Control<any>; // React Hook Form의 Control 객체 타입
@@ -54,7 +53,6 @@ const FormInput = ({
   }, [searchQuery]);
   const [dropdownHeight, setDropdownHeight] = useState<number>(0);
   const [inputHeight, setInputHeight] = useState<number>(0);
-
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -112,6 +110,7 @@ const FormInput = ({
                     setSearchedLocation={field.onChange}
                     inputHeight = {inputHeight}
                     setDropdownHeight = {setDropdownHeight}
+                    form
                   />
                 )}
               </View>

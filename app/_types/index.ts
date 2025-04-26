@@ -1,3 +1,5 @@
+import { LocationObjectCoords } from "expo-location/build/Location.types";
+
 export interface userSignupType {
   loginId: string;
   password: string;
@@ -8,16 +10,24 @@ export interface userSignupType {
     height: number;
     weight: number;
   };
+  userLocation :{
+    latitude: number;
+    longitude: number;
+    specificLocation: string;
+  }
 };
 export interface location {
   latitude: number;
   longitude: number;
 }
+export interface runningLocation extends LocationObjectCoords {
+  runningStatus: 'ONGOING' | 'ESCAPED';
+}
+
 export interface userLoginType {
   loginId: string;
   password: string;
 }
-
 export interface location {
   latitude: number;
   longitude: number;
@@ -75,4 +85,10 @@ export interface CreateCrewApi {
   image: string;
   latitude: number;
   longitude: number;
+}
+
+export interface runningRecord {
+  progress: number[];
+  runningTime: number;
+  courseId: string;
 }

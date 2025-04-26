@@ -18,17 +18,19 @@ export default function Index() {
   const [region, setRegion] = useState<Region>();
   const {
     selectedCourse,
+    currentCourses,
+    setCurrentCourses,
     searchedLocation,
     myLocation,
-    running,
+    runningLocation,
+    isRunning,
     setSelectedCourse,
     setIsDropdownVisible,
-    setRunning,
+    setIsRunning,
     startLocationTracking,
     stopLocationTracking,
   } = useLocation();
   const mapRef = useRef<MapView>(null);
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -45,7 +47,7 @@ export default function Index() {
   }, []);
   useEffect(() => {
     if (selectedCourse === "") {
-      setRunning(false);
+      setIsRunning(false);
     }
   }, [selectedCourse]);
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function Index() {
     async function updateCourses() {
       if (region) {
         const response = await fetchCourses(region);
-        setCourses(response.courseResponses);
+        setCurrentCourses(response.courseResponses);
       }
     }
     updateCourses();
@@ -65,22 +67,21 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (running && myLocation) {
+    if (isRunning && runningLocation && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: myLocation?.latitude,
-          longitude: myLocation?.longitude,
+          latitude: runningLocation?.latitude,
+          longitude: runningLocation?.longitude,
         },
         pitch: 0, // 기울기 (0~90도)
-        heading: myLocation?.heading, // 방향 (나아가는 방향)
-        altitude: myLocation?.altitude, // 고도
+        heading: runningLocation?.heading, // 방향 (나아가는 방향)
+        altitude: runningLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
-  }, [running, myLocation]);
+  }, [isRunning, myLocation, runningLocation]);
 
   // 위치 추적 시작
-
   useEffect(() => {
     startLocationTracking();
     return () => {
@@ -121,7 +122,7 @@ export default function Index() {
               }
             }}
             onPress={() => {
-              if (selectedCourse !== "" && region) {
+              if (selectedCourse !== "" && region && !isRunning) {
                 setSelectedCourse("");
                 mapRef.current?.animateToRegion(region);
               }
@@ -138,8 +139,14 @@ export default function Index() {
             <View style={{ flex: 1 }}>
               <Marker
                 coordinate={{
-                  latitude: myLocation?.latitude,
-                  longitude: myLocation?.longitude,
+                  latitude:
+                    (isRunning && runningLocation)
+                      ? runningLocation?.latitude
+                      : myLocation?.latitude,
+                  longitude:
+                    (isRunning && runningLocation)
+                      ? runningLocation?.longitude
+                      : myLocation?.longitude,
                 }}
                 style={{ zIndex: 3 }}
               >
@@ -149,7 +156,7 @@ export default function Index() {
                   source={require("@/assets/images/marker.png")}
                 />
               </Marker>
-              {courses?.map((course, index) => {
+              {currentCourses?.map((course, index) => {
                 if (!course) return;
                 const courseStart: LatLng = {
                   longitude: course?.coordinates[0][0][0],
@@ -164,7 +171,7 @@ export default function Index() {
                       setSelectedCourse(course.courseId);
                       setIsDropdownVisible(false);
                       if (mapRef.current) {
-                        const formattedCoordinates = courses[
+                        const formattedCoordinates = currentCourses[
                           index
                         ].coordinates[0].map(([lng, lat]) => ({
                           latitude: lat,
@@ -188,7 +195,7 @@ export default function Index() {
               {/* 선택된 코스의 Polyline 그리기 */}
               {selectedCourse !== "" && (
                 <Polyline
-                  coordinates={courses
+                  coordinates={currentCourses
                     ?.find((course) => course.courseId === selectedCourse)
                     .coordinates[0].map(([longitude, latitude]) => ({
                       latitude,

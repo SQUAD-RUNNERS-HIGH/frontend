@@ -69,13 +69,14 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await apiClient.delete(`/auth/logout`);
-      await AsyncStorage.removeItem("accessToken");
-      await SecureStore.deleteItemAsync("refreshToken");
-      setAccessToken(null);
+
       router.push("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
+    await AsyncStorage.removeItem("accessToken");
+    await SecureStore.deleteItemAsync("refreshToken");
+    setAccessToken(null);
   };
 
   return (

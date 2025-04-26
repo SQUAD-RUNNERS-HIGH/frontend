@@ -5,30 +5,25 @@ import { CourseDetail } from "@/app/_types";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { LineChart } from "react-native-chart-kit";
 import { useLocation } from "@/app/_hooks/useLocation";
+import { useQuery } from "@tanstack/react-query";
 
 export function InfoModal({
   setTheme,
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const {selectedCourse} = useLocation();
-  async function updateDetail() {
-    setLoading(true);
-    const detail = await fetchCourseDetail(selectedCourse);
-    setDetail(detail);
-    setLoading(false);
-  }
-  useEffect(() => {
-    if (selectedCourse !== "") {
-      updateDetail();
-    }
-  }, [selectedCourse]);
+  const {selectedCourse, setRunningInfo, setIsRunning} = useLocation();
+  const { data: detail, isLoading, error } = useQuery({
+    queryKey: ["courseDetail", selectedCourse],
+    queryFn: () => fetchCourseDetail(selectedCourse),
+    enabled: !!selectedCourse, // selectedCourse가 있을 때만 실행,
+    staleTime: 100000,
+  });
   return (
     <>
-      {loading ? (
+      {isLoading ? (
         <View style={styles.spinnerContainer}>
           <ActivityIndicator size={"large"} />
         </View>
@@ -105,10 +100,17 @@ export function InfoModal({
             <Button style={{ flex: 1 }} onPress={() => {}}>
               같이 뛰기
             </Button>
+            <Button style={{ flex: 1 }} onPress={() => {
+                setTheme("select");
+              }}>
+              경쟁자와 뛰기
+            </Button>
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setTheme("select");
+                setRunningInfo('solo');
+                setTheme('running');
+                setIsRunning(true);
               }}
             >
               혼자 뛰기

@@ -23,7 +23,7 @@ export default function Signup() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, },
   } = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     mode: "onChange",
@@ -118,6 +118,14 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 name="gender"
                 label="성별"
                 placeholder="성별을 입력해주세요"
+              />
+              <FormInput
+                control={control}
+                errorMessage={errors.userLocation?.message}
+                isLocationInput
+                name="userLocation"
+                label="주소"
+                placeholder="주소를 입력해주세요"
               />
               <View style={styles.buttonview}>
                 <Button onPress={handleSubmit(onSubmit)} disabled={!isValid}>회원가입</Button>

@@ -67,7 +67,7 @@ export default Button;
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 14,
+    paddingVertical: 8,
     borderRadius: 6,
   },
   default: {

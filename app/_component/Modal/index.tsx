@@ -1,27 +1,67 @@
-import { StyleSheet, View } from "react-native";
+import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
-import { RunningModal } from "./RunningModal";
 import { useLocation } from "../../_hooks/useLocation";
-
+import { useBackHandler } from "@/app/_hooks/useBackHandler";
+import { RunningModal } from "./RunningModal";
+import { PreRunOverlay } from "../PreRunOverlay";
+import PrepareRunModal from "./PrepareRunModal";
+import ResultModal from "./ResultModal";
 export function Modal() {
   const [theme, setTheme] = useState<string>("info");
-  const {running, selectedCourse} = useLocation();
+  const {
+    isRunning,
+    selectedCourse,
+    runningRecord,
+    setSelectedCourse,
+    preRunning,
+    client,
+    setPreRunning,
+    runningInfo,
+  } = useLocation();
 
   useEffect(() => {
-    if (selectedCourse !== '') {
+    if (selectedCourse !== "") {
       setTheme("info");
     }
   }, [selectedCourse]);
+  console.log(client.current);
+
+  useBackHandler(setSelectedCourse, theme, setTheme);
   return (
     <>
-      {selectedCourse !== '' && (
-        <View style={[styles.rootContainer,running && styles.runningModalBackground]}>
-          {theme === "info" && <InfoModal  setTheme={setTheme} />}
-          {theme === "select" && <SelectedModal setTheme={setTheme} />}
-          {theme === 'running' && <RunningModal />}
-        </View>
+      {selectedCourse !== "" && (
+        <>
+          <View
+            style={[
+              styles.rootContainer,
+              isRunning && styles.runningModalBackground,
+            ]}
+          >
+            {isRunning && <RunningModal />}
+            {theme === "info" && !isRunning && (
+              <InfoModal setTheme={setTheme} />
+            )}
+            {theme === "select" && !isRunning && (
+              <SelectedModal setTheme={setTheme} />
+            )}
+          </View>
+          {isRunning && preRunning && (
+            <PreRunOverlay
+              onFinish={() => {
+                setPreRunning(false);
+              }}
+            />
+          )}
+          {!isRunning && runningInfo !== "" && runningInfo !== "finish" && (
+            <PrepareRunModal />
+          )}
+          {!isRunning &&
+            runningInfo === "finish" &&
+            runningRecord &&
+            runningRecord?.progress.length >= 2 && <ResultModal />}
+        </>
       )}
     </>
   );
@@ -39,7 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: "12px 12px 0px 0px",
   },
   runningModalBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   container: {
     flexDirection: "row",
@@ -52,7 +92,7 @@ const styles = StyleSheet.create({
   info: {
     color: "#6B7280",
   },
-  value: {  
+  value: {
     color: "#000000",
     fontWeight: 600,
   },
