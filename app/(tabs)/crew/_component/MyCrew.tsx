@@ -1,17 +1,26 @@
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Pressable } from "react-native";
+import { fetchMyCrew } from "../_lib/fetchMyCrew";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 
-function Mycrew() {
+interface MyCrewType {
+  id: number;
+  crewName: string;
+  numberOfParticipants: number;
+}
+function Mycrew({id, crewName, numberOfParticipants}: MyCrewType) {
+  const router = useRouter();
   return (
-    <View style = {styles.container}>
+    <Pressable onPress={() => {router.push(`/crew/detail/${id}`)}} style = {styles.container}>
       <View style={styles.crewInfo}>
         <View style={styles.image}></View>
         <View>
-          <Text style={styles.crewTitle}>러닝 메이트</Text>
-          <Text style={styles.crewMember}>멤버 24명</Text>
+          <Text style={styles.crewTitle}>{crewName}</Text>
+          <Text style={styles.crewMember}>멤버 {numberOfParticipants}명</Text>
         </View>
       </View>
       <Text style={styles.role}>리더</Text>
-    </View>
+    </Pressable>
   );
 }
 const styles = StyleSheet.create({

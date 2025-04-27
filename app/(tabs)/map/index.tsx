@@ -15,7 +15,14 @@ import { CourseResponse } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
 import RunningInfo from "@/app/_component/Modal/RunningModal/RunningInfo";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMyCrew } from "../crew/_lib/fetchMyCrew";
 export default function Index() {
+  useQuery({
+    queryKey: ["myCrew"],
+    queryFn: fetchMyCrew,
+    staleTime: 100000,
+  });
   const [region, setRegion] = useState<Region>();
   const {
     selectedCourse,
@@ -70,7 +77,7 @@ export default function Index() {
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    if (isRunning && runningLocation&&myLocation) {
+    if (isRunning && runningLocation && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: runningLocation?.latitude,
@@ -82,7 +89,7 @@ export default function Index() {
         zoom: 18, // 줌 레벨
       });
     }
-    if (isRunning && !runningLocation&& myLocation) {
+    if (isRunning && !runningLocation && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: myLocation?.latitude,
@@ -155,11 +162,11 @@ export default function Index() {
               <Marker
                 coordinate={{
                   latitude:
-                    (isRunning && runningLocation)
+                    isRunning && runningLocation
                       ? runningLocation?.latitude
                       : myLocation?.latitude,
                   longitude:
-                    (isRunning && runningLocation)
+                    isRunning && runningLocation
                       ? runningLocation?.longitude
                       : myLocation?.longitude,
                 }}
@@ -208,18 +215,20 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== "" && selectedCourse !=='solo' && runningInfo !== 'solo' && (
-                <Polyline
-                  coordinates={currentCourses
-                    ?.find((course) => course.courseId === selectedCourse)
-                    .coordinates[0].map(([longitude, latitude]) => ({
-                      latitude,
-                      longitude,
-                    }))}
-                  strokeColor="#4169E1"
-                  strokeWidth={4}
-                />
-              )}
+              {selectedCourse !== "" &&
+                selectedCourse !== "solo" &&
+                runningInfo !== "solo" && (
+                  <Polyline
+                    coordinates={currentCourses
+                      ?.find((course) => course.courseId === selectedCourse)
+                      .coordinates[0].map(([longitude, latitude]) => ({
+                        latitude,
+                        longitude,
+                      }))}
+                    strokeColor="#4169E1"
+                    strokeWidth={4}
+                  />
+                )}
             </View>
           </MapView>
         )}
@@ -241,18 +250,19 @@ export default function Index() {
                   { duration: 1000 }
                 );
               }
-              setRunningInfo('solo');
-              setSelectedCourse('solo');
+              setRunningInfo("solo");
+              setSelectedCourse("solo");
             }}
             style={[
               styles.runningContainer,
-              selectedCourse !== "" && selectedCourse !== 'solo' && {display:'none'},
+              selectedCourse !== "" &&
+                selectedCourse !== "solo" && { display: "none" },
             ]}
           >
             <Image
-      source={require('@/assets/images/solo_running.png')}
-      style={{ width: 14, height: 14 }}
-    />
+              source={require("@/assets/images/solo_running.png")}
+              style={{ width: 14, height: 14 }}
+            />
           </Pressable>
         )}
         {myLocation && (
@@ -282,7 +292,7 @@ export default function Index() {
             <MyLocation />
           </Pressable>
         )}
-        
+
         <Modal />
       </View>
     </ProtectedRoute>

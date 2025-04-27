@@ -5,9 +5,16 @@ import Button from "@/app/_component/Button";
 import SurroundCrews from "./_component/SurroundCrews";
 import CrewRaking from "./_component/CrewRanking";
 import { CreateCrewModal } from "./_component/CreateCrewModal";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMyCrew } from "./_lib/fetchMyCrew";
 
 export function CrewHome() {
   const [modalVisible, setModalVisible] = useState(false);
+  const { data: myCrewResponse, isLoading } = useQuery({
+    queryKey: ["myCrew"],
+    queryFn: fetchMyCrew,
+    staleTime: 100000,
+  });
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -18,12 +25,21 @@ export function CrewHome() {
             <Button
               fontSize={14}
               style={{ paddingHorizontal: 14, paddingVertical: 8 }}
-              onPress={() => {setModalVisible(true)}}
+              onPress={() => {
+                setModalVisible(true);
+              }}
             >
               크루 만들기
             </Button>
           </View>
-          <MyCrew />
+          {myCrewResponse?.myCrews?.map((crew) => (
+            <MyCrew
+              key={crew?.crewId}
+              id={crew?.crewId}
+              crewName={crew?.crewName}
+              numberOfParticipants={crew?.numberOfParticipants}
+            />
+          ))}
         </View>
         <View style={styles.innerContainer}>
           <View style={styles.innerTitleContainer}>
@@ -34,14 +50,21 @@ export function CrewHome() {
         <View style={styles.innerContainer}>
           <View style={[styles.innerTitleContainer, { flexDirection: "row" }]}>
             <Text style={styles.innerTitle}>크루 랭킹</Text>
-            <Button theme="secondary" style = {{paddingVertical:5, paddingHorizontal: 12}} onPress={() => {}}>
+            <Button
+              theme="secondary"
+              style={{ paddingVertical: 5, paddingHorizontal: 12 }}
+              onPress={() => {}}
+            >
               랭킹 전체보기
             </Button>
           </View>
           <CrewRaking />
         </View>
       </View>
-      <CreateCrewModal modalVisible = {modalVisible} setModalVisible={setModalVisible}/>
+      <CreateCrewModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </ScrollView>
   );
 }

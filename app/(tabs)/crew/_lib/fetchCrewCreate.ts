@@ -5,7 +5,7 @@ import { z } from "zod";
 import { crewSchema } from "./crewSchema";
 import { apiClient } from "@/api/apiClient";
 
-export async function fetchCrewCreate(data: CreateCrewApi) {
+export async function fetchCrewCreate(data: z.infer<typeof crewSchema>) {
   try {
     const response = await apiClient.post(`/crew`, data);
     return response;

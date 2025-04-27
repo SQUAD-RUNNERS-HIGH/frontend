@@ -98,3 +98,13 @@ export interface soloRunningRecord {
   coordinates: [number,number][][];
   courseName: string;
 }
+
+export interface Crew {
+  crewId: number;
+  crewName: string;
+  numberOfParticipants: number;
+}
+
+export interface CrewParticipantResponse {
+  myCrews: Crew[];
+}
