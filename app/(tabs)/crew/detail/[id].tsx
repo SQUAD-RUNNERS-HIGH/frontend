@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { crewSchema } from "../_lib/crewSchema";
 import { fetchCrewParticipants } from "./_lib/fetchCrewParticipants";
 import { fetchCrewApply } from "./_lib/fetchCrewApply";
+import { CrewMember } from "./_components/CrewMember";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();
@@ -40,7 +41,26 @@ const CrewDetail = () => {
           <Button
             style={{ paddingHorizontal: 12, paddingVertical: 5 }}
             onPress={async () => {
-              
+              const confirmApply = () => {
+                return new Promise((resolve) => {
+                  Alert.alert(
+                    "크루 지원", // 제목
+                    `${detail?.name} 크루에 지원하시겠습니까?`, // 메시지
+                    [
+                      {
+                        text: "아니요",
+                        style: "cancel",
+                        onPress: () => resolve(false),
+                      }, // 취소 버튼
+                      { text: "예", onPress: () => resolve(true) }, // 종료 버튼
+                    ]
+                  );
+                });
+              };
+              const permit = await confirmApply();
+              if(permit) {
+              fetchCrewApply(id);
+              }
             }}
             theme="secondary"
           >
@@ -83,16 +103,7 @@ const CrewDetail = () => {
       <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
         <Text style={styles.crewTitle}>크루원</Text>
         <View style={styles.crewInfoContainer}>
-          <View style={styles.crewMember}>
-            <View style={styles.moreCrewIcon}>
-              <Text style={[styles.crewSecondary, { color: "#000000" }]}>
-                +20
-              </Text>
-            </View>
-            <Text style={[styles.crewSecondary, { color: "#000000" }]}>
-              더보기
-            </Text>
-          </View>
+          <CrewMember id = {id}/>
         </View>
       </View>
     </View>
