@@ -49,10 +49,11 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
   const { connected, sendLocation } = useStomp();
   
   useEffect(() => {
-    if (client.current && myLocation) {
+    if (client.current && myLocation && connected) {
       sendLocation(myLocation);
     }
-  }, [myLocation]);
+  }, [myLocation, connected]); // ✅
+  
   return (
     <>
       {completeCompetitorRecord ? (
