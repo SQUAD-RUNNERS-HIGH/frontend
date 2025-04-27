@@ -35,6 +35,7 @@ export function CrewHome() {
           {myCrewResponse?.myCrews?.map((crew) => (
             <MyCrew
               key={crew?.crewId}
+              id={crew?.crewId}
               crewName={crew?.crewName}
               numberOfParticipants={crew?.numberOfParticipants}
             />
