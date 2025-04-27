@@ -8,26 +8,26 @@ import { useNavigation, useRouter } from "expo-router";
 import { ProtectedRoute } from "../_component/ProtectedRoute";
 
 // Splash Screen을 유지
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const [isAppReady, setAppReady] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const prepareApp = async () => {
-      // Splash Screen 동안 실행할 초기 작업 (ex: 데이터 로딩, API 호출 등)
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // 3초 대기
-      setAppReady(true);
-      await SplashScreen.hideAsync(); // Splash Screen 숨기기
-    };
+  // useEffect(() => {
+  //   const prepareApp = async () => {
+  //     // Splash Screen 동안 실행할 초기 작업 (ex: 데이터 로딩, API 호출 등)
+  //     await new Promise((resolve) => setTimeout(resolve, 3000)); // 3초 대기
+  //     setAppReady(true);
+  //     await SplashScreen.hideAsync(); // Splash Screen 숨기기
+  //   };
 
-    prepareApp();
-  }, []);
+  //   prepareApp();
+  // }, []);
 
-  if (!isAppReady) {
-    return <RhSplashScreen />; // Splash Screen 유지
-  }
+  // if (!isAppReady) {
+  //   return <RhSplashScreen />; // Splash Screen 유지
+  // }
 
   return (
     <ProtectedRoute isAuthPage>
