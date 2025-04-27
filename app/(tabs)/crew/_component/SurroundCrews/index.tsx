@@ -14,7 +14,6 @@ function SurroundCrews() {
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 5,
       });
-      console.log(surroundCrews?.pages);
   const flatContents = surroundCrews?.pages?.flatMap((page) => page.data.content) ?? [];
 
   return (
