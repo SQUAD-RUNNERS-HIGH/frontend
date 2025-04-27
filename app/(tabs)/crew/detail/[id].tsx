@@ -1,9 +1,24 @@
 import Button from "@/app/_component/Button";
 import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Alert } from "react-native";
+import { fetchCrewDetail } from "./_lib/fetchCrewDetail";
+import { useQuery } from "@tanstack/react-query";
+import { crewSchema } from "../_lib/crewSchema";
+import { fetchCrewParticipants } from "./_lib/fetchCrewParticipants";
+import { fetchCrewApply } from "./_lib/fetchCrewApply";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["crewDetail", id],
+    queryFn: () => fetchCrewDetail(id),
+    enabled: !!id,
+    staleTime: 100000,
+  });
 
   return (
     <View style={styles.container}>
@@ -13,8 +28,10 @@ const CrewDetail = () => {
           source={require("@/assets/images/camera.png")}
         />
         <View>
-          <Text style={[styles.crewTitle, { fontSize: 20 }]}>러닝 메이트</Text>
-          <Text style={styles.crewSecondary}>멤버 24명</Text>
+          <Text style={[styles.crewTitle, { fontSize: 20 }]}>
+            {detail?.name}
+          </Text>
+          <Text style={styles.crewSecondary}>멤버 {detail?.useCount}명</Text>
         </View>
       </View>
       <View style={styles.crewDescriptionContainer}>
@@ -22,15 +39,16 @@ const CrewDetail = () => {
           <Text style={styles.crewTitle}>크루 소개</Text>
           <Button
             style={{ paddingHorizontal: 12, paddingVertical: 5 }}
-            onPress={() => {}}
+            onPress={async () => {
+              
+            }}
             theme="secondary"
           >
             가입신청
           </Button>
         </View>
         <Text style={[styles.crewSecondary, { color: "#485563" }]}>
-          함께 달리며 건강한 습관을 만들어가는 러닝 크루입니다. 초보자부터
-          마라톤 완주자까지 다양한 멤버들이 함께하고 있습니다
+          {detail?.description}
         </Text>
       </View>
       <View style={styles.crewDescriptionContainer}>
@@ -49,7 +67,7 @@ const CrewDetail = () => {
             <Text
               style={[styles.crewTitle, { fontSize: 20, fontWeight: "bold" }]}
             >
-              3위
+              {detail?.crewRank}위
             </Text>
           </View>
           <View style={styles.crewInfo}>
@@ -57,7 +75,7 @@ const CrewDetail = () => {
             <Text
               style={[styles.crewTitle, { fontSize: 20, fontWeight: "bold" }]}
             >
-              30 / 50
+              {detail?.userCount} / {detail?.maxCapacity}
             </Text>
           </View>
         </View>
@@ -66,20 +84,14 @@ const CrewDetail = () => {
         <Text style={styles.crewTitle}>크루원</Text>
         <View style={styles.crewInfoContainer}>
           <View style={styles.crewMember}>
-            <Image style={styles.crewMemberImage} source={require('@/assets/images/logo.png')}/>
-            <Text style={[styles.crewSecondary, { color: "#000000" }]}>김리더</Text>
-          </View>
-          <View style={styles.crewMember}>
-            <Image style={styles.crewMemberImage} />
-            <Text style={[styles.crewSecondary, { color: "#000000" }]}>김리더</Text>
-          </View>
-          <View style={styles.crewMember}>
-            <Image style={styles.crewMemberImage} />
-            <Text style={[styles.crewSecondary, { color: "#000000" }]}>김리더</Text>
-          </View>
-          <View style={styles.crewMember}>
-            <View style={styles.moreCrewIcon}><Text style = {[styles.crewSecondary,{color:'#000000'}]}>+20</Text></View>
-            <Text style={[styles.crewSecondary, { color: "#000000" }]}>더보기</Text>
+            <View style={styles.moreCrewIcon}>
+              <Text style={[styles.crewSecondary, { color: "#000000" }]}>
+                +20
+              </Text>
+            </View>
+            <Text style={[styles.crewSecondary, { color: "#000000" }]}>
+              더보기
+            </Text>
           </View>
         </View>
       </View>
@@ -126,9 +138,9 @@ const styles = StyleSheet.create({
   },
   crewInfoContainer: {
     flexDirection: "row",
-    gap:16,
+    gap: 16,
     width: "100%",
-    justifyContent: 'space-between'
+    justifyContent: "space-between",
   },
   crewInfo: {
     backgroundColor: "#F9FAFB",
@@ -141,22 +153,22 @@ const styles = StyleSheet.create({
   },
   crewMember: {
     gap: 4,
-    flex:1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   crewMemberImage: {
     borderRadius: 999,
     width: 56,
     height: 56,
   },
-  moreCrewIcon:{
-    backgroundColor: '#F3F4F6',
+  moreCrewIcon: {
+    backgroundColor: "#F3F4F6",
     borderRadius: 999,
     width: 56,
     height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 export default CrewDetail;
