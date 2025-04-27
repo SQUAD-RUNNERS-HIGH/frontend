@@ -57,6 +57,9 @@ function AuthContextProvider({ children }: { children: React.ReactNode }) {
       const newAccessToken = response?.data.data.accessToken;
       if (newAccessToken) {
         await AsyncStorage.setItem("accessToken", newAccessToken);
+        const response = await apiClient.get('/user');
+        const userName = response?.data.data.username;
+        await AsyncStorage.setItem('userName', userName);
         setAccessToken(newAccessToken);
       }
     } catch (error) {
