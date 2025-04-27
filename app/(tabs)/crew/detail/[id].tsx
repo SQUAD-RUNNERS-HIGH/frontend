@@ -6,9 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 
 import { fetchCrewApply } from "./_lib/fetchCrewApply";
 import { CrewMember } from "./_components/CrewMember";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import { CrewApplyModal } from "./_components/CrewApplyModal";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();
+  const [isHost, setIsHost] = useState<boolean>();
+  const [applyModal, setApplyModal] =  useState<boolean>(false);
   const {
     data: detail,
     isLoading,
@@ -19,7 +24,19 @@ const CrewDetail = () => {
     enabled: !!id,
     staleTime: 100000,
   });
+  useEffect(() => {
+    const checkIsHost = async () => {
+      try {
+        const userName = await AsyncStorage.getItem("userName");
+        setIsHost(userName === detail?.crewLeaderName);
+      } catch (error) {
+        console.error("Failed to check host status:", error);
+        setIsHost(false);
+      }
+    };
 
+    checkIsHost();
+  }, [detail?.crewLeaderName]);
   return (
     <View style={styles.container}>
       <View style={styles.crewTitleContainer}>
@@ -40,30 +57,33 @@ const CrewDetail = () => {
           <Button
             style={{ paddingHorizontal: 12, paddingVertical: 5 }}
             onPress={async () => {
-              const confirmApply = () => {
-                return new Promise((resolve) => {
-                  Alert.alert(
-                    "크루 지원", // 제목
-                    `${detail?.name} 크루에 지원하시겠습니까?`, // 메시지
-                    [
-                      {
-                        text: "아니요",
-                        style: "cancel",
-                        onPress: () => resolve(false),
-                      }, // 취소 버튼
-                      { text: "예", onPress: () => resolve(true) }, // 종료 버튼
-                    ]
-                  );
-                });
-              };
-              const permit = await confirmApply();
-              if(permit) {
-              fetchCrewApply(id);
-              }
-            }}
+              if (!isHost) {
+                const confirmApply = () => {
+                  return new Promise((resolve) => {
+                    Alert.alert(
+                      "크루 지원", // 제목
+                      `${detail?.name} 크루에 지원하시겠습니까?`, // 메시지
+                      [
+                        {
+                          text: "아니요",
+                          style: "cancel",
+                          onPress: () => resolve(false),
+                        }, // 취소 버튼
+                        { text: "예", onPress: () => resolve(true) }, // 종료 버튼
+                      ]
+                    );
+                  });
+                };
+                const permit = await confirmApply();
+                if (permit) {
+                  fetchCrewApply(id);
+                }
+              } else {
+                setApplyModal(true);
+              };              }}
             theme="secondary"
           >
-            가입신청
+            {`${isHost? '신청자 보기': '가입 신청'}`}
           </Button>
         </View>
         <Text style={[styles.crewSecondary, { color: "#485563" }]}>
@@ -101,9 +121,11 @@ const CrewDetail = () => {
       </View>
       <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
         <View style={styles.crewInfoContainer}>
-          <CrewMember id = {id}/>
+          <CrewMember id={id} />
         </View>
       </View>
+      {applyModal &&
+      <CrewApplyModal  id={id} applyModal setApplyModal={setApplyModal}/>}
     </View>
   );
 };
