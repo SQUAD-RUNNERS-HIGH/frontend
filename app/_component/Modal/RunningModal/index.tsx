@@ -25,14 +25,14 @@ export function RunningModal() {
     });
   };
   useEffect(() => {
-    if (runningInfo !== "solo" && runningInfo!=='crew' ) {
+    if (runningInfo !== "solo" && isNaN(Number(runningInfo)) ) {
       const data = fetchTestData();
     }
   }, []);
 
   return (
     <>
-      {runningInfo !== "solo" && runningInfo!=='crew' && runningInfo !=='finish' && (
+      {runningInfo !== "solo" && isNaN(Number(runningInfo)) && runningInfo !=='finish' && (
         <>
           <CompetitorRunning />
         </>
@@ -51,7 +51,7 @@ export function RunningModal() {
               if(runningInfo === 'solo') {
                 setRunningInfo('soloFinish');
               }
-              if(runningInfo !== 'solo' && runningInfo !== 'crew') {
+              if(runningInfo !== 'solo' && isNaN(Number(runningInfo))) {
                 setRunningInfo('competitorFinish');
               }
               setIsRunning(false);           

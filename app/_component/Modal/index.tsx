@@ -43,8 +43,8 @@ export function Modal() {
             {theme === "info" && !isRunning && (
               <InfoModal setTheme={setTheme} />
             )}
-            {theme === "select" && !isRunning && (
-              <SelectedModal setTheme={setTheme} />
+            {theme.includes("select") && !isRunning && (
+              <SelectedModal theme = {theme} setTheme={setTheme} />
             )}
             {isRunning && <RunningModal />}
           </View>
