@@ -101,7 +101,6 @@ const CrewDetail = () => {
         </View>
       </View>
       <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
-        <Text style={styles.crewTitle}>크루원</Text>
         <View style={styles.crewInfoContainer}>
           <CrewMember id = {id}/>
         </View>
