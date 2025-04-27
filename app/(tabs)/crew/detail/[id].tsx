@@ -3,8 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { View, Text, StyleSheet, Image, Alert } from "react-native";
 import { fetchCrewDetail } from "./_lib/fetchCrewDetail";
 import { useQuery } from "@tanstack/react-query";
-import { crewSchema } from "../_lib/crewSchema";
-import { fetchCrewParticipants } from "./_lib/fetchCrewParticipants";
+
 import { fetchCrewApply } from "./_lib/fetchCrewApply";
 import { CrewMember } from "./_components/CrewMember";
 
@@ -32,7 +31,7 @@ const CrewDetail = () => {
           <Text style={[styles.crewTitle, { fontSize: 20 }]}>
             {detail?.name}
           </Text>
-          <Text style={styles.crewSecondary}>멤버 {detail?.useCount}명</Text>
+          <Text style={styles.crewSecondary}>멤버 {detail?.userCount}명</Text>
         </View>
       </View>
       <View style={styles.crewDescriptionContainer}>
