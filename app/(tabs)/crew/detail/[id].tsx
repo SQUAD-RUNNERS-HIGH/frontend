@@ -1,6 +1,6 @@
 import Button from "@/app/_component/Button";
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, Image, Alert } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, StyleSheet, Image, Alert, BackHandler } from "react-native";
 import { fetchCrewDetail } from "./_lib/fetchCrewDetail";
 import { useQuery } from "@tanstack/react-query";
 
@@ -14,6 +14,8 @@ const CrewDetail = () => {
   const { id } = useLocalSearchParams();
   const [isHost, setIsHost] = useState<boolean>();
   const [applyModal, setApplyModal] =  useState<boolean>(false);
+  const router = useRouter();
+
   const {
     data: detail,
     isLoading,
@@ -24,6 +26,20 @@ const CrewDetail = () => {
     enabled: !!id,
     staleTime: 100000,
   });
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.back();
+      return true; // 기본 하드웨어 back 동작(앱 종료)을 막는다
+    };
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    );
+
+    return () => subscription.remove(); // 컴포넌트 언마운트 시 해제
+  }, [router]);
   useEffect(() => {
     const checkIsHost = async () => {
       try {
