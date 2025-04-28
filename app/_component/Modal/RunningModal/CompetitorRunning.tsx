@@ -6,8 +6,9 @@ import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
 import { RunningText } from "../../RunningText";
+import { useEffect, useState } from "react";
 const CompetitorRunning = () => {
-  const { runningLocation, runningRecord } = useLocation();
+  const { runningLocation, runningRecord ,runDistance } = useLocation();
   const {
     data,
     speed,
@@ -16,7 +17,9 @@ const CompetitorRunning = () => {
     distanceToCompetitor,
     competitorProgress,
     completeCompetitorRecord,
+    totalDistance,
   } = useCompetitorRunning();
+  
   return (
     <>
       {completeCompetitorRecord &&
@@ -24,7 +27,7 @@ const CompetitorRunning = () => {
       runningRecord &&
       runningRecord?.progress.length >= 1 ? (
         <>
-          <RunningInfo seconds={seconds} rest={2.5} speed={speed} />
+          <RunningInfo seconds={seconds} rest={totalDistance - runDistance} speed={speed} />
           <ProgressList
             records={[
               {
@@ -45,7 +48,7 @@ const CompetitorRunning = () => {
           )}
          {
           runningLocation?.runningStatus === "ONGOING" && (
-            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning}/>
+            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {seconds>=data?.progress.length}/>
           )
          }
         </>

@@ -8,15 +8,16 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Button from "../../Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { apiClient } from "@/api/apiClient";
 
 export function SelectCompetitor() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { setRunningInfo, selectedCourse } = useLocation();
+  const { setRunningInfo, selectedCourse, runningInfo } = useLocation();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],
@@ -40,6 +41,15 @@ export function SelectCompetitor() {
       fetchNextPage();
     }
   };
+  const fetchTestData = async () => {
+      const data = await apiClient.post(`/test-data/${selectedCourse}`);
+      return data;
+    };
+    useEffect(() => {
+      if (runningInfo !== "solo" ) {
+        const data = fetchTestData();
+      }
+    }, []);
   return (
     <>
       {competitors.length === 0 ? (
