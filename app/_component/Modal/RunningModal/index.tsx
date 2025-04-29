@@ -5,10 +5,11 @@ import { useLocation } from "@/app/_hooks/useLocation";
 import { apiClient } from "@/api/apiClient";
 import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
-
+import CrewRunning from "./CrewRunning";
 export function RunningModal() {
-  const { setRunDistance, runningInfo,  setRunningInfo, setIsRunning } = useLocation();
- 
+  const { setRunDistance, runningInfo, setRunningInfo, setIsRunning } =
+    useLocation();
+  console.log(useLocation);
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -21,15 +22,23 @@ export function RunningModal() {
       );
     });
   };
-  
 
   return (
     <>
-      {runningInfo !== "solo" && isNaN(Number(runningInfo)) && runningInfo !=='finish' && (
-        <>
-          <CompetitorRunning />
-        </>
-      )}
+      {runningInfo !== "solo" &&
+        !isNaN(Number(runningInfo)) &&
+        runningInfo !== "finish" && (
+          <>
+            <CrewRunning />
+          </>
+        )}
+      {runningInfo !== "solo" &&
+        isNaN(Number(runningInfo)) &&
+        runningInfo !== "finish" && (
+          <>
+            <CompetitorRunning />
+          </>
+        )}
       {runningInfo === "solo" && (
         <>
           <SoloRunning />
@@ -41,14 +50,13 @@ export function RunningModal() {
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              setRunDistance(0);
-              if(runningInfo === 'solo') {
-                setRunningInfo('soloFinish');
+              if (runningInfo === "solo") {
+                setRunningInfo("soloFinish");
               }
-              if(runningInfo !== 'solo' && isNaN(Number(runningInfo))) {
-                setRunningInfo('competitorFinish');
+              if (runningInfo !== "solo" && isNaN(Number(runningInfo))) {
+                setRunningInfo("competitorFinish");
               }
-              setIsRunning(false);           
+              setIsRunning(false);
             }
           }}
         >

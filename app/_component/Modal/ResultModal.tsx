@@ -31,6 +31,7 @@ const ResultModal = () => {
     runDistance,
     currentCourses,
     setSelectedCourse,
+    setRunDistance
   } = useLocation();
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +73,8 @@ const ResultModal = () => {
         }
         setRunningInfo("");
         setSelectedCourse("");
+        setRunDistance(0);
+
       } catch (error) {
         Alert.alert(`기록 저장 실패: ${error}`);
       } finally {
@@ -137,6 +140,7 @@ const ResultModal = () => {
                 onPress={() => {
                   setRunningInfo("");
                   setSelectedCourse("");
+                  setRunDistance(0);
                 }}
               >
                 저장하지 않고 종료

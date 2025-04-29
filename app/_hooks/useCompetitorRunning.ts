@@ -6,6 +6,7 @@ import { getDistance, getPathLength } from "geolib";
 import { location } from "../_types";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
+import { Alert } from "react-native";
 export const useCompetitorRunning = () => {
   const {
     runningInfo,
@@ -30,11 +31,11 @@ export const useCompetitorRunning = () => {
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [progress, setProgress] = useState<number[]>([]);
   const [competitorProgress, setCompetitorProgress] = useState<number>(0);
-  const [traveledDistance, setTraveledDistance] = useState(0); // 유저 실제 이동 거리 (m)
   const prevLocation = useRef<location | null>(null);
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
   const [winning, setWinning] = useState<boolean>(true);
   const [index, setIndex] = useState<number>(0);
+  const [text, setText] = useState<string>('');
   useEffect(() => {
     if (selectedCourse) {
       setRunningRecord({
@@ -98,8 +99,10 @@ export const useCompetitorRunning = () => {
           );
           setRunDistance((prev) => prev + distance);
         }
+
       }
       prevLocation.current = runningLocation;
+
     }
   }, [runningLocation]);
 
@@ -122,9 +125,9 @@ export const useCompetitorRunning = () => {
       const newCompetitorDistance =
         Number((totalDistance * safeCompetitorProgress).toFixed(0));
       setCompetitorProgress(Number(safeCompetitorProgress.toFixed(4)));
-      setWinning(traveledDistance >= newCompetitorDistance);
+      setWinning(runDistance >= newCompetitorDistance);
       setDistanceToCompetitor(
-        Math.abs(newCompetitorDistance - traveledDistance)
+        Math.abs(newCompetitorDistance - runDistance)
       );
     }
     setRunningRecord({
@@ -132,12 +135,12 @@ export const useCompetitorRunning = () => {
       progress: progress,
       courseId: selectedCourse,
     });
-  }, [progress, index, totalDistance, traveledDistance]);
-
+  }, [progress, index, totalDistance, runDistance]);
   return {
     data,
     speed,
     seconds,
+    text,
     index,
     winning,
     distanceToCompetitor,
