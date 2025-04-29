@@ -7,11 +7,8 @@ import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
 
 export function RunningModal() {
-  const { selectedCourse, runningInfo,  setRunningInfo, setIsRunning } = useLocation();
-  const fetchTestData = async () => {
-    const data = await apiClient.post(`/test-data/${selectedCourse}`);
-    return data;
-  };
+  const { setRunDistance, runningInfo,  setRunningInfo, setIsRunning } = useLocation();
+ 
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -24,11 +21,7 @@ export function RunningModal() {
       );
     });
   };
-  useEffect(() => {
-    if (runningInfo !== "solo" && isNaN(Number(runningInfo)) ) {
-      const data = fetchTestData();
-    }
-  }, []);
+  
 
   return (
     <>
@@ -48,6 +41,7 @@ export function RunningModal() {
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
+              setRunDistance(0);
               if(runningInfo === 'solo') {
                 setRunningInfo('soloFinish');
               }
