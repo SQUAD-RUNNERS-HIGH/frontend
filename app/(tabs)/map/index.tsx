@@ -24,6 +24,13 @@ export default function Index() {
     staleTime: 100000,
   });
   const [region, setRegion] = useState<Region>();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['courses', region],
+    queryFn: () => fetchCourses(region),
+    enabled: !!region,
+  });
+
   const {
     selectedCourse,
     currentCourses,
@@ -65,15 +72,19 @@ export default function Index() {
       mapRef.current?.animateToRegion(searchedLocation);
     }
   }, [searchedLocation]);
+  // useEffect(() => {
+  //   async function updateCourses() {
+  //     if (region) {
+  //       const response = await fetchCourses(region);
+  //       setCurrentCourses(response.courseResponses);
+  //     }
+  //   }
+  //   updateCourses();
+  // }, [region]);
   useEffect(() => {
-    async function updateCourses() {
-      if (region) {
-        const response = await fetchCourses(region);
-        setCurrentCourses(response.courseResponses);
-      }
-    }
-    updateCourses();
-  }, [region]);
+    if (data) {
+      setCurrentCourses(data.courseResponses);
+    }  }, [data])
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동

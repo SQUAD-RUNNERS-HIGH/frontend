@@ -10,13 +10,12 @@ const ProgressList = ({
   return (
     <View style={styles.container}>
       {records?.map((record, index) => {
-        const progress = Number(record?.progress.toFixed(2));
         return (
           <View key={index} style={styles.row}>
             <Text style={styles.name}>{record.name}</Text>
             <View style={styles.progressBar}>
               <ProgressBar
-                progress={progress}
+                progress={record.progress}
                 color="#6200ee"
                 style={styles.progressBar}
               />

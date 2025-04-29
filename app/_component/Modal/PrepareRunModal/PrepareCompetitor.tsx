@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Button from "../../Button";
+import { apiClient } from "@/api/apiClient";
 const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
   
   const {
@@ -47,13 +48,13 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
     staleTime: 100000,
   });
   const { connected, sendLocation } = useStomp();
-  
+  console.log(data?.progress);
   useEffect(() => {
     if (client.current && myLocation && connected) {
+
       sendLocation(myLocation);
     }
   }, [myLocation, connected]); // ✅
-  
   return (
     <>
       {completeCompetitorRecord ? (

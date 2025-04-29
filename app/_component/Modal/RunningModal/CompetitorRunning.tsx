@@ -1,5 +1,4 @@
-import { ProgressBar } from "react-native-paper";
-import { StyleSheet, View, Text, Alert } from "react-native";
+import { StyleSheet } from "react-native";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { useCompetitorRunning } from "@/app/_hooks/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
@@ -13,16 +12,16 @@ const CompetitorRunning = () => {
     data,
     speed,
     seconds,
+    index,
     winning,
     distanceToCompetitor,
     competitorProgress,
-    completeCompetitorRecord,
     totalDistance,
   } = useCompetitorRunning();
-  
+  console.log(runningRecord);
   return (
     <>
-      {completeCompetitorRecord &&
+      {
       data &&
       runningRecord &&
       runningRecord?.progress.length >= 1 ? (
@@ -31,7 +30,7 @@ const CompetitorRunning = () => {
           <ProgressList
             records={[
               {
-                progress: competitorProgress / 100,
+                progress: data?.progress.length <=index? 1: competitorProgress,
                 name: data?.competitorUserName,
               },
               {
@@ -48,7 +47,7 @@ const CompetitorRunning = () => {
           )}
          {
           runningLocation?.runningStatus === "ONGOING" && (
-            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {seconds>=data?.progress.length}/>
+            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {index>=data?.progress.length}/>
           )
          }
         </>

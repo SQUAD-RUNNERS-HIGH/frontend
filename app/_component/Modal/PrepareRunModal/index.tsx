@@ -22,7 +22,6 @@ const PrepareRunModal = () => {
       setTotalDistance(total);
     }
   }, [courseCoordinates]);
-  console.log(runningInfo);
   useEffect(() => {
     if (currentCourses && runningInfo !== 'solo') {
       setCourseCoordinates(
