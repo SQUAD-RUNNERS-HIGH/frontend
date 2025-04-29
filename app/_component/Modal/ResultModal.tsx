@@ -2,7 +2,7 @@ import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { location } from "@/app/_types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPathLength } from "geolib";
 import { useEffect, useState } from "react";
 import {
@@ -34,7 +34,7 @@ const ResultModal = () => {
   } = useLocation();
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
-
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (currentCourses && selectedCourse !== 'solo') {
       setCourseCoordinates(
@@ -56,7 +56,19 @@ const ResultModal = () => {
           await fetchSaveRecord(runningRecord);
         }
         if (runningInfo === "soloFinish"&& isSoloRunningRecord(runningRecord)) {
-          await fetchSaveCourses({courseName:runningRecord?.courseName, coordinates: runningRecord?.coordinates});
+          const totalDistance = runningRecord?.progress.reduce((sum, val) => sum + val, 0);
+
+          // 2. 누적합을 이용해 누적 비율 계산
+          const cumulativeRatios: number[] = [];
+          let cumulativeSum = 0;
+          
+          for (let i = 0; i < runningRecord?.progress.length; i++) {
+            cumulativeSum += runningRecord?.progress[i];
+            cumulativeRatios.push(totalDistance > 0 ? Number((cumulativeSum / totalDistance).toFixed(4)) : 0);
+          }
+          
+          const response = await fetchSaveCourses({courseName:runningRecord?.courseName, coordinates: runningRecord?.coordinates, runningTime: runningRecord?.runningTime, progress: cumulativeRatios});
+          queryClient.invalidateQueries({ queryKey: ['courses'] });
         }
         setRunningInfo("");
         setSelectedCourse("");

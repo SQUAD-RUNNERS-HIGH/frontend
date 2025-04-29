@@ -11,29 +11,45 @@ export const useSoloRunning = () => {
     setRunDistance,
     runningRecord,
     setRunningRecord,
+    runDistance,
   } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [progress, setProgress] = useState<location[]>([]);
+  useEffect(() => {
+    if (!preRunning) {
+      const start = Date.now();
+
+      const interval = setInterval(() => {
+        setSeconds(Date.now() - start);
+       
+      }, 1000);
+      return () => {
+        clearInterval(interval);
+      }
+    }
+  }, [preRunning])
   useEffect(() => {
     if (preRunning && myLocation) {
       setRunningRecord({
         runningTime: 0,
         courseName: "",
-        coordinates: [[[myLocation?.longitude, myLocation?.latitude ]]],
+        coordinates: [[[myLocation.longitude, myLocation.latitude]]],
+        progress: [],
       });
     }
+
     if (!preRunning && myLocation) {
       const interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
         setProgress((prev) => [
           ...prev,
-          { latitude: myLocation?.latitude, longitude: myLocation?.longitude },
+          { latitude: myLocation.latitude, longitude: myLocation.longitude },
         ]);
-      }, 1000);
-
-      return () => clearInterval(interval);
+      }, 500);
+      return () => {
+        clearInterval(interval);
+      }
     }
-  }, [preRunning]);
+  }, [myLocation]); // ★ myLocation 추가
 
   useEffect(() => {
     if (progress.length >= 2) {
@@ -41,23 +57,30 @@ export const useSoloRunning = () => {
         progress[progress.length - 1],
         progress[progress.length - 2]
       );
+
+      // 전체 거리 업데이트
       setRunDistance((prev) => prev + distance);
-      // 좌표 추가 업데이트
-      if (runningRecord) {
-        const newRunningRecord = [...runningRecord.coordinates[0]]; // 복사
-        newRunningRecord.push([
+
+      if (runningRecord && isSoloRunningRecord(runningRecord)) {
+        const newCoordinates = [...runningRecord.coordinates[0]];
+        newCoordinates.push([
           progress[progress.length - 1].longitude,
-          progress[progress.length - 1].latitude
-          
+          progress[progress.length - 1].latitude,
         ]);
+
+        // 진행률 비율 계산
+
+        const newProgress = [...runningRecord.progress];
+        newProgress.push(distance);
+
         setRunningRecord({
           runningTime: seconds,
-          courseName: runningRecord.courseName, // 기존 값 유지
-          coordinates: [newRunningRecord],
+          courseName: runningRecord.courseName,
+          coordinates: [newCoordinates],
+          progress: newProgress,
         });
       }
     }
   }, [progress]);
-
   return { seconds, progress };
 };

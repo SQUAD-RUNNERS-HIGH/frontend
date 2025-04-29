@@ -95,6 +95,7 @@ export interface competitorRunningRecord {
 
 export interface soloRunningRecord {
   runningTime: number;
+  progress: number[]
   coordinates: [number,number][][];
   courseName: string;
 }
@@ -105,6 +106,13 @@ export interface Crew {
   numberOfParticipants: number;
 }
 
-export interface CrewParticipantResponse {
+export interface myCrewResponse {
   myCrews: Crew[];
 }
+export type Participant = {
+  userId: string;
+  isReady: boolean;
+  userName: string;
+  longitude: number;
+  latitude: number;
+};
