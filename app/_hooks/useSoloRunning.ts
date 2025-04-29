@@ -3,6 +3,7 @@ import { useLocation } from "./useLocation";
 import { location } from "@/app/_types";
 import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../_lib/discriminateRecordType";
+import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 
 export const useSoloRunning = () => {
   const {
@@ -15,12 +16,12 @@ export const useSoloRunning = () => {
   } = useLocation();
   const [seconds, setSeconds] = useState(0);
   const [progress, setProgress] = useState<location[]>([]);
+  const [speed, setSpeed] = useState<string>(`0'00''`);
   useEffect(() => {
     if (!preRunning) {
-      const start = Date.now();
 
       const interval = setInterval(() => {
-        setSeconds(Date.now() - start);
+        setSeconds(prev => prev+1);
        
       }, 1000);
       return () => {
@@ -39,6 +40,7 @@ export const useSoloRunning = () => {
     }
 
     if (!preRunning && myLocation) {
+      setSpeed(convertSpeedToPace(myLocation.speed));
       const interval = setInterval(() => {
         setProgress((prev) => [
           ...prev,
@@ -82,5 +84,5 @@ export const useSoloRunning = () => {
       }
     }
   }, [progress]);
-  return { seconds, progress };
+  return { speed, seconds, progress };
 };
