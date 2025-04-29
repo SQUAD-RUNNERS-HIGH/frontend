@@ -17,6 +17,7 @@ import { z } from "zod";
 import Button from "@/app/_component/Button";
 import { useRouter } from "expo-router";
 import { fetchCrewCreate } from "../_lib/fetchCrewCreate";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CreateCrewModal({
   modalVisible,
@@ -29,6 +30,8 @@ export function CreateCrewModal({
     const response = await fetchCrewCreate(data);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
+      const queryClient = useQueryClient();
+      queryClient.invalidateQueries({queryKey:['myCrew']});
       setModalVisible(false);
     }
   };
@@ -41,7 +44,6 @@ export function CreateCrewModal({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
-  console.log(watch())
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
