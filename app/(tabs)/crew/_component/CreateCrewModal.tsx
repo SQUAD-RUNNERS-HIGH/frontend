@@ -26,12 +26,13 @@ export function CreateCrewModal({
   modalVisible: boolean;
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
+  const queryClient = useQueryClient();
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
     const response = await fetchCrewCreate(data);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
-      const queryClient = useQueryClient();
-      queryClient.invalidateQueries({queryKey:['myCrew']});
+
+      queryClient.invalidateQueries({ queryKey: ["myCrew"] });
       setModalVisible(false);
     }
   };
@@ -39,7 +40,7 @@ export function CreateCrewModal({
     control,
     handleSubmit,
     formState: { errors, isValid },
-    watch
+    watch,
   } = useForm<z.infer<typeof crewSchema>>({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
@@ -104,7 +105,7 @@ export function CreateCrewModal({
                 isLocationInput
               />
               <Button
-                style={{ marginTop: 6, width: "100%" }}
+                style={{ marginTop: 20, width: "100%" }}
                 onPress={handleSubmit(onSubmit)}
               >
                 크루 만들기
