@@ -1,42 +1,33 @@
 import Button from "@/app/_component/Button";
-import { View, StyleSheet, Text } from "react-native";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { View, StyleSheet, Text, Image, Pressable } from "react-native";
+import { fetchCrewRanking } from "../_lib/fetchCrewRanking";
+import { useRouter } from "expo-router";
 
 function CrewRaking() {
-  const crewRanking = [
-    {
-      id: 1,
-      rank: 1,
-      name: "마라톤 마스터즈",
-      km: 1234,
-    },
-    {
-      id: 2,
-      name: "런데이 러너스",
-      km: 1156,
-      rank: 2,
-    },
-    {
-      id: 3,
-      name: "러닝 메이트",
-      km: 987,
-      rank: 3,
-    },
-  ];
-  return (
+  const { data: crewRanking, } =
+      useQuery({
+        queryKey: ["crewRanking"],
+        queryFn: fetchCrewRanking,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 5,
+      });
+      const router = useRouter();
+      return (
     <View style={styles.container}>
-      {crewRanking.map((crew) => (
-        <View key={crew.id} style={styles.crewContainer}>
+      {crewRanking?.data?.crewRankResponses.map((crew,index) => (
+        <Pressable onPress = {() => {router.push(`/crew/detail/${crew.crewId}`);}} key={crew.id} style={styles.crewContainer}>
           <View style = {styles.crewLeftContainer}>
             <View style = {styles.rankingContainer}>
-              <Text style = {styles.ranking}>{crew.rank}</Text>
+              <Text style = {styles.ranking}>{index+1}</Text>
             </View>
-            <View style = {styles.profile}></View>
-            <Text>{crew.name}</Text>
+            <Image source = {require('@/assets/images/crewImage.png')} style = {styles.profile} />
+            <Text>{crew.crewName}</Text>
           </View>
           <Text style= {styles.crewRightContainer}>
-            총 {crew.km}km
+            총 {crew.score}m
           </Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -79,7 +70,6 @@ const styles = StyleSheet.create({
     width:32,
     height:32,
     borderRadius:999,
-    backgroundColor: 'blue',
   }
 });
 export default CrewRaking;
