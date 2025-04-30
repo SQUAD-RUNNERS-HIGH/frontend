@@ -7,8 +7,9 @@ interface MyCrewType {
   id: number;
   crewName: string;
   numberOfParticipants: number;
+  crewRole:string;
 }
-function Mycrew({ id, crewName, numberOfParticipants }: MyCrewType) {
+function Mycrew({ id, crewName, numberOfParticipants, crewRole }: MyCrewType) {
   const router = useRouter();
   return (
     <Pressable
@@ -27,7 +28,7 @@ function Mycrew({ id, crewName, numberOfParticipants }: MyCrewType) {
           <Text style={styles.crewMember}>멤버 {numberOfParticipants}명</Text>
         </View>
       </View>
-      <Text style={styles.role}>리더</Text>
+      <Text style={styles.role}>{crewRole==='LEADER'?'리더':'멤버'}</Text>
     </Pressable>
   );
 }
