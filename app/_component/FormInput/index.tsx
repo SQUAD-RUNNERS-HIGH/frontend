@@ -53,6 +53,10 @@ const FormInput = ({
   }, [searchQuery]);
   const [dropdownHeight, setDropdownHeight] = useState<number>(0);
   const [inputHeight, setInputHeight] = useState<number>(0);
+  useEffect(() => {
+    if(!isDropdownVisible)
+    setDropdownHeight(0)
+  },[isDropdownVisible])
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -95,7 +99,8 @@ const FormInput = ({
           }
           if (isLocationInput) {
             return (
-              <View style = {inputHeight!==0 && {minHeight: (inputHeight + dropdownHeight)}}>
+              <View style = { [inputHeight!==0 && {minHeight: (inputHeight + dropdownHeight)}, {position:'relative'}]}>
+                <View>
                 <SearchInput
                   type="location"
                   searchQuery={searchQuery}
@@ -103,6 +108,7 @@ const FormInput = ({
                   setInputHeight={setInputHeight}
                   nonHeader
                 />
+                </View>
                 {isDropdownVisible && (
                   <SearchDropdown
                     results={results}
@@ -167,6 +173,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#EF4444",
   },
+  dropdownContainer: {
+    position:'absolute',
+    bottom:0,
+  }
 });
 
 export default FormInput;
