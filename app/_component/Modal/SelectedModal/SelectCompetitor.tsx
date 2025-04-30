@@ -32,24 +32,18 @@ export function SelectCompetitor() {
     data?.pages
       .flatMap((page) => page?.items.personalRunningTimes)
       .filter((item) => {
+        if (item.userName === "러너스하이") return false;
         if (seen.has(item.historyId)) return false;
         seen.add(item.historyId);
         return true;
       }) || [];
+
   const loadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   };
-  const fetchTestData = async () => {
-      const data = await apiClient.post(`/test-data/${selectedCourse}`);
-      return data;
-    };
-    useEffect(() => {
-      if (runningInfo !== "solo" ) {
-        const data = fetchTestData();
-      }
-    }, []);
+
   return (
     <>
       {competitors.length === 0 ? (
@@ -70,23 +64,29 @@ export function SelectCompetitor() {
             ) : null
           }
           renderItem={({ item: competitor }) => (
-            <View style={styles.competitor}>
-              <Text style={styles.name}>{competitor.userName}</Text>
-              <View style={styles.checkContainer}>
-                <Text style={styles.name}>{competitor.runningTime}</Text>
-                <Checkbox
-                  style={styles.checkBox}
-                  value={selectedId === competitor.historyId}
-                  onValueChange={() => {
-                    if (selectedId === competitor.historyId) {
-                      setSelectedId("");
-                    } else {
-                      setSelectedId(competitor.historyId);
-                    }
-                  }}
-                />
-              </View>
-            </View>
+            <>
+              {competitor.userName === "러너스하이" ? (
+                <View></View>
+              ) : (
+                <View style={styles.competitor}>
+                  <Text style={styles.name}>{competitor.userName}</Text>
+                  <View style={styles.checkContainer}>
+                    <Text style={styles.name}>{competitor.runningTime}</Text>
+                    <Checkbox
+                      style={styles.checkBox}
+                      value={selectedId === competitor.historyId}
+                      onValueChange={() => {
+                        if (selectedId === competitor.historyId) {
+                          setSelectedId("");
+                        } else {
+                          setSelectedId(competitor.historyId);
+                        }
+                      }}
+                    />
+                  </View>
+                </View>
+              )}
+            </>
           )}
         />
       )}

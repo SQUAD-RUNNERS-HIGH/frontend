@@ -2,14 +2,11 @@ import { StyleSheet, View, Text, Alert } from "react-native";
 import Button from "../../Button";
 import React, { SetStateAction, useEffect } from "react";
 import { useLocation } from "@/app/_hooks/useLocation";
-import { apiClient } from "@/api/apiClient";
 import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
-import CrewRunning from "./CrewRunning";
 export function RunningModal() {
   const { setRunDistance, runningInfo, setRunningInfo, setIsRunning } =
     useLocation();
-  console.log(useLocation);
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -25,13 +22,13 @@ export function RunningModal() {
 
   return (
     <>
-      {runningInfo !== "solo" &&
+      {/* {runningInfo !== "solo" &&
         !isNaN(Number(runningInfo)) &&
         runningInfo !== "finish" && (
           <>
             <CrewRunning />
           </>
-        )}
+        )}*/}
       {runningInfo !== "solo" &&
         isNaN(Number(runningInfo)) &&
         runningInfo !== "finish" && (
