@@ -43,7 +43,7 @@ function TabBar() {
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          onPress={() => {router.push('/crew')}}
+          onPress={() => {router.push('/crew/home')}}
         >
           <CrewIcon fill={`${segments.includes('crew')?tabBarFill.activate:tabBarFill.inactivate}`}  />
           <Text style={[styles.buttonText, segments.includes('crew') &&  styles.currentPage]}>크루</Text>

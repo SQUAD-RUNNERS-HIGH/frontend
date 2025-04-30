@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Text, ScrollView, Modal } from "react-native";
-import MyCrew from "./_component/MyCrew";
+import MyCrew from "../_component/MyCrew";
 import Button from "@/app/_component/Button";
-import SurroundCrews from "./_component/SurroundCrews";
-import CrewRaking from "./_component/CrewRanking";
-import { CreateCrewModal } from "./_component/CreateCrewModal";
+import SurroundCrews from "../_component/SurroundCrews";
+import CrewRaking from "../_component/CrewRanking";
+import { CreateCrewModal } from "../_component/CreateCrewModal";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMyCrew } from "./_lib/fetchMyCrew";
+import { fetchMyCrew } from "../_lib/fetchMyCrew";
 
 export function CrewHome() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -51,13 +51,13 @@ export function CrewHome() {
         <View style={styles.innerContainer}>
           <View style={[styles.innerTitleContainer, { flexDirection: "row" }]}>
             <Text style={styles.innerTitle}>크루 랭킹</Text>
-            <Button
+            {/* <Button
               theme="secondary"
               style={{ paddingVertical: 5, paddingHorizontal: 12 }}
               onPress={() => {}}
             >
               랭킹 전체보기
-            </Button>
+            </Button> */}
           </View>
           <CrewRaking />
         </View>
