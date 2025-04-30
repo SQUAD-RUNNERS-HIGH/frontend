@@ -58,7 +58,7 @@ const CrewDetail = () => {
       <View style={styles.crewTitleContainer}>
         <Image
           style={styles.crewImage}
-          source={require("@/assets/images/camera.png")}
+          source={require("@/assets/images/crewImage.png")}
         />
         <View>
           <Text style={[styles.crewTitle, { fontSize: 20 }]}>
