@@ -36,7 +36,9 @@ const ImageUpload = ({
       {field.value ? (
         <ImageBackground
           source={{ uri: field.value }}
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: '100%', height:'100%' }}
+          resizeMode="contain"
+
         />
       ) : (
         <>
