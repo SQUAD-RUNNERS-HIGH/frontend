@@ -1,17 +1,29 @@
 import Button from "@/app/_component/Button";
-import { View, StyleSheet, Text } from "react-native";
+import { useRouter } from "expo-router";
+import { View, StyleSheet, Text, Pressable, Alert } from "react-native";
+import { fetchCrewApply } from "../../detail/_lib/fetchCrewApply";
+import { useState } from "react";
 
 function Crew({
+  id,
   name,
   description,
   userCount,
 }: {
+  id: string;
   name: string;
   description: string;
   userCount: number;
 }) {
+  const router = useRouter();
+
   return (
-    <View style={styles.container}>
+    <Pressable
+      style={styles.container}
+      onPress={() => {
+        router.push(`/crew/detail/${id}`);
+      }}
+    >
       <View style={styles.infoContainer}>
         <View style={styles.crewInfo}>
           <View>
@@ -20,7 +32,28 @@ function Crew({
           </View>
         </View>
         <Button
-          onPress={() => {}}
+          onPress={async () => {
+            const confirmApply = () => {
+              return new Promise((resolve) => {
+                Alert.alert(
+                  "크루 지원", // 제목
+                  `${name} 크루에 지원하시겠습니까?`, // 메시지
+                  [
+                    {
+                      text: "아니요",
+                      style: "cancel",
+                      onPress: () => resolve(false),
+                    }, // 취소 버튼
+                    { text: "예", onPress: () => resolve(true) }, // 종료 버튼
+                  ]
+                );
+              });
+            };
+            const permit = await confirmApply();
+            if (permit) {
+              fetchCrewApply(id);
+            }
+          }}
           theme="secondary"
           style={{
             paddingVertical: 5,
@@ -32,7 +65,7 @@ function Crew({
         </Button>
       </View>
       <Text style={styles.description}>{description}</Text>
-    </View>
+    </Pressable>
   );
 }
 const styles = StyleSheet.create({

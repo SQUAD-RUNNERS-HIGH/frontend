@@ -15,12 +15,12 @@ function SurroundCrews() {
         gcTime: 1000 * 60 * 5,
       });
   const flatContents = surroundCrews?.pages?.flatMap((page) => page.data.content) ?? [];
-
   return (
     <View style = {styles.container}>
       {flatContents.map((crew,index) => (
         <Crew
           key={index}
+          id = {crew.crewId}
           name={crew.name}
           description={crew.description}
           userCount={crew.userCount}

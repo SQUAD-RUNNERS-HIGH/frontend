@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, Pressable } from "react-native";
+import { View, StyleSheet, Text, Pressable, Image } from "react-native";
 import { fetchMyCrew } from "../_lib/fetchMyCrew";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -8,12 +8,20 @@ interface MyCrewType {
   crewName: string;
   numberOfParticipants: number;
 }
-function Mycrew({id, crewName, numberOfParticipants}: MyCrewType) {
+function Mycrew({ id, crewName, numberOfParticipants }: MyCrewType) {
   const router = useRouter();
   return (
-    <Pressable onPress={() => {router.push(`/crew/detail/${id}`)}} style = {styles.container}>
+    <Pressable
+      onPress={() => {
+        router.push(`/crew/detail/${id}`);
+      }}
+      style={styles.container}
+    >
       <View style={styles.crewInfo}>
-        <View style={styles.image}></View>
+        <Image
+          source={require("@/assets/images/crewImage.png")}
+          style={styles.image}
+        />
         <View>
           <Text style={styles.crewTitle}>{crewName}</Text>
           <Text style={styles.crewMember}>멤버 {numberOfParticipants}명</Text>
@@ -60,8 +68,7 @@ const styles = StyleSheet.create({
   image: {
     width: 40,
     height: 40,
-    backgroundColor: "blue",
-    borderRadius: "100%",
+    borderRadius: 999,
   },
   role: {
     color: "#6500A8",
