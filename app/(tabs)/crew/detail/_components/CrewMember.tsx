@@ -13,7 +13,7 @@ export const CrewMember = ({ id }: { id: string }) => {
     queryKey: ["crewParticipants", id],
     queryFn: () => fetchCrewParticipants(id),
     enabled: !!id,
-    staleTime: 100000,
+    staleTime:0,
   });
   console.log(participants);
   return (

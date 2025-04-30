@@ -14,19 +14,13 @@ import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 import { CourseResponse } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
-import RunningInfo from "@/app/_component/Modal/RunningModal/RunningInfo";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMyCrew } from "../crew/_lib/fetchMyCrew";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function Index() {
-  useQuery({
-    queryKey: ["myCrew"],
-    queryFn: fetchMyCrew,
-    staleTime: 100000,
-  });
+
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
-    queryKey: ['courses', region],
+    queryKey: ["courses", region],
     queryFn: () => fetchCourses(region),
     enabled: !!region,
   });
@@ -84,52 +78,51 @@ export default function Index() {
   useEffect(() => {
     if (data) {
       setCurrentCourses(data.courseResponses);
-    }  }, [data])
+    }
+  }, [data]);
   // 러닝 시
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
-    const PITCH = 0.0005
-    if (isRunning && runningLocation && myLocation) {
+
+    if (isRunning && runningLocation && runningInfo !== "solo"  && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: myLocation?.latitude-PITCH,
+          latitude: runningLocation?.latitude,
           longitude: runningLocation?.longitude,
         },
-        pitch: 50, // 기울기 (0~90도)
+        pitch: 60, // 기울기 (0~90도)
         heading: runningLocation?.heading, // 방향 (나아가는 방향)
         altitude: runningLocation?.altitude, // 고도
+        zoom: 19, // 줌 레벨
+      });
+    }
+    if (isRunning && runningInfo === "solo" && myLocation) {
+      mapRef.current?.animateCamera({
+        center: {
+          latitude: myLocation?.latitude,
+          longitude: myLocation?.longitude,
+        },
+        pitch: 60, // 기울기 (0~90도)
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 18, // 줌 레벨
       });
     }
-    if (isRunning && runningInfo === 'solo' && myLocation) {
-      mapRef.current?.animateCamera({
-        center: {
-          latitude: myLocation?.latitude-PITCH,
-          longitude: myLocation?.longitude,
-        },
-        pitch: 50, // 기울기 (0~90도)
-        heading: myLocation?.heading, // 방향 (나아가는 방향)
-        altitude: myLocation?.altitude, // 고도
-        zoom: 17, // 줌 레벨
-      });
-    }
-    if(!isRunning && runningInfo.includes('Finish')){
-
-        mapRef.current?.animateCamera(
-          {
-            center: {
-              longitude: myLocation?.longitude,
-              latitude: myLocation?.latitude,
-            },
-            zoom:16,
-            pitch: 0,
-            altitude:myLocation?.altitude,
+    if (!isRunning && runningInfo.includes("Finish")) {
+      mapRef.current?.animateCamera(
+        {
+          center: {
+            longitude: myLocation?.longitude,
+            latitude: myLocation?.latitude,
           },
-          { duration: 1000 }
-        );
-      }
-    } 
-  , [isRunning, myLocation, runningLocation]);
+          zoom: 16,
+          pitch: 0,
+          altitude: myLocation?.altitude,
+        },
+        { duration: 1000 }
+      );
+    }
+  }, [isRunning, myLocation, runningLocation]);
 
   // 위치 추적 시작
   useEffect(() => {
@@ -265,14 +258,14 @@ export default function Index() {
             onPress={async () => {
               const currentCamera = await mapRef.current?.getCamera();
               if (currentCamera) {
-                const { center, zoom,pitch, ...rest } = currentCamera;
+                const { center, zoom, pitch, ...rest } = currentCamera;
                 mapRef.current?.animateCamera(
                   {
                     center: {
                       longitude: myLocation?.longitude,
                       latitude: myLocation?.latitude,
                     },
-                    zoom:16,
+                    zoom: 16,
                     pitch: 0,
                     ...rest,
                   },
@@ -299,14 +292,14 @@ export default function Index() {
             onPress={async () => {
               const currentCamera = await mapRef.current?.getCamera();
               if (currentCamera) {
-                const { center, zoom,pitch, ...rest } = currentCamera;
+                const { center, zoom, pitch, ...rest } = currentCamera;
                 mapRef.current?.animateCamera(
                   {
                     center: {
                       longitude: myLocation?.longitude,
                       latitude: myLocation?.latitude,
                     },
-                    zoom:16,
+                    zoom: 16,
                     pitch: 0,
                     ...rest,
                   },

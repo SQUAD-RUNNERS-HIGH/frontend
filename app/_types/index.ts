@@ -104,6 +104,7 @@ export interface Crew {
   crewId: number;
   crewName: string;
   numberOfParticipants: number;
+  crewUserRole?: string;
 }
 
 export interface myCrewResponse {

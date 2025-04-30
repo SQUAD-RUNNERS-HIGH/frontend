@@ -16,9 +16,9 @@ export const CrewApplyModal = ({
   setApplyModal: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const { data } = useQuery({
-    queryKey: ["crew-applicant", id],
+    queryKey: ["crewApplicant", id],
     queryFn: () => fetchCrewApplicants(id),
-    staleTime: 60 * 1000 * 5,
+    staleTime:0,
   });
   const { mutate: grantCrewApply } = useCrewApplyGrant();
   const { mutate: declineCrewApply } = useCrewApplyDecline();
@@ -42,22 +42,24 @@ export const CrewApplyModal = ({
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>크루 가입 신청</Text>
           <View style={styles.crewContainer}>
-            {data?.applicantResponse.map((crew) => (
-              <View style={styles.crew}>
+            {data?.applicantResponse.map((applicant) => {
+              console.log(applicant);
+              return (
+              <View style={styles.crew} key={applicant.id}>
                 <View style={styles.crewInfo}>
                   <Image
                     style={styles.crewImage}
                     source={require("@/assets/images/crewMember1.png")}
                   />
                   <View>
-                    <Text>{crew?.username}</Text>
-                    <Text>{crew?.applicationDate}</Text>
+                    <Text>{applicant?.username}</Text>
+                    <Text>{applicant?.applicationDate}</Text>
                   </View>
                 </View>
                 <View style={styles.buttonContainer}>
                   <Button
                     onPress={() => {
-                      grantCrewApply({ id, applicantId: crew?.applicantId });
+                      grantCrewApply({ id: Number(id), applicantId: Number(applicant?.id) });
                     }}
                     style={{ paddingHorizontal: 11 }}
                   >
@@ -65,7 +67,7 @@ export const CrewApplyModal = ({
                   </Button>
                   <Button
                     onPress={() => {
-                      declineCrewApply({ id, applicantId: data?.applicantId });
+                      declineCrewApply({  id: Number(id), applicantId: Number(applicant?.id) });
                     }}
                     style={{ paddingHorizontal: 11 }}
                     theme="secondary"
@@ -74,7 +76,7 @@ export const CrewApplyModal = ({
                   </Button>
                 </View>
               </View>
-            ))}
+            )})}
             {
               data?.applicantResponse.length===0 && (
                 <View style = {{paddingHorizontal:24}}>
