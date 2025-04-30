@@ -29,6 +29,11 @@ function CrewRaking() {
           </Text>
         </Pressable>
       ))}
+      {crewRanking?.data?.crewRankResponses.length===0 && (<View
+                style={styles.noCrewContainer}
+              >
+                <Text>크루가 없습니다.</Text>
+              </View>)}
     </View>
   );
 }
@@ -70,6 +75,12 @@ const styles = StyleSheet.create({
     width:32,
     height:32,
     borderRadius:999,
+  },
+  noCrewContainer:{
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 16,
+    paddingBottom: 8,
   }
 });
 export default CrewRaking;
