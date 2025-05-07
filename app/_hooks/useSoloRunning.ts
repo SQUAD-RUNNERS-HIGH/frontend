@@ -4,16 +4,17 @@ import { location } from "@/app/_types";
 import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../_lib/discriminateRecordType";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
+import { useLocationStore } from "@/store/useLocationStore";
 
 export const useSoloRunning = () => {
   const {
-    myLocation,
     preRunning,
     setRunDistance,
     runningRecord,
     setRunningRecord,
     runDistance,
   } = useLocation();
+  const myLocation = useLocationStore(state => state.myLocation);
   const [seconds, setSeconds] = useState(0);
   const [progress, setProgress] = useState<location[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
@@ -40,7 +41,7 @@ export const useSoloRunning = () => {
     }
 
     if (!preRunning && myLocation) {
-      setSpeed(convertSpeedToPace(myLocation.speed));
+      setSpeed(convertSpeedToPace(myLocation?.speed));
       const interval = setInterval(() => {
         setProgress((prev) => [
           ...prev,

@@ -27,11 +27,21 @@ interface FormProps extends BaseProps {
 }
 
 interface NonFormProps extends BaseProps {
-  form?: false;
+  form?: boolean;
   setSearchedLocation: React.Dispatch<SetStateAction<Region>>; // 또는 다른 타입
 }
 
-type SearchInputProps = FormProps | NonFormProps;
+type SearchInputProps =
+  | {
+      form: true;
+      setSearchedLocation: React.Dispatch<
+        SetStateAction<z.infer<typeof userLocationSchema>>
+      >;
+    } & BaseProps
+  | {
+      form?: false;
+      setSearchedLocation: React.Dispatch<SetStateAction<Region>>;
+    } & BaseProps;
 
 const SearchDropdown = ({
   results,
@@ -39,7 +49,7 @@ const SearchDropdown = ({
   setSearchedLocation,
   setDropdownHeight,
   inputHeight,
-  form
+  form=false
 }: SearchInputProps) => {
   const { setIsDropdownVisible } = useLocation();
   return (
@@ -55,15 +65,17 @@ const SearchDropdown = ({
       <FlatList
         data={results}
         keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }: { item: any }) => {
+        renderItem={({ item }: {item: Place}) => {
           return (
             <Pressable
               style={styles.resultItem}
               onPress={() => {
+              // form 에서 사용될 경우
               if(form) {
                 setSearchedLocation({latitude: item.geometry.location.lat,
                   longitude: item.geometry.location.lng, specificLocation: item.formatted_address});
               }
+              // form 에서 사용되지 않았을경우
               else{
                 const latitudeDelta =
                   item.geometry.viewport.northeast.lat -
@@ -78,7 +90,6 @@ const SearchDropdown = ({
                   longitudeDelta,
                 };
                 setSearchedLocation(location);
-
               }
                 setSelectedQuery(item.formatted_address);
                 setIsDropdownVisible(false);

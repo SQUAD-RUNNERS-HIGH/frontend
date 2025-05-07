@@ -15,17 +15,23 @@ import {
 } from "react-native";
 import Button from "../../Button";
 import { apiClient } from "@/api/apiClient";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useShallow } from "zustand/react/shallow";
 const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
   
   const {
-    myLocation,
-    runningLocation,
     runningInfo,
     selectedCourse,
     setIsRunning,
     setPreRunning,
     client,
   } = useLocation();
+  const {myLocation, stompLocation} = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+      stompLocation: state.stompLocation,
+    }))
+  );
   const {
     data: detail,
     isLoading,
@@ -48,7 +54,6 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
     staleTime: 100000,
   });
   const { connected, sendLocation } = useStomp();
-  console.log(data?.progress);
   useEffect(() => {
     if (client.current && myLocation && connected) {
 
@@ -74,7 +79,7 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
       )}
       {connected ? (
         <>
-          {runningLocation?.runningStatus === "ONGOING" ? (
+          {stompLocation?.runningStatus === "ONGOING" ? (
             <>
               <Text style={[styles.modalDepscription2, { fontWeight: 700 }]}>
                 {data?.competitorUserName}님과 러닝을 시작합니다.

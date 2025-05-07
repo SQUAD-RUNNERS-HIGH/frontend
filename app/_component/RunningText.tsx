@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import * as Speech from "expo-speech";
-import { useLocation } from "../_hooks/useLocation";
+import { useLocationStore } from "@/store/useLocationStore";
 
 export const RunningText = ({
   winning,
@@ -15,7 +15,7 @@ export const RunningText = ({
   endRunCompetitor: boolean;
 }) => {
   const [message, setMessage] = useState<string>();
-  const { runningLocation } = useLocation();
+  const stompLocation = useLocationStore(store => store.stompLocation);
   useEffect(() => {
     if (!endRunCompetitor)
       setMessage(
@@ -29,7 +29,7 @@ export const RunningText = ({
       Speech.stop(); // 이전 스피치 중단
       Speech.speak(message, { voice: "ko-KR-SMTl01" });
     }
-    if (runningLocation?.runningStatus === "ESCAPED") {
+    if (stompLocation?.runningStatus === "ESCAPED") {
       Speech.stop();
     }
     if (endRunCompetitor) setMessage("경쟁자의 러닝이 끝났습니다.");
