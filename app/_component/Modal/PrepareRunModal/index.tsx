@@ -10,9 +10,15 @@ import PrepareCompetitor from "./PrepareCompetitor";
 import PrepareSolo from "./PrepareSolo";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { PrepareCrew } from "./PrepareCrew";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 const PrepareRunModal = () => {
-  const { runningInfo, setRunningInfo, selectedCourse, currentCourses } =
+  const { selectedCourse, currentCourses } =
     useLocation();
+  const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state)=> ({
+    runningInfo: state.runningInfo,
+    setRunningInfo: state.setRunningInfo
+  })));
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
  

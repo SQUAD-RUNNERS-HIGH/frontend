@@ -1,12 +1,24 @@
 import { StyleSheet, View, Text, Alert } from "react-native";
 import Button from "../../Button";
 import React, { SetStateAction, useEffect } from "react";
-import { useLocation } from "@/app/_hooks/useLocation";
 import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 export function RunningModal() {
-  const { setRunDistance, runningInfo, setRunningInfo, setIsRunning } =
-    useLocation();
+  const {
+    setRunDistance,
+    runningInfo,
+    setRunningInfo,
+    setIsRunning,
+  } = useRunningStore(
+    useShallow((state) => ({
+      setRunDistance: state.setRunDistance,
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+      setIsRunning: state.setIsRunning,
+    }))
+  );
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(

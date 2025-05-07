@@ -5,15 +5,26 @@ import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../_lib/discriminateRecordType";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useLocationStore } from "@/store/useLocationStore";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const useSoloRunning = () => {
+
   const {
     preRunning,
     setRunDistance,
     runningRecord,
     setRunningRecord,
     runDistance,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      preRunning: state.preRunning,
+      setRunDistance: state.setRunDistance,
+      runningRecord: state.runningRecord,
+      setRunningRecord: state.setRunningRecord,
+      runDistance: state.runDistance,
+    }))
+  );
   const myLocation = useLocationStore(state => state.myLocation);
   const [seconds, setSeconds] = useState(0);
   const [progress, setProgress] = useState<location[]>([]);

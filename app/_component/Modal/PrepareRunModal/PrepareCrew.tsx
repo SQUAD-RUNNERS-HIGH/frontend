@@ -4,17 +4,28 @@ import { useQuery } from "@tanstack/react-query";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import Button from "../../Button";
 import Checkbox from "expo-checkbox";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
   const {
-    myLocation,
-    runningLocation,
-    runningInfo,
     selectedCourse,
-    setIsRunning,
-    setPreRunning,
     client,
   } = useLocation();
+  const { myLocation, stompLocation } = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+      stompLocation: state.stompLocation,
+    }))
+  );
+  const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setIsRunning: state.setIsRunning,
+      setPreRunning: state.setPreRunning,
+    }))
+  );
   const {
     data: detail,
     isLoading,

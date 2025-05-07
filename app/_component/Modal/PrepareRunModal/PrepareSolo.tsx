@@ -1,9 +1,17 @@
 import { Text, StyleSheet, View } from "react-native";
 import Button from "../../Button";
 import { useLocation } from "@/app/_hooks/useLocation";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 const PrepareSolo = () => {
-  const { setPreRunning, setIsRunning, setRunningInfo, selectedCourse, setSelectedCourse } = useLocation();
-  return (
+  const { selectedCourse, setSelectedCourse } = useLocation();
+  const { setPreRunning, setIsRunning, setRunningInfo } = useRunningStore(
+    useShallow((state) => ({
+      setPreRunning: state.setPreRunning,
+      setIsRunning: state.setIsRunning,
+      setRunningInfo: state.setRunningInfo,
+    }))
+  );  return (
     <>
       <Text style={styles.modalDepscription2}>
         현재 위치를 기준으로 러닝을 시작합니다.

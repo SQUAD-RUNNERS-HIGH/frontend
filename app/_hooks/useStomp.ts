@@ -3,30 +3,39 @@ import { Client, IMessage } from "@stomp/stompjs";
 import { useLocation } from "./useLocation";
 import { location } from "@/app/_types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
+import { useLocationStore } from "@/store/useLocationStore";
 
 export function useStomp() {
   const {
     client,
     selectedCourse,
-    setRunningLocation,
+  } = useLocation();
+  const {
     runningInfo,
     isRunning,
-    setRunningParticipants,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      isRunning: state.isRunning,
+    }))
+  );
+  const setStompLocation = useLocationStore(state => state.setStompLocation); 
   const [connected, setConnected] = useState(false);
   const handleMessage = useCallback((data) => {
     console.log(data);
     console.log("message");
-    if (!isRunning && !isNaN(Number(runningInfo))) {
-      setRunningParticipants(data?.nearByParticipants);
-    } else {
-      setRunningLocation((prev) => ({
+    // if (!isRunning && !isNaN(Number(runningInfo))) {
+    //   setRunningParticipants(data?.nearByParticipants);
+    // } else {
+      setStompLocation((prev) => ({
         ...prev,
         runningStatus: data?.runningStatus,
         latitude: data?.latitude,
         longitude: data?.longitude,
       }));
-    }
+    // }
     // setRunningLocation((prev) => ({
     //   ...prev,
     //   status: data?.status,

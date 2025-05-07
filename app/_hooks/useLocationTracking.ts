@@ -3,12 +3,13 @@ import * as Location from "expo-location";
 import { Alert, AppState } from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useLocation } from "./useLocation";
+import { useRunningStore } from "@/store/useRunningStore";
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
-  const { isRunning } = useLocation();
+  const isRunning  = useRunningStore(state => state.isRunning);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();

@@ -17,16 +17,18 @@ import Button from "../../Button";
 import { apiClient } from "@/api/apiClient";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
-const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
-  
-  const {
-    runningInfo,
-    selectedCourse,
-    setIsRunning,
-    setPreRunning,
-    client,
-  } = useLocation();
-  const {myLocation, stompLocation} = useLocationStore(
+import { useRunningStore } from "@/store/useRunningStore";
+const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
+  const { selectedCourse, client } = useLocation();
+
+  const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setIsRunning: state.setIsRunning,
+      setPreRunning: state.setPreRunning,
+    }))
+  );
+  const { myLocation, stompLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
       stompLocation: state.stompLocation,
@@ -40,8 +42,12 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => {
       return fetchCourseDetail(selectedCourse);
-    },    
-    enabled: !!(selectedCourse && selectedCourse!=='solo' && runningInfo !=='solo'), // selectedCourse가 있을 때만 실행,
+    },
+    enabled: !!(
+      selectedCourse &&
+      selectedCourse !== "solo" &&
+      runningInfo !== "solo"
+    ), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
   const {
@@ -56,7 +62,6 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
   const { connected, sendLocation } = useStomp();
   useEffect(() => {
     if (client.current && myLocation && connected) {
-
       sendLocation(myLocation);
     }
   }, [myLocation, connected]); // ✅

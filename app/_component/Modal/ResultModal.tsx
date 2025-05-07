@@ -23,19 +23,28 @@ import {
   isSoloRunningRecord,
 } from "@/app/_lib/discriminateRecordType";
 import { fetchSaveCourses } from "@/app/(tabs)/map/_lib/fetchSaveCourse";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 
 const ResultModal = () => {
+  const { selectedCourse, currentCourses, setSelectedCourse } = useLocation();
   const {
     runningInfo,
     setRunningInfo,
-    selectedCourse,
     runningRecord,
     setRunningRecord,
     runDistance,
-    currentCourses,
-    setSelectedCourse,
     setRunDistance,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+      runningRecord: state.runningRecord,
+      setRunningRecord: state.setRunningRecord,
+      runDistance: state.runDistance,
+      setRunDistance: state.setRunDistance,
+    }))
+  );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();

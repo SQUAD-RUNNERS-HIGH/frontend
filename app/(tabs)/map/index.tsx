@@ -16,7 +16,8 @@ import { fetchCourses } from "./_lib/fetchCourses";
 import { useQuery } from "@tanstack/react-query";
 import { useLocationTracking } from "@/app/_hooks/useLocationTracking";
 import { useLocationStore } from "@/store/useLocationStore";
-import { useShallow } from 'zustand/react/shallow';
+import { useShallow } from "zustand/react/shallow";
+import { useRunningStore } from "@/store/useRunningStore";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -29,19 +30,25 @@ export default function Index() {
   const {
     selectedCourse,
     currentCourses,
-    runningInfo,
-    isRunning,
     setCurrentCourses,
-    setRunningInfo,
     setSelectedCourse,
     setIsDropdownVisible,
-    setIsRunning,
   } = useLocation();
-  const { myLocation, stompLocation,mapLocation } = useLocationStore(
+
+  const { runningInfo, isRunning, setRunningInfo, setIsRunning } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        isRunning: state.isRunning,
+        setRunningInfo: state.setRunningInfo,
+        setIsRunning: state.setIsRunning,
+      }))
+    );
+  const { myLocation, stompLocation, mapLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
       stompLocation: state.stompLocation,
-      mapLocation: state.mapLocation
+      mapLocation: state.mapLocation,
     }))
   );
   const mapRef = useRef<MapView>(null);
@@ -87,7 +94,7 @@ export default function Index() {
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
 
-    if (isRunning && stompLocation && runningInfo !== "solo"  && myLocation) {
+    if (isRunning && stompLocation && runningInfo !== "solo" && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: stompLocation?.latitude,

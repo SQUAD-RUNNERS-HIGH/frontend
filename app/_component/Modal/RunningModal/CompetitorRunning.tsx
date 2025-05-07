@@ -7,8 +7,15 @@ import ProgressList from "../../ProgressList";
 import { RunningText } from "../../RunningText";
 import { useEffect, useState } from "react";
 import { useLocationStore } from "@/store/useLocationStore";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 const CompetitorRunning = () => {
-  const { runningRecord ,runDistance } = useLocation();
+  const { runningRecord, runDistance } = useRunningStore(
+    useShallow((state) => ({
+      runningRecord: state.runningRecord,
+      runDistance: state.runDistance,
+    }))
+  );  
   const stompLocation = useLocationStore(state => state.stompLocation);
   const {
     data,

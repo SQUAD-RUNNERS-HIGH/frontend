@@ -14,10 +14,16 @@ import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/apiClient";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 
 export function SelectCompetitor() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { setRunningInfo, selectedCourse, runningInfo } = useLocation();
+  const { selectedCourse } = useLocation();
+  const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state) => ({
+    runningInfo:state.runningInfo,
+    setRunningInfo: state.setRunningInfo
+  })))
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],

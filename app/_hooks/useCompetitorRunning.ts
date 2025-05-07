@@ -8,16 +8,27 @@ import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
+import { useRunningStore } from "@/store/useRunningStore";
 export const useCompetitorRunning = () => {
   const {
-    runningInfo,
     selectedCourse,
     currentCourses,
+  } = useLocation();
+  const {
+    runningInfo,
     setRunningRecord,
     preRunning,
     setRunDistance,
     runDistance,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningRecord: state.setRunningRecord,
+      preRunning: state.preRunning,
+      setRunDistance: state.setRunDistance,
+      runDistance: state.runDistance,
+    }))
+  );
   const {myLocation, stompLocation} = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
