@@ -5,11 +5,17 @@ import MyLocation from "@/assets/images/svg/Mylocation";
 import { convertSpeedToPace } from "@/app/_lib/convertSpeedToPace";
 
 const SoloRunning = () => {
-  const { seconds } = useSoloRunning();
+  const { speed, seconds } = useSoloRunning();
   const { runDistance, myLocation } = useLocation();
   return (
     <>
-      <RunningInfo seconds={seconds} rest={runDistance} speed={convertSpeedToPace(myLocation?.speed)} />
+      {myLocation && (
+        <RunningInfo
+          seconds={seconds}
+          rest={runDistance}
+          speed={speed}
+        />
+      )}
     </>
   );
 };

@@ -6,6 +6,7 @@ import { getDistance, getPathLength } from "geolib";
 import { location } from "../_types";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
+import { Alert } from "react-native";
 export const useCompetitorRunning = () => {
   const {
     runningInfo,
@@ -16,17 +17,13 @@ export const useCompetitorRunning = () => {
     setRunningRecord,
     preRunning,
     setRunDistance,
-    runDistance
+    runDistance,
   } = useLocation();
   const { sendLocation } = useStomp();
-  const {
-    data,
-    isSuccess: completeCompetitorRecord,
-    error: errorCompetitorRecord,
-  } = useQuery({
+  const { data } = useQuery({
     queryKey: ["courseHistory", runningInfo, selectedCourse],
     queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
-    staleTime:100000
+    staleTime: 100000,
   });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
   const [totalDistance, setTotalDistance] = useState(0);
@@ -34,11 +31,11 @@ export const useCompetitorRunning = () => {
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [progress, setProgress] = useState<number[]>([]);
   const [competitorProgress, setCompetitorProgress] = useState<number>(0);
-  const [traveledDistance, setTraveledDistance] = useState(0); // 유저 실제 이동 거리 (m)
   const prevLocation = useRef<location | null>(null);
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
   const [winning, setWinning] = useState<boolean>(true);
-
+  const [index, setIndex] = useState<number>(0);
+  const [text, setText] = useState<string>('');
   useEffect(() => {
     if (selectedCourse) {
       setRunningRecord({
@@ -59,25 +56,33 @@ export const useCompetitorRunning = () => {
     }
   }, []);
   useEffect(() => {
-    if (completeCompetitorRecord && !preRunning) {
-      // ✅ 조건 추가
+    if (data && !preRunning) {
       const interval = setInterval(() => {
         setSeconds((prev) => prev + 1);
-        if (myLocation) {
-          sendLocation(myLocation);
-        }
-        setSpeed(convertSpeedToPace(myLocation?.speed));
       }, 1000);
-
       return () => clearInterval(interval);
     }
-  }, [completeCompetitorRecord, preRunning]); // 의존성 배열에 preRunning 추가
+  }, [data, preRunning]);
+  useEffect(() => {
+    if (myLocation && !preRunning && data) {
+      const interval = setInterval(() => {
+        if (index < data?.progress.length-1) {
+          setIndex((prev) => prev + 1);
+        }
+        sendLocation(myLocation);
+
+        setSpeed(convertSpeedToPace(myLocation?.speed));
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [myLocation, preRunning, data]);
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
       const total = getPathLength(currentCourse);
       setTotalDistance(total);
     }
   }, [currentCourse]);
+
   useEffect(() => {
     if (runningLocation) {
       if (prevLocation.current) {
@@ -92,32 +97,37 @@ export const useCompetitorRunning = () => {
               longitude: runningLocation?.longitude,
             }
           );
-          setRunDistance((prev) => {
-            const newTraveledDistance = prev + distance;
-            return newTraveledDistance;
-          });
+          setRunDistance((prev) => prev + distance);
         }
+
       }
       prevLocation.current = runningLocation;
+
     }
   }, [runningLocation]);
 
   useEffect(() => {
-    const newProgress = totalDistance
-      ? (traveledDistance / totalDistance) * 100
-      : 0;
-    setProgress((prev) => [...prev, Number(newProgress.toFixed(2))]);
-  }, [seconds]);
+    if (totalDistance > 0 && index > 0) {
+      const newProgress = runDistance / totalDistance;
+      setProgress((prevProgress) => [
+        ...prevProgress,
+        Number(newProgress.toFixed(4)),
+      ]);
+    }
+  }, [index, runDistance, totalDistance]);
 
   useEffect(() => {
-    if (data && seconds > 0 && seconds - 1 < data?.progress.length) {
-      const newCompetitorProgress = data?.progress[seconds - 1] ?? 0;
+    if (data && index >= 0 && data?.progress.length >= 1) {
+      const rawCompetitorProgress = data?.progress[index] ?? 0;
+      const safeCompetitorProgress = isNaN(rawCompetitorProgress)
+        ? 0
+        : rawCompetitorProgress;
       const newCompetitorDistance =
-        totalDistance * (Math.min(newCompetitorProgress, 100) / 100);
-      setCompetitorProgress(newCompetitorProgress);
-      setWinning(traveledDistance >= newCompetitorDistance);
+        Number((totalDistance * safeCompetitorProgress).toFixed(0));
+      setCompetitorProgress(Number(safeCompetitorProgress.toFixed(4)));
+      setWinning(runDistance >= newCompetitorDistance);
       setDistanceToCompetitor(
-        Math.abs(newCompetitorDistance - traveledDistance)
+        Math.abs(newCompetitorDistance - runDistance)
       );
     }
     setRunningRecord({
@@ -125,14 +135,16 @@ export const useCompetitorRunning = () => {
       progress: progress,
       courseId: selectedCourse,
     });
-  }, [progress]);
+  }, [progress, index, totalDistance, runDistance]);
   return {
     data,
     speed,
     seconds,
+    text,
+    index,
     winning,
     distanceToCompetitor,
     competitorProgress,
-    completeCompetitorRecord,
+    totalDistance,
   };
 };

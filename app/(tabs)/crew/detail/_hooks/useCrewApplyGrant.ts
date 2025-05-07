@@ -6,13 +6,14 @@ export function useCrewApplyGrant() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ id, applicantId }: { id: string; applicantId: number }) =>
+    mutationFn: ({ id, applicantId }: { id: number; applicantId: number }) =>
       fetchCrewApplyGrant(id, applicantId),
     onSuccess: (_, variables) => {
       const { id } = variables;
       Alert.alert('크루 요청이 승인되었습니다!')
       queryClient.invalidateQueries({ queryKey: ["crewDetail", id] });
       queryClient.invalidateQueries({ queryKey: ["crewParticipants", id] });
+      queryClient.invalidateQueries({ queryKey: ["crewApplicant", id] });
     },
     onError: (error) => {
       console.error("Grant mutation failed:", error);

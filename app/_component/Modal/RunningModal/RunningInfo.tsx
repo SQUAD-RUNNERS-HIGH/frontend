@@ -15,7 +15,7 @@ const RunningInfo = ({seconds, rest, speed}: RunningInfoProps) => {
             <Text style={styles.key}>경과시간</Text>
           </View>
           <View style={styles.info}>
-            <Text style={styles.value}>{rest}km</Text>
+            <Text style={styles.value}>{rest}m</Text>
             <Text style={styles.key}>{`${runningInfo === 'solo' ? '뛴 ':'남은 '}`}거리</Text>
           </View>
           <View style={styles.info}>

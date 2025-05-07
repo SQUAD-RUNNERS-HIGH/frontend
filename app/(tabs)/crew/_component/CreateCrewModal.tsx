@@ -17,6 +17,7 @@ import { z } from "zod";
 import Button from "@/app/_component/Button";
 import { useRouter } from "expo-router";
 import { fetchCrewCreate } from "../_lib/fetchCrewCreate";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CreateCrewModal({
   modalVisible,
@@ -25,10 +26,13 @@ export function CreateCrewModal({
   modalVisible: boolean;
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
+  const queryClient = useQueryClient();
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
     const response = await fetchCrewCreate(data);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
+
+      queryClient.invalidateQueries({ queryKey: ["myCrew"] });
       setModalVisible(false);
     }
   };
@@ -36,12 +40,11 @@ export function CreateCrewModal({
     control,
     handleSubmit,
     formState: { errors, isValid },
-    watch
+    watch,
   } = useForm<z.infer<typeof crewSchema>>({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
-  console.log(watch())
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
@@ -102,7 +105,7 @@ export function CreateCrewModal({
                 isLocationInput
               />
               <Button
-                style={{ marginTop: 6, width: "100%" }}
+                style={{ marginTop: 20, width: "100%" }}
                 onPress={handleSubmit(onSubmit)}
               >
                 크루 만들기

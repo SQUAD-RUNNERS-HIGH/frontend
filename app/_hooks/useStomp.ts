@@ -2,19 +2,31 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import { useLocation } from "./useLocation";
 import { location } from "@/app/_types";
-import * as Sentry from "@sentry/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function useStomp() {
-  const { client, selectedCourse, setRunningLocation, runningInfo } =
-    useLocation();
+  const {
+    client,
+    selectedCourse,
+    setRunningLocation,
+    runningInfo,
+    isRunning,
+    setRunningParticipants,
+  } = useLocation();
   const [connected, setConnected] = useState(false);
   const handleMessage = useCallback((data) => {
-    setRunningLocation((prev) => ({
-      ...prev,
-      runningStatus: data?.runningStatus,
-      latitude: data?.latitude,
-      longitude: data?.longitude,
-    }));
+    console.log(data);
+    console.log("message");
+    if (!isRunning && !isNaN(Number(runningInfo))) {
+      setRunningParticipants(data?.nearByParticipants);
+    } else {
+      setRunningLocation((prev) => ({
+        ...prev,
+        runningStatus: data?.runningStatus,
+        latitude: data?.latitude,
+        longitude: data?.longitude,
+      }));
+    }
     // setRunningLocation((prev) => ({
     //   ...prev,
     //   status: data?.status,
@@ -40,7 +52,6 @@ export function useStomp() {
     if (client.current) {
       client.current.activate();
       client.current.onStompError = (frame) => {
-        Sentry.captureMessage(`stomp failed: ${frame.headers["message"]}`);
 
         console.error(
           "[STOMP] Broker reported error:",
@@ -48,14 +59,33 @@ export function useStomp() {
         );
       };
       client.current.onConnect = () => {
-        // Sentry.captureMessage("client.current Connected?", clientRef.current?.connected); // 여기서 true여야 정상
         console.log("client.current Connected?", client.current?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
-        client.current?.subscribe("/user/queue/reply", (message: IMessage) => {
-          const data: location = JSON.parse(message.body);
-          handleMessage(data);
-        });
+        let subscription;
+        if (!isNaN(Number(runningInfo)) && isRunning) {
+          subscription = client.current?.subscribe(
+            `/topic/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+            (message: IMessage) => {
+              const data = JSON.parse(message.body);
+              console.log(data);
+              handleMessage(data);
+            }
+          );
+        } else {
+          subscription = client.current?.subscribe(
+            "/user/queue/reply",
+            (message: IMessage) => {
+              console.log("aaaa");
+              const data = JSON.parse(message.body);
+              handleMessage(data);
+            }
+          );
+        }
         setConnected(true);
+
+        return () => {
+          subscription?.unsubscribe(); // 이전 구독 정리
+        };
       };
       (client.current.onDisconnect = () => {}),
         (client.current.onWebSocketClose = (event: CloseEvent) => {
@@ -66,20 +96,67 @@ export function useStomp() {
         });
       client.current.onWebSocketError = (event) => {
         console.error("[STOMP] WebSsocket error:", event);
-        Sentry.captureException(event);
       };
     }
-  }, [client.current]);
+  }, [client.current, runningInfo, isRunning, selectedCourse, handleMessage]);
 
-  const sendLocation = (location: location) => {
-    if (client.current && client.current?.connected) {
+  const sendLocation = async (location: location, ready?: boolean) => {
+    // 러닝
+    if (
+      client.current &&
+      client.current?.connected &&
+      isNaN(Number(runningInfo))
+    ) {
       client.current.publish({
         destination: `/app/course/${selectedCourse}`,
         body: JSON.stringify(location),
       });
-    } else {
-      console.warn("STOMP client.current not connected");
+      return;
     }
+    // 크루러닝 준비
+    if (
+      client.current &&
+      client.current?.connected &&
+      !isNaN(Number(runningInfo)) &&
+      !isRunning
+    ) {
+      const userId = await AsyncStorage.getItem("userId");
+      const userName = await AsyncStorage.getItem("userName");
+
+      const newBody = {
+        userId: Number(userId),
+        userName,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        isReady: ready, // 추가로 받은 ready 사용
+      };
+      console.log(newBody);
+      client.current.publish({
+        destination: `/app/crew-participant/course/${selectedCourse}/crew/${runningInfo}`,
+        body: JSON.stringify(newBody),
+      });
+      return;
+    }
+    if (
+      client.current &&
+      client.current?.connected &&
+      !isNaN(Number(runningInfo)) &&
+      isRunning
+    ) {
+      const userId = await AsyncStorage.getItem("userId");
+
+      const newBody = {
+        userId: Number(userId),
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      };
+      client.current.publish({
+        destination: `/app/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+        body: JSON.stringify(newBody),
+      });
+      return;
+    }
+    console.warn("STOMP client.current not connected");
   };
 
   return {

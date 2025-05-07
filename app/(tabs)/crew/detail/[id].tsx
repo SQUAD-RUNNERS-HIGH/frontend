@@ -24,9 +24,8 @@ const CrewDetail = () => {
     queryKey: ["crewDetail", id],
     queryFn: () => fetchCrewDetail(id),
     enabled: !!id,
-    staleTime: 100000,
+    staleTime:0,
   });
-
   useEffect(() => {
     const onBackPress = () => {
       router.back();
@@ -40,25 +39,14 @@ const CrewDetail = () => {
 
     return () => subscription.remove(); // 컴포넌트 언마운트 시 해제
   }, [router]);
-  useEffect(() => {
-    const checkIsHost = async () => {
-      try {
-        const userName = await AsyncStorage.getItem("userName");
-        setIsHost(userName === detail?.crewLeaderName);
-      } catch (error) {
-        console.error("Failed to check host status:", error);
-        setIsHost(false);
-      }
-    };
 
-    checkIsHost();
-  }, [detail?.crewLeaderName]);
+  console.log(detail);
   return (
     <View style={styles.container}>
       <View style={styles.crewTitleContainer}>
         <Image
           style={styles.crewImage}
-          source={require("@/assets/images/camera.png")}
+          source={require("@/assets/images/crewImage.png")}
         />
         <View>
           <Text style={[styles.crewTitle, { fontSize: 20 }]}>
@@ -73,7 +61,7 @@ const CrewDetail = () => {
           <Button
             style={{ paddingHorizontal: 12, paddingVertical: 5 }}
             onPress={async () => {
-              if (!isHost) {
+              if (!(detail?.crewUserRole === 'LEADER')) {
                 const confirmApply = () => {
                   return new Promise((resolve) => {
                     Alert.alert(
@@ -99,7 +87,7 @@ const CrewDetail = () => {
               };              }}
             theme="secondary"
           >
-            {`${isHost? '신청자 보기': '가입 신청'}`}
+            {`${detail?.crewUserRole === 'LEADER'? '신청자 보기': '가입 신청'}`}
           </Button>
         </View>
         <Text style={[styles.crewSecondary, { color: "#485563" }]}>
@@ -110,11 +98,11 @@ const CrewDetail = () => {
         <Text style={styles.crewTitle}>활동 정보</Text>
         <View style={styles.crewInfoContainer}>
           <View style={styles.crewInfo}>
-            <Text style={styles.crewSecondary}>이번 달 거리</Text>
+            <Text style={styles.crewSecondary}>총 뛴 거리</Text>
             <Text
               style={[styles.crewTitle, { fontSize: 20, fontWeight: "bold" }]}
             >
-              767km
+              {detail?.crewScore}m
             </Text>
           </View>
           <View style={styles.crewInfo}>
@@ -138,10 +126,11 @@ const CrewDetail = () => {
       <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
         <View style={styles.crewInfoContainer}>
           <CrewMember id={id} />
-        </View>
+          </View>
       </View>
-      {applyModal &&
+      {applyModal && 
       <CrewApplyModal  id={id} applyModal setApplyModal={setApplyModal}/>}
+      
     </View>
   );
 };

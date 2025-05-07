@@ -9,6 +9,7 @@ import { Modal, Pressable, View, StyleSheet } from "react-native";
 import PrepareCompetitor from "./PrepareCompetitor";
 import PrepareSolo from "./PrepareSolo";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
+import { PrepareCrew } from "./PrepareCrew";
 const PrepareRunModal = () => {
   const { runningInfo, setRunningInfo, selectedCourse, currentCourses } =
     useLocation();
@@ -21,7 +22,6 @@ const PrepareRunModal = () => {
       setTotalDistance(total);
     }
   }, [courseCoordinates]);
-
   useEffect(() => {
     if (currentCourses && runningInfo !== 'solo') {
       setCourseCoordinates(
@@ -55,11 +55,12 @@ const PrepareRunModal = () => {
           {runningInfo === "solo" && <PrepareSolo />}
           {runningInfo !== "" &&
             runningInfo !== "solo" &&
-            runningInfo !== "crew" && (
+            isNaN(Number(runningInfo)) && (
               <PrepareCompetitor
                 totalDistance={totalDistance}
               />
             )}
+            {!isNaN(Number(runningInfo)) && <PrepareCrew totalDistance={totalDistance} />}
         </View>
       </View>
     </Modal>

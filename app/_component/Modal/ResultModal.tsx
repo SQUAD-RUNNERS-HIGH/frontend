@@ -2,7 +2,7 @@ import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { location } from "@/app/_types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPathLength } from "geolib";
 import { useEffect, useState } from "react";
 import {
@@ -18,7 +18,10 @@ import Button from "../Button";
 import { fetchSaveRecord } from "@/app/(tabs)/map/_lib/fetchSaveRecord";
 import FormInput from "../FormInput";
 import Input from "../Input";
-import { isCompetitorRunningRecord, isSoloRunningRecord } from "@/app/_lib/discriminateRecordType";
+import {
+  isCompetitorRunningRecord,
+  isSoloRunningRecord,
+} from "@/app/_lib/discriminateRecordType";
 import { fetchSaveCourses } from "@/app/(tabs)/map/_lib/fetchSaveCourse";
 
 const ResultModal = () => {
@@ -31,12 +34,13 @@ const ResultModal = () => {
     runDistance,
     currentCourses,
     setSelectedCourse,
+    setRunDistance,
   } = useLocation();
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
-
+  const queryClient = useQueryClient();
   useEffect(() => {
-    if (currentCourses && selectedCourse !== 'solo') {
+    if (currentCourses && selectedCourse !== "solo") {
       setCourseCoordinates(
         currentCourses
           .find((course) => course.courseId === selectedCourse)
@@ -52,14 +56,46 @@ const ResultModal = () => {
     if (runningRecord) {
       setIsLoading(true);
       try {
-        if (runningInfo === "competitorFinish"&& isCompetitorRunningRecord(runningRecord)) {
+        if (
+          runningInfo === "competitorFinish" &&
+          isCompetitorRunningRecord(runningRecord)
+        ) {
           await fetchSaveRecord(runningRecord);
+          queryClient.invalidateQueries({ queryKey: ["personalRanks"] });
         }
-        if (runningInfo === "soloFinish"&& isSoloRunningRecord(runningRecord)) {
-          await fetchSaveCourses({courseName:runningRecord?.courseName, coordinates: runningRecord?.coordinates});
+        if (
+          runningInfo === "soloFinish" &&
+          isSoloRunningRecord(runningRecord)
+        ) {
+          const totalDistance = runningRecord?.progress.reduce(
+            (sum, val) => sum + val,
+            0
+          );
+
+          // 2. 누적합을 이용해 누적 비율 계산
+          const cumulativeRatios: number[] = [];
+          let cumulativeSum = 0;
+
+          for (let i = 0; i < runningRecord?.progress.length; i++) {
+            cumulativeSum += runningRecord?.progress[i];
+            cumulativeRatios.push(
+              totalDistance > 0
+                ? Number((cumulativeSum / totalDistance).toFixed(4))
+                : 0
+            );
+          }
+
+          const response = await fetchSaveCourses({
+            courseName: runningRecord?.courseName,
+            coordinates: runningRecord?.coordinates,
+            runningTime: runningRecord?.runningTime,
+            progress: cumulativeRatios,
+          });
+          queryClient.invalidateQueries({ queryKey: ["courses"] });
         }
         setRunningInfo("");
         setSelectedCourse("");
+        setRunDistance(0);
       } catch (error) {
         Alert.alert(`기록 저장 실패: ${error}`);
       } finally {
@@ -78,21 +114,23 @@ const ResultModal = () => {
       <Pressable style={styles.modalOverlay}></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
-          {runningInfo === "soloFinish" &&   runningRecord && isSoloRunningRecord(runningRecord) && (
-            <Input
-              type="text"
-              onChange={(text) => {
-                if (isSoloRunningRecord(runningRecord)) {
-                  setRunningRecord((prev) => ({
-                    ...prev,
-                    courseName: text,
-                  }));
-                }
-              }}
-              value={runningRecord?.courseName}
-              placeholder="코스 이름을 입력하세요."
-            />
-          )}
+          {runningInfo === "soloFinish" &&
+            runningRecord &&
+            isSoloRunningRecord(runningRecord) && (
+              <Input
+                type="text"
+                onChange={(text) => {
+                  if (isSoloRunningRecord(runningRecord)) {
+                    setRunningRecord((prev) => ({
+                      ...prev,
+                      courseName: text,
+                    }));
+                  }
+                }}
+                value={runningRecord?.courseName}
+                placeholder="코스 이름을 입력하세요."
+              />
+            )}
           <Text style={styles.modalDepscription2}>
             <Text style={{ fontWeight: "500" }}>
               {Number(runningRecord?.runningTime).toFixed(0)}초
@@ -125,6 +163,7 @@ const ResultModal = () => {
                 onPress={() => {
                   setRunningInfo("");
                   setSelectedCourse("");
+                  setRunDistance(0);
                 }}
               >
                 저장하지 않고 종료

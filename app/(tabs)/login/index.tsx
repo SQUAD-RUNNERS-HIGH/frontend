@@ -38,6 +38,7 @@ export default function Login() {
       await authenticate(
         response?.data.data.tokenResponse.accessToken,
         response?.data.data.tokenResponse.refreshToken,
+        response?.data.data.userId.toString(),
       );
       router.push("/map");
     }

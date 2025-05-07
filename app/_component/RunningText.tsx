@@ -7,26 +7,32 @@ export const RunningText = ({
   winning,
   distance,
   seconds,
+  endRunCompetitor = false,
 }: {
   winning: boolean;
   distance: number;
   seconds: number;
+  endRunCompetitor: boolean;
 }) => {
   const [message, setMessage] = useState<string>();
-  const {runningLocation} = useLocation();
+  const { runningLocation } = useLocation();
   useEffect(() => {
-    setMessage(
-      `${distance.toFixed(0)}m ${winning ? "앞서고 있어요" : "뒤처지고 있어요"}`
-    );
+    if (!endRunCompetitor)
+      setMessage(
+        `${distance.toFixed(0)}m ${
+          winning ? "앞서고 있어요" : "뒤처지고 있어요"
+        }`
+      );
   }, [distance]);
   useEffect(() => {
-    if (seconds % 3 === 0 && message) {
+    if (!endRunCompetitor && seconds % 3 === 0 && message) {
       Speech.stop(); // 이전 스피치 중단
       Speech.speak(message, { voice: "ko-KR-SMTl01" });
     }
-    if (runningLocation?.runningStatus === 'ESCAPED') {
+    if (runningLocation?.runningStatus === "ESCAPED") {
       Speech.stop();
     }
+    if (endRunCompetitor) setMessage("경쟁자의 러닝이 끝났습니다.");
   }, [seconds]);
   return (
     <View style={styles.statusTextContainer}>

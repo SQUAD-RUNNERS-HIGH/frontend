@@ -10,7 +10,7 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import { Region } from "react-native-maps";
-import { CourseResponse, runningLocation, soloRunningRecord, competitorRunningRecord } from "../_types";
+import { CourseResponse, runningLocation, soloRunningRecord, competitorRunningRecord, Participant } from "../_types";
 import { Client } from "@stomp/stompjs";
 
 // 타입 정의
@@ -41,6 +41,8 @@ interface LocationContextType {
   client: React.MutableRefObject<Client | null>;
   runDistance: number;
   setRunDistance: React.Dispatch<SetStateAction<number>>;
+  runningParticipants: Participant[]
+  setRunningParticipants: React.Dispatch<SetStateAction<Participant[]>>
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -56,7 +58,7 @@ export const LocationProvider = ({
   const [myLocation, setMyLocation] = useState<LocationObjectCoords | null>(
     null
   );
-
+  const [runningParticipants, setRunningParticipants] = useState<Participant[]>([]);
   const [subscription, setSubscription] =
     useState<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
@@ -89,8 +91,8 @@ export const LocationProvider = ({
     const sub = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: runningInfo ? 500 : 3000, // 3초마다 업데이트
-        distanceInterval: runningInfo ? 1 : 5, // 5m 이동마다 업데이트
+        timeInterval: isRunning ? 500 : 3000, // 3초마다 업데이트
+        distanceInterval: isRunning ? 1 : 5, // 5m 이동마다 업데이트
       },
       (newLocation) => {
         setMyLocation(newLocation.coords);
@@ -148,6 +150,8 @@ export const LocationProvider = ({
         client,
         runDistance,
         setRunDistance,
+        runningParticipants,
+        setRunningParticipants,
       }}
     >
       {children}

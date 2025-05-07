@@ -1,34 +1,36 @@
-import { ProgressBar } from "react-native-paper";
-import { StyleSheet, View, Text, Alert } from "react-native";
+import { StyleSheet } from "react-native";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { useCompetitorRunning } from "@/app/_hooks/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
 import { RunningText } from "../../RunningText";
+import { useEffect, useState } from "react";
 const CompetitorRunning = () => {
-  const { runningLocation, runningRecord } = useLocation();
+  const { runningLocation, runningRecord ,runDistance } = useLocation();
   const {
     data,
     speed,
     seconds,
+    index,
     winning,
     distanceToCompetitor,
     competitorProgress,
-    completeCompetitorRecord,
+    totalDistance,
   } = useCompetitorRunning();
+  console.log(runningRecord);
   return (
     <>
-      {completeCompetitorRecord &&
+      {
       data &&
       runningRecord &&
       runningRecord?.progress.length >= 1 ? (
         <>
-          <RunningInfo seconds={seconds} rest={2.5} speed={speed} />
+          <RunningInfo seconds={seconds} rest={totalDistance - runDistance} speed={speed} />
           <ProgressList
             records={[
               {
-                progress: competitorProgress / 100,
+                progress: data?.progress.length <=index? 1: competitorProgress,
                 name: data?.competitorUserName,
               },
               {
@@ -45,7 +47,7 @@ const CompetitorRunning = () => {
           )}
          {
           runningLocation?.runningStatus === "ONGOING" && (
-            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning}/>
+            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {index>=data?.progress.length}/>
           )
          }
         </>

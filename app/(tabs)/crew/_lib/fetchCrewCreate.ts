@@ -7,7 +7,8 @@ import { apiClient } from "@/api/apiClient";
 
 export async function fetchCrewCreate(data: z.infer<typeof crewSchema>) {
   try {
-    const response = await apiClient.post(`/crew`, data);
+    const {image, ...rest} = data;
+    const response = await apiClient.post(`/crew`, rest);
     return response;
   } catch (error) {
     if (error?.response) {

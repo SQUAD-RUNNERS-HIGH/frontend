@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Place } from "../_types";
-import * as Sentry from "@sentry/react-native";
 
 export const usePlacesSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,12 +22,10 @@ export const usePlacesSearch = () => {
         setResults(data.results);
         setIsDropdownVisible(true);
       } else {
-        Sentry.captureMessage(`Places API failed: ${data.status}`);
         setResults([]);
         setIsDropdownVisible(false);
       }
     } catch (error) {
-      Sentry.captureException(error);
 
       setResults([]);
       setIsDropdownVisible(false);

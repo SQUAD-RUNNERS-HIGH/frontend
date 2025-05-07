@@ -97,11 +97,11 @@ export function InfoModal({
             </View>
           </View>
           <View style={styles.buttonContainer}>
-            <Button style={{ flex: 1 }} onPress={() => {}}>
+            <Button style={{ flex: 1 }} onPress={() => {setTheme('selectCrew')}}>
               같이 뛰기
             </Button>
             <Button style={{ flex: 1 }} onPress={() => {
-                setTheme("select");
+                setTheme("selectCompetitor");
               }}>
               경쟁자와 뛰기
             </Button>
