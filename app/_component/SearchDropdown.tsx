@@ -12,6 +12,7 @@ import { useLocation } from "../_hooks/useLocation";
 import { Region } from "react-native-maps";
 import { z } from "zod";
 import { userLocationSchema } from "../(tabs)/signup/_lib/signUpSchema";
+import { useCourseStore } from "@/store/useCourseStore";
 
 interface BaseProps {
   results: Place[];
@@ -51,7 +52,7 @@ const SearchDropdown = ({
   inputHeight,
   form=false
 }: SearchInputProps) => {
-  const { setIsDropdownVisible } = useLocation();
+  const setIsDropdownVisible = useCourseStore(state => state.setIsDropdownVisible);
   return (
     <View
       style={[styles.dropdowncontainer, {top: inputHeight? inputHeight: '100%'}]}

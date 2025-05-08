@@ -7,12 +7,12 @@ import Checkbox from "expo-checkbox";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useStompStore } from "@/store/useStompStore";
 
 export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
-  const {
-    selectedCourse,
-    client,
-  } = useLocation();
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const client = useStompStore(state => state.client);
   const { myLocation, stompLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,

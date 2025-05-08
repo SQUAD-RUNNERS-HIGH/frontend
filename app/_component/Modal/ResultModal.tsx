@@ -25,10 +25,16 @@ import {
 import { fetchSaveCourses } from "@/app/(tabs)/map/_lib/fetchSaveCourse";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 const ResultModal = () => {
-  const { selectedCourse, currentCourses, setSelectedCourse } = useLocation();
-  const {
+  const { selectedCourse, currentCourses, setSelectedCourse } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+      setSelectedCourse: state.setSelectedCourse,
+    }))
+  );  const {
     runningInfo,
     setRunningInfo,
     runningRecord,

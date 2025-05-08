@@ -18,9 +18,11 @@ import { apiClient } from "@/api/apiClient";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useStompStore } from "@/store/useStompStore";
 const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
-  const { selectedCourse, client } = useLocation();
-
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const client = useStompStore(state => state.client);
   const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -61,7 +63,7 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
   });
   const { connected, sendLocation } = useStomp();
   useEffect(() => {
-    if (client.current && myLocation && connected) {
+    if (client && myLocation && connected) {
       sendLocation(myLocation);
     }
   }, [myLocation, connected]); // ✅

@@ -3,9 +3,14 @@ import Button from "../../Button";
 import { useLocation } from "@/app/_hooks/useLocation";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 const PrepareSolo = () => {
-  const { selectedCourse, setSelectedCourse } = useLocation();
-  const { setPreRunning, setIsRunning, setRunningInfo } = useRunningStore(
+  const { selectedCourse, setSelectedCourse } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      setSelectedCourse: state.setSelectedCourse,
+    }))
+  );  const { setPreRunning, setIsRunning, setRunningInfo } = useRunningStore(
     useShallow((state) => ({
       setPreRunning: state.setPreRunning,
       setIsRunning: state.setIsRunning,

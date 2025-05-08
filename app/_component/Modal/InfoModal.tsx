@@ -8,6 +8,7 @@ import { useLocation } from "@/app/_hooks/useLocation";
 import { useQuery } from "@tanstack/react-query";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export function InfoModal({
   setTheme,
@@ -16,7 +17,7 @@ export function InfoModal({
 }) {
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const { selectedCourse } = useLocation();
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
   const { runningInfo, setRunningInfo } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,

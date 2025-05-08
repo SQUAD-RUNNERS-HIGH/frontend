@@ -16,10 +16,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/apiClient";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export function SelectCompetitor() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { selectedCourse } = useLocation();
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
   const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state) => ({
     runningInfo:state.runningInfo,
     setRunningInfo: state.setRunningInfo

@@ -15,10 +15,11 @@ import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchMyCrew } from "@/app/(tabs)/crew/_lib/fetchMyCrew";
 import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export function SelectCrew() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { selectedCourse } = useLocation();
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
   const setRunningInfo = useRunningStore(state => state.setRunningInfo);
   const { data: myCrewResponse } =
     useQuery({

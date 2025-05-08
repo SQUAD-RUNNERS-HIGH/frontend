@@ -10,12 +10,15 @@ import PrepareRunModal from "./PrepareRunModal";
 import ResultModal from "./ResultModal";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 export function Modal() {
   const [theme, setTheme] = useState<string>("");
-  const {
-    selectedCourse,
-    setSelectedCourse,
-  } = useLocation();
+  const { selectedCourse, setSelectedCourse } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      setSelectedCourse: state.setSelectedCourse,
+    }))
+  );
   const {isRunning, runningRecord, preRunning, runningInfo, setPreRunning } = useRunningStore(
     useShallow((state) => ({
       isRunning: state.isRunning,

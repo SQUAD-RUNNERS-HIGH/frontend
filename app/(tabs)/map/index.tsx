@@ -18,6 +18,7 @@ import { useLocationTracking } from "@/app/_hooks/useLocationTracking";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -33,7 +34,15 @@ export default function Index() {
     setCurrentCourses,
     setSelectedCourse,
     setIsDropdownVisible,
-  } = useLocation();
+  } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+      setCurrentCourses: state.setCurrentCourses,
+      setSelectedCourse: state.setSelectedCourse,
+      setIsDropdownVisible: state.setIsDropdownVisible,
+    }))
+  );
 
   const { runningInfo, isRunning, setRunningInfo, setIsRunning } =
     useRunningStore(

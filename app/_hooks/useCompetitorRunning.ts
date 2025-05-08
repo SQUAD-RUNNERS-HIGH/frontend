@@ -9,11 +9,14 @@ import { useStomp } from "./useStomp";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
 export const useCompetitorRunning = () => {
-  const {
-    selectedCourse,
-    currentCourses,
-  } = useLocation();
+  const { selectedCourse, currentCourses } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+    }))
+  );
   const {
     runningInfo,
     setRunningRecord,

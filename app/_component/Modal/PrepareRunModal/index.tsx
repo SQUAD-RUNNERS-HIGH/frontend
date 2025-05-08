@@ -1,5 +1,4 @@
 import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { location } from "@/app/_types";
 import { useQuery } from "@tanstack/react-query";
@@ -12,9 +11,14 @@ import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { PrepareCrew } from "./PrepareCrew";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 const PrepareRunModal = () => {
-  const { selectedCourse, currentCourses } =
-    useLocation();
+  const { selectedCourse, currentCourses } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+    }))
+  );
   const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state)=> ({
     runningInfo: state.runningInfo,
     setRunningInfo: state.setRunningInfo

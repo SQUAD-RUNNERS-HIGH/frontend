@@ -6,22 +6,24 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useLocationStore } from "@/store/useLocationStore";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useStompStore } from "@/store/useStompStore";
 
 export function useStomp() {
-  const {
-    client,
-    selectedCourse,
-  } = useLocation();
-  const {
-    runningInfo,
-    isRunning,
-  } = useRunningStore(
+  const selectedCourse = useCourseStore((state) => state.selectedCourse);
+  const { client, setClient } = useStompStore(
+    useShallow((state) => ({
+      client: state.client,
+      setClient: state.setClient,
+    }))
+  );
+  const { runningInfo, isRunning } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
       isRunning: state.isRunning,
     }))
   );
-  const setStompLocation = useLocationStore(state => state.setStompLocation); 
+  const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
   const handleMessage = useCallback((data) => {
     console.log(data);
@@ -29,12 +31,12 @@ export function useStomp() {
     // if (!isRunning && !isNaN(Number(runningInfo))) {
     //   setRunningParticipants(data?.nearByParticipants);
     // } else {
-      setStompLocation((prev) => ({
-        ...prev,
-        runningStatus: data?.runningStatus,
-        latitude: data?.latitude,
-        longitude: data?.longitude,
-      }));
+    setStompLocation((prev) => ({
+      ...prev,
+      runningStatus: data?.runningStatus,
+      latitude: data?.latitude,
+      longitude: data?.longitude,
+    }));
     // }
     // setRunningLocation((prev) => ({
     //   ...prev,
@@ -44,7 +46,7 @@ export function useStomp() {
     // }));
   }, []);
   useEffect(() => {
-    if (!client.current && runningInfo !== "" && runningInfo !== "finish") {
+    if (!client && runningInfo !== "" && runningInfo !== "finish") {
       const newClient = new Client({
         brokerURL: "wss://runners-high.shop/running",
         reconnectDelay: 5000,
@@ -54,25 +56,24 @@ export function useStomp() {
         heartbeatOutgoing: 10000,
         debug: (str) => console.log(`[STOMP DEBUG] ${str}`),
       });
-      client.current = newClient;
+      setClient(newClient);
     }
   }, [selectedCourse, handleMessage]);
   useEffect(() => {
-    if (client.current) {
-      client.current.activate();
-      client.current.onStompError = (frame) => {
-
+    if (client) {
+      client.activate();
+      client.onStompError = (frame) => {
         console.error(
           "[STOMP] Broker reported error:",
           frame.headers["message"]
         );
       };
-      client.current.onConnect = () => {
-        console.log("client.current Connected?", client.current?.connected); // 여기서 true여야 정상
+      client.onConnect = () => {
+        console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
         if (!isNaN(Number(runningInfo)) && isRunning) {
-          subscription = client.current?.subscribe(
+          subscription = client?.subscribe(
             `/topic/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
             (message: IMessage) => {
               const data = JSON.parse(message.body);
@@ -81,7 +82,7 @@ export function useStomp() {
             }
           );
         } else {
-          subscription = client.current?.subscribe(
+          subscription = client?.subscribe(
             "/user/queue/reply",
             (message: IMessage) => {
               console.log("aaaa");
@@ -96,27 +97,27 @@ export function useStomp() {
           subscription?.unsubscribe(); // 이전 구독 정리
         };
       };
-      (client.current.onDisconnect = () => {}),
-        (client.current.onWebSocketClose = (event: CloseEvent) => {
+      (client.onDisconnect = () => {}),
+        (client.onWebSocketClose = (event: CloseEvent) => {
           console.warn("[STOMP] WebSocket closed:", event);
           console.warn("[STOMP] Code:", event.code);
           console.warn("[STOMP] Reason:", event.reason);
           console.warn("[STOMP] WasClean:", event.wasClean);
         });
-      client.current.onWebSocketError = (event) => {
+      client.onWebSocketError = (event) => {
         console.error("[STOMP] WebSsocket error:", event);
       };
     }
-  }, [client.current, runningInfo, isRunning, selectedCourse, handleMessage]);
+  }, [client, runningInfo, isRunning, selectedCourse, handleMessage]);
 
   const sendLocation = async (location: location, ready?: boolean) => {
     // 러닝
     if (
-      client.current &&
-      client.current?.connected &&
+      client &&
+      client?.connected &&
       isNaN(Number(runningInfo))
     ) {
-      client.current.publish({
+      client.publish({
         destination: `/app/course/${selectedCourse}`,
         body: JSON.stringify(location),
       });
@@ -124,8 +125,8 @@ export function useStomp() {
     }
     // 크루러닝 준비
     if (
-      client.current &&
-      client.current?.connected &&
+      client &&
+      client?.connected &&
       !isNaN(Number(runningInfo)) &&
       !isRunning
     ) {
@@ -140,15 +141,15 @@ export function useStomp() {
         isReady: ready, // 추가로 받은 ready 사용
       };
       console.log(newBody);
-      client.current.publish({
+      client.publish({
         destination: `/app/crew-participant/course/${selectedCourse}/crew/${runningInfo}`,
         body: JSON.stringify(newBody),
       });
       return;
     }
     if (
-      client.current &&
-      client.current?.connected &&
+      client &&
+      client?.connected &&
       !isNaN(Number(runningInfo)) &&
       isRunning
     ) {
@@ -159,7 +160,7 @@ export function useStomp() {
         latitude: location?.latitude,
         longitude: location?.longitude,
       };
-      client.current.publish({
+      client?.publish({
         destination: `/app/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
         body: JSON.stringify(newBody),
       });
