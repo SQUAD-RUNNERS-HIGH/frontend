@@ -4,8 +4,10 @@ import { SetStateAction, useEffect, useState } from "react";
 import { CourseDetail } from "@/app/_types";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { LineChart } from "react-native-chart-kit";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useQuery } from "@tanstack/react-query";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export function InfoModal({
   setTheme,
@@ -14,11 +16,25 @@ export function InfoModal({
 }) {
   const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const {selectedCourse, setRunningInfo, runningInfo} = useLocation();
-  const { data: detail, isLoading, error } = useQuery({
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const { runningInfo, setRunningInfo } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+    }))
+  );
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => fetchCourseDetail(selectedCourse),
-    enabled: !!(selectedCourse && selectedCourse!=='solo' && runningInfo !=='solo'), // selectedCourse가 있을 때만 실행,
+    enabled: !!(
+      selectedCourse &&
+      selectedCourse !== "solo" &&
+      runningInfo !== "solo"
+    ), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
   return (
@@ -51,18 +67,17 @@ export function InfoModal({
                         },
                       ],
                     }}
-                    width={parentStyle.width+10} // 전체 너비
-                    
+                    width={parentStyle.width + 10} // 전체 너비
                     height={Math.floor(parentStyle.height)} // 높이
                     chartConfig={{
                       backgroundColor: "#4169E1",
                       backgroundGradientFrom: "#8A2BE2",
                       backgroundGradientTo: "#4169E1",
-                      
+
                       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                       labelColor: (opacity = 1) =>
                         `rgba(255, 255, 255, ${opacity})`,
-                      strokeWidth:2,
+                      strokeWidth: 2,
                     }}
                     bezier // 부드러운 곡선
                     style={{
@@ -79,7 +94,9 @@ export function InfoModal({
             <View style={styles.textContainer}>
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>코스 이름</Text>
-                <Text style={styles.value}>{(detail?.courseName)? detail?.courseName: 'Untitled'}</Text>
+                <Text style={styles.value}>
+                  {detail?.courseName ? detail?.courseName : "Untitled"}
+                </Text>
               </View>
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>예상 소모 칼로리</Text>
@@ -97,18 +114,26 @@ export function InfoModal({
             </View>
           </View>
           <View style={styles.buttonContainer}>
-            <Button style={{ flex: 1 }} onPress={() => {setTheme('selectCrew')}}>
+            <Button
+              style={{ flex: 1 }}
+              onPress={() => {
+                setTheme("selectCrew");
+              }}
+            >
               같이 뛰기
             </Button>
-            <Button style={{ flex: 1 }} onPress={() => {
+            <Button
+              style={{ flex: 1 }}
+              onPress={() => {
                 setTheme("selectCompetitor");
-              }}>
+              }}
+            >
               경쟁자와 뛰기
             </Button>
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setRunningInfo('solo');
+                setRunningInfo("solo");
               }}
             >
               혼자 뛰기
@@ -149,8 +174,8 @@ const styles = StyleSheet.create({
   background: {
     width: "100%",
     flex: 1,
-    overflow:'hidden',
-    borderRadius:16,
+    overflow: "hidden",
+    borderRadius: 16,
   },
 
   textContainer: {

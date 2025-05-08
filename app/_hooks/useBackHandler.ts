@@ -1,12 +1,18 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { BackHandler, ToastAndroid } from "react-native";
-import { useLocation } from "./useLocation";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
   const [backPressCount, setBackPressCount] = useState(0);
   const timeoutRef = useRef(null);
-  const { isRunning,setIsRunning, setRunningInfo } = useLocation();
-
+  const { isRunning, setIsRunning, setRunningInfo } = useRunningStore(
+    useShallow((state) => ({
+      isRunning: state.isRunning,
+      setIsRunning: state.setIsRunning,
+      setRunningInfo: state.setRunningInfo,
+    }))
+  );
   const backPressCases = useCallback(() => {
     if (theme === "info") {
       setSelectedCourse("");

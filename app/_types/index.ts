@@ -28,6 +28,15 @@ export interface userLoginType {
   loginId: string;
   password: string;
 }
+
+export interface UserLoginResponse {
+  tokenResponse: {
+    accessToken: string;
+    refreshToken: string;
+  };
+  userId: number;
+  userName: string;
+};
 export interface location {
   latitude: number;
   longitude: number;

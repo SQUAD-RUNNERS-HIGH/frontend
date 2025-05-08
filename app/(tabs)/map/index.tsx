@@ -9,38 +9,58 @@ import MapView, {
 } from "react-native-maps";
 import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
-import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
-import { CourseResponse } from "@/app/_types";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";
 import { useQuery } from "@tanstack/react-query";
-
+import { useLocationTracking } from "@/app/_hooks/useLocationTracking";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useShallow } from "zustand/react/shallow";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useAuthStore } from "@/store/useAuthStore";
 export default function Index() {
-
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
     queryKey: ["courses", region],
     queryFn: () => fetchCourses(region),
     enabled: !!region,
   });
-
+  useLocationTracking();
+  const userName = useAuthStore(state => state.userName);
+  console.log(userName);
   const {
     selectedCourse,
     currentCourses,
     setCurrentCourses,
-    searchedLocation,
-    myLocation,
-    runningInfo,
-    runningLocation,
-    setRunningInfo,
-    isRunning,
     setSelectedCourse,
     setIsDropdownVisible,
-    setIsRunning,
-    startLocationTracking,
-    stopLocationTracking,
-  } = useLocation();
+  } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+      setCurrentCourses: state.setCurrentCourses,
+      setSelectedCourse: state.setSelectedCourse,
+      setIsDropdownVisible: state.setIsDropdownVisible,
+    }))
+  );
+
+  const { runningInfo, isRunning, setRunningInfo, setIsRunning } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        isRunning: state.isRunning,
+        setRunningInfo: state.setRunningInfo,
+        setIsRunning: state.setIsRunning,
+      }))
+    );
+  const { myLocation, stompLocation, mapLocation } = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+      stompLocation: state.stompLocation,
+      mapLocation: state.mapLocation,
+    }))
+  );
   const mapRef = useRef<MapView>(null);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
   useEffect(() => {
@@ -62,10 +82,10 @@ export default function Index() {
     }
   }, [selectedCourse]);
   useEffect(() => {
-    if (searchedLocation) {
-      mapRef.current?.animateToRegion(searchedLocation);
+    if (mapLocation) {
+      mapRef.current?.animateToRegion(mapLocation);
     }
-  }, [searchedLocation]);
+  }, [mapLocation]);
   // useEffect(() => {
   //   async function updateCourses() {
   //     if (region) {
@@ -84,15 +104,15 @@ export default function Index() {
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
 
-    if (isRunning && runningLocation && runningInfo !== "solo"  && myLocation) {
+    if (isRunning && stompLocation && runningInfo !== "solo" && myLocation) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: runningLocation?.latitude,
-          longitude: runningLocation?.longitude,
+          latitude: stompLocation?.latitude,
+          longitude: stompLocation?.longitude,
         },
         pitch: 60, // 기울기 (0~90도)
-        heading: runningLocation?.heading, // 방향 (나아가는 방향)
-        altitude: runningLocation?.altitude, // 고도
+        heading: stompLocation?.heading, // 방향 (나아가는 방향)
+        altitude: stompLocation?.altitude, // 고도
         zoom: 19, // 줌 레벨
       });
     }
@@ -122,15 +142,8 @@ export default function Index() {
         { duration: 1000 }
       );
     }
-  }, [isRunning, myLocation, runningLocation]);
+  }, [isRunning, myLocation, stompLocation]);
 
-  // 위치 추적 시작
-  useEffect(() => {
-    startLocationTracking();
-    return () => {
-      stopLocationTracking();
-    };
-  }, []);
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -183,12 +196,12 @@ export default function Index() {
               <Marker
                 coordinate={{
                   latitude:
-                    isRunning && runningLocation
-                      ? runningLocation?.latitude
+                    isRunning && stompLocation
+                      ? stompLocation?.latitude
                       : myLocation?.latitude,
                   longitude:
-                    isRunning && runningLocation
-                      ? runningLocation?.longitude
+                    isRunning && stompLocation
+                      ? stompLocation?.longitude
                       : myLocation?.longitude,
                 }}
                 style={{ zIndex: 3 }}

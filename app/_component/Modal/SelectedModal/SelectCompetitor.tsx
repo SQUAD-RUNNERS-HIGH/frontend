@@ -10,22 +10,27 @@ import {
 import Button from "../../Button";
 import { useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/apiClient";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export function SelectCompetitor() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const { setRunningInfo, selectedCourse, runningInfo } = useLocation();
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state) => ({
+    runningInfo:state.runningInfo,
+    setRunningInfo: state.setRunningInfo
+  })))
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["personalRanks", selectedCourse],
       queryFn: fetchPersonRanks,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage?.nextPage,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 5,
+      staleTime: 0
     });
   const seen = new Set();
   const competitors =
@@ -43,6 +48,9 @@ export function SelectCompetitor() {
       fetchNextPage();
     }
   };
+  useEffect(() => {
+    apiClient.post(`/test-data/${selectedCourse}`);
+  },[])
 
   return (
     <>

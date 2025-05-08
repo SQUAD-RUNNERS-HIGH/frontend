@@ -1,5 +1,4 @@
 import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { location } from "@/app/_types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,19 +22,34 @@ import {
   isSoloRunningRecord,
 } from "@/app/_lib/discriminateRecordType";
 import { fetchSaveCourses } from "@/app/(tabs)/map/_lib/fetchSaveCourse";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 
 const ResultModal = () => {
-  const {
+  const { selectedCourse, currentCourses, setSelectedCourse } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+      setSelectedCourse: state.setSelectedCourse,
+    }))
+  );  const {
     runningInfo,
     setRunningInfo,
-    selectedCourse,
     runningRecord,
     setRunningRecord,
     runDistance,
-    currentCourses,
-    setSelectedCourse,
     setRunDistance,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+      runningRecord: state.runningRecord,
+      setRunningRecord: state.setRunningRecord,
+      runDistance: state.runDistance,
+      setRunDistance: state.setRunDistance,
+    }))
+  );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();

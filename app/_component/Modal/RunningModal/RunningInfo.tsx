@@ -1,5 +1,5 @@
-import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
+import { useRunningStore } from "@/store/useRunningStore";
 import { View, Text, StyleSheet } from "react-native";
 
 interface RunningInfoProps {
@@ -8,7 +8,7 @@ interface RunningInfoProps {
   speed: string;
 }
 const RunningInfo = ({seconds, rest, speed}: RunningInfoProps) => {
-  const {runningInfo} = useLocation();
+  const runningInfo = useRunningStore((state) => state.runningInfo);
   return (<View style={styles.infoContainer}>
           <View style={styles.info}>
             <Text style={styles.value}>{formatTime(seconds)}</Text>

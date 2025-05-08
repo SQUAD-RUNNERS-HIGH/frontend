@@ -1,24 +1,32 @@
-import { StyleSheet } from "react-native";
-import { useLocation } from "@/app/_hooks/useLocation";
+import { StyleSheet, Text } from "react-native";
 import { useCompetitorRunning } from "@/app/_hooks/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
 import { RunningText } from "../../RunningText";
-import { useEffect, useState } from "react";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
 const CompetitorRunning = () => {
-  const { runningLocation, runningRecord ,runDistance } = useLocation();
+  const { runningRecord, runDistance } = useRunningStore(
+    useShallow((state) => ({
+      runningRecord: state.runningRecord,
+      runDistance: state.runDistance,
+    }))
+  );  
+  const stompLocation = useLocationStore(state => state.stompLocation);
   const {
     data,
     speed,
     seconds,
     index,
     winning,
+    text,
     distanceToCompetitor,
     competitorProgress,
     totalDistance,
   } = useCompetitorRunning();
-  console.log(runningRecord);
+  console.log(runDistance);
   return (
     <>
       {
@@ -40,13 +48,16 @@ const CompetitorRunning = () => {
               },
             ]}
           />
-          {runningLocation?.runningStatus === "ESCAPED" && (
+          <Text style = {{color: 'black'}}>{text}</Text>
+                    
+
+          {stompLocation?.runningStatus === "ESCAPED" && (
             <BlinkingText vibrate tts>
               코스에서 벗어났습니다.
             </BlinkingText>
           )}
          {
-          runningLocation?.runningStatus === "ONGOING" && (
+          stompLocation?.runningStatus === "ONGOING" && (
             <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {index>=data?.progress.length}/>
           )
          }

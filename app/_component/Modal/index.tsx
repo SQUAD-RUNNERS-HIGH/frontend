@@ -2,24 +2,31 @@ import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
-import { useLocation } from "../../_hooks/useLocation";
 import { useBackHandler } from "@/app/_hooks/useBackHandler";
 import { RunningModal } from "./RunningModal";
 import { PreRunOverlay } from "../PreRunOverlay";
 import PrepareRunModal from "./PrepareRunModal";
 import ResultModal from "./ResultModal";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 export function Modal() {
   const [theme, setTheme] = useState<string>("");
-  const {
-    isRunning,
-    selectedCourse,
-    runningRecord,
-    setSelectedCourse,
-    preRunning,
-    client,
-    setPreRunning,
-    runningInfo,
-  } = useLocation();
+  const { selectedCourse, setSelectedCourse } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      setSelectedCourse: state.setSelectedCourse,
+    }))
+  );
+  const {isRunning, runningRecord, preRunning, runningInfo, setPreRunning } = useRunningStore(
+    useShallow((state) => ({
+      isRunning: state.isRunning,
+      runningRecord: state.runningRecord,
+      preRunning: state.preRunning,
+      setPreRunning: state.setPreRunning,
+      runningInfo: state.runningInfo,
+    }))
+  )
   useEffect(() => {
     if (selectedCourse !== "" && !runningInfo.includes("solo")) {
       setTheme("info");

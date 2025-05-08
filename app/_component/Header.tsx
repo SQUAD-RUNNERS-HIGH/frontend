@@ -8,10 +8,11 @@ import {
 import { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import SearchDropdown from "./SearchDropdown";
-import { useSegments } from "expo-router";
 import { location, Place } from "../_types";
-import { useLocation } from "../_hooks/useLocation";
 import { usePlacesSearch } from "../_hooks/usePlacesSearch";
+import { useLocationStore } from "@/store/useLocationStore";
+import { Region } from "react-native-maps/lib/sharedTypes";
+import { useSegments } from "expo-router";
 
 function Header() {
   const {
@@ -24,9 +25,10 @@ function Header() {
     isDropdownVisible,
     setIsDropdownVisible,
   } = usePlacesSearch();
-  const {setSearchedLocation} = useLocation();
+  const setMapLocation = useLocationStore(state => state.setMapLocation);
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
+  console.log(segments);
   const [selectedLocation,setSelectedLocation] = useState<Region | null>();
   const [type, setType] = useState<"crew" | "location" | "chat">("location");
   useEffect(() => {
@@ -66,7 +68,7 @@ function Header() {
 
   useEffect(() => {
     if (selectedLocation){
-      setSearchedLocation(selectedLocation);
+      setMapLocation(selectedLocation);
     }
   }, [selectedLocation])
   return (

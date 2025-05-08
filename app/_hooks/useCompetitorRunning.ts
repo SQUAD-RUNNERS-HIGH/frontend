@@ -1,24 +1,42 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "./useLocation";
 import { fetchCompetitor } from "../(tabs)/map/_lib/fetchCompetitor";
 import { useEffect, useRef, useState } from "react";
 import { getDistance, getPathLength } from "geolib";
 import { location } from "../_types";
 import { convertSpeedToPace } from "../_lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
-import { Alert } from "react-native";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useShallow } from "zustand/react/shallow";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
 export const useCompetitorRunning = () => {
+  const { selectedCourse, currentCourses } = useCourseStore(
+    useShallow((state) => ({
+      selectedCourse: state.selectedCourse,
+      currentCourses: state.currentCourses,
+    }))
+  );
   const {
     runningInfo,
-    selectedCourse,
-    runningLocation,
-    currentCourses,
-    myLocation,
     setRunningRecord,
     preRunning,
     setRunDistance,
     runDistance,
-  } = useLocation();
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningRecord: state.setRunningRecord,
+      preRunning: state.preRunning,
+      setRunDistance: state.setRunDistance,
+      runDistance: state.runDistance,
+    }))
+  );
+  const {myLocation, stompLocation} = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+      stompLocation: state.stompLocation
+    }))
+  )
   const { sendLocation } = useStomp();
   const { data } = useQuery({
     queryKey: ["courseHistory", runningInfo, selectedCourse],
@@ -84,27 +102,27 @@ export const useCompetitorRunning = () => {
   }, [currentCourse]);
 
   useEffect(() => {
-    if (runningLocation) {
+    if (stompLocation) {
       if (prevLocation.current) {
-        if (runningLocation?.runningStatus === "ONGOING") {
+        if (stompLocation?.runningStatus === "ONGOING") {
           const distance = getDistance(
             {
               latitude: prevLocation.current.latitude,
               longitude: prevLocation.current.longitude,
             },
             {
-              latitude: runningLocation?.latitude,
-              longitude: runningLocation?.longitude,
+              latitude: stompLocation?.latitude,
+              longitude: stompLocation?.longitude,
             }
           );
           setRunDistance((prev) => prev + distance);
         }
 
       }
-      prevLocation.current = runningLocation;
+      prevLocation.current = stompLocation;
 
     }
-  }, [runningLocation]);
+  }, [stompLocation]);
 
   useEffect(() => {
     if (totalDistance > 0 && index > 0) {

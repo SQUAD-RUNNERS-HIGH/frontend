@@ -1,6 +1,5 @@
 import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { useQuery } from "@tanstack/react-query";
 import { getPathLength } from "geolib";
@@ -15,17 +14,27 @@ import {
 } from "react-native";
 import Button from "../../Button";
 import { apiClient } from "@/api/apiClient";
-const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
-  
-  const {
-    myLocation,
-    runningLocation,
-    runningInfo,
-    selectedCourse,
-    setIsRunning,
-    setPreRunning,
-    client,
-  } = useLocation();
+import { useLocationStore } from "@/store/useLocationStore";
+import { useShallow } from "zustand/react/shallow";
+import { useRunningStore } from "@/store/useRunningStore";
+import { useCourseStore } from "@/store/useCourseStore";
+import { useStompStore } from "@/store/useStompStore";
+const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
+  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const client = useStompStore(state => state.client);
+  const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setIsRunning: state.setIsRunning,
+      setPreRunning: state.setPreRunning,
+    }))
+  );
+  const { myLocation, stompLocation } = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+      stompLocation: state.stompLocation,
+    }))
+  );
   const {
     data: detail,
     isLoading,
@@ -34,8 +43,12 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
     queryKey: ["courseDetail", selectedCourse],
     queryFn: () => {
       return fetchCourseDetail(selectedCourse);
-    },    
-    enabled: !!(selectedCourse && selectedCourse!=='solo' && runningInfo !=='solo'), // selectedCourse가 있을 때만 실행,
+    },
+    enabled: !!(
+      selectedCourse &&
+      selectedCourse !== "solo" &&
+      runningInfo !== "solo"
+    ), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
   const {
@@ -48,10 +61,8 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
     staleTime: 100000,
   });
   const { connected, sendLocation } = useStomp();
-  console.log(data?.progress);
   useEffect(() => {
-    if (client.current && myLocation && connected) {
-
+    if (client && myLocation && connected) {
       sendLocation(myLocation);
     }
   }, [myLocation, connected]); // ✅
@@ -74,7 +85,7 @@ const PrepareCompetitor = ({totalDistance}: {totalDistance: number;}) => {
       )}
       {connected ? (
         <>
-          {runningLocation?.runningStatus === "ONGOING" ? (
+          {stompLocation?.runningStatus === "ONGOING" ? (
             <>
               <Text style={[styles.modalDepscription2, { fontWeight: 700 }]}>
                 {data?.competitorUserName}님과 러닝을 시작합니다.

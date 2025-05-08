@@ -1,8 +1,7 @@
 // components/ProtectedRoute.js
 import { ReactNode, useEffect } from "react";
-import { useAuth } from "../_hooks/useAuth";
-import { useFocusEffect, useRouter, useSegments } from "expo-router";
 import { Redirect } from "expo-router";
+import { useAuthStore } from "@/store/useAuthStore";
 export const ProtectedRoute = ({
   children,
   isAuthPage = false,
@@ -10,7 +9,7 @@ export const ProtectedRoute = ({
   children: ReactNode;
   isAuthPage: boolean;
 }) => {
-  const { accessToken } = useAuth();
+  const accessToken = useAuthStore(state => state.accessToken);
   if (accessToken && isAuthPage) {
     return <Redirect href="/map" />;
   }
