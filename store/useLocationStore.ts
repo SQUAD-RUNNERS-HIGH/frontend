@@ -35,15 +35,5 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setPermissionStatus: (perm) => set({ permissionStatus: perm }),
   setMapLocation: (region) => set({ mapLocation: region }),
   setStompLocation: (loc) => set({ stompLocation: loc }),
-  // 위치 권한 요청
-  askPermission: async () => {
-    const { permissionStatus } = get();
-    if (!permissionStatus || !permissionStatus.granted) {
-      const perm = await Location.requestForegroundPermissionsAsync();
-      set({ permissionStatus: perm });
-      if (!perm.granted) {
-        Alert.alert('위치 권한 필요', '위치 권한을 허용해주세요.');
-      }
-    }
-  }, 
+
 }));
