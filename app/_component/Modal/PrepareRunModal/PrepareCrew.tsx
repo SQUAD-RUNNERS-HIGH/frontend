@@ -1,5 +1,4 @@
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useQuery } from "@tanstack/react-query";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import Button from "../../Button";

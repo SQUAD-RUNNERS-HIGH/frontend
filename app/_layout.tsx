@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router";
 import TabBar from "./_component/TabBar";
 import Header from "./_component/Header";
-import { LocationProvider } from "./_hooks/useLocation";
 import AuthContextProvider from "./_hooks/useAuth";
 import { DevToolsBubble } from "react-native-react-query-devtools";
 import {
@@ -27,7 +26,6 @@ export default function TabLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
-        <LocationProvider>
           <Header />
           <Tabs
             screenOptions={{ headerShown: false }}
@@ -52,7 +50,6 @@ export default function TabLayout() {
             <Tabs.Screen name="map" options={{ title: "map" }} />
             <Tabs.Screen name="crew" options={{ title: "crew" }} />
           </Tabs>
-        </LocationProvider>
       </AuthContextProvider>
       <DevToolsBubble onCopy={onCopy} />
     </QueryClientProvider>

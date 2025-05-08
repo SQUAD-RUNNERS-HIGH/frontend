@@ -10,7 +10,6 @@ import {
 import Button from "../../Button";
 import { useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { apiClient } from "@/api/apiClient";
@@ -31,8 +30,7 @@ export function SelectCompetitor() {
       queryFn: fetchPersonRanks,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage?.nextPage,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 5,
+      staleTime: 0
     });
   const seen = new Set();
   const competitors =
@@ -50,6 +48,9 @@ export function SelectCompetitor() {
       fetchNextPage();
     }
   };
+  useEffect(() => {
+    apiClient.post(`/test-data/${selectedCourse}`);
+  },[])
 
   return (
     <>

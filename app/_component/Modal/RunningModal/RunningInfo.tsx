@@ -1,4 +1,3 @@
-import { useLocation } from "@/app/_hooks/useLocation";
 import { formatTime } from "@/app/_lib/formatTime";
 import { useRunningStore } from "@/store/useRunningStore";
 import { View, Text, StyleSheet } from "react-native";

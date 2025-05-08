@@ -1,6 +1,5 @@
 import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { useQuery } from "@tanstack/react-query";
 import { getPathLength } from "geolib";

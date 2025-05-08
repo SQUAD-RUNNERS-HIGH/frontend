@@ -4,7 +4,6 @@ import { SetStateAction, useEffect, useState } from "react";
 import { CourseDetail } from "@/app/_types";
 import { fetchCourseDetail } from "@/app/(tabs)/map/_lib/fetchCourseDetail";
 import { LineChart } from "react-native-chart-kit";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useQuery } from "@tanstack/react-query";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";

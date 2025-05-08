@@ -9,7 +9,6 @@ import MapView, {
 } from "react-native-maps";
 import { Image } from "react-native";
 import { Modal } from "../../_component/Modal";
-import { useLocation } from "../../_hooks/useLocation";
 import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
 import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "./_lib/fetchCourses";

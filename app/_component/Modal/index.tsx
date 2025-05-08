@@ -2,7 +2,6 @@ import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
-import { useLocation } from "../../_hooks/useLocation";
 import { useBackHandler } from "@/app/_hooks/useBackHandler";
 import { RunningModal } from "./RunningModal";
 import { PreRunOverlay } from "../PreRunOverlay";

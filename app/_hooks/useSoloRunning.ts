@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "./useLocation";
 import { location } from "@/app/_types";
 import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../_lib/discriminateRecordType";

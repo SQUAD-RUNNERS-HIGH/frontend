@@ -8,7 +8,6 @@ import {
   Image,
 } from "react-native";
 import { Place } from "../_types";
-import { useLocation } from "../_hooks/useLocation";
 import { Region } from "react-native-maps";
 import { z } from "zod";
 import { userLocationSchema } from "../(tabs)/signup/_lib/signUpSchema";

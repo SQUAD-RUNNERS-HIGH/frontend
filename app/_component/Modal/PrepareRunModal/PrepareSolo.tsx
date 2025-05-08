@@ -1,6 +1,5 @@
 import { Text, StyleSheet, View } from "react-native";
 import Button from "../../Button";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";

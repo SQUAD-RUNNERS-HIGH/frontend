@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import * as Location from "expo-location";
 import { Alert, AppState } from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
-import { useLocation } from "./useLocation";
 import { useRunningStore } from "@/store/useRunningStore";
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
@@ -42,8 +41,9 @@ export const useLocationTracking = () => {
 
   useEffect(() => {
     askPermission();
-
+    startLocationTracking();
     const sub = AppState.addEventListener("change", (state) => {
+
       if (state === "active") {
         startLocationTracking();
       } else {

@@ -1,5 +1,4 @@
 import { fetchCompetitor } from "@/app/(tabs)/map/_lib/fetchCompetitor";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useStomp } from "@/app/_hooks/useStomp";
 import { location } from "@/app/_types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

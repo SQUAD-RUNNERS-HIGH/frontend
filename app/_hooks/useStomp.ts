@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
-import { useLocation } from "./useLocation";
 import { location } from "@/app/_types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRunningStore } from "@/store/useRunningStore";
@@ -45,6 +44,14 @@ export function useStomp() {
     //   longitude: prev.longitude + 0.0001,
     // }));
   }, []);
+  useEffect(() => {
+      if (client && !isRunning) {
+        if (runningInfo === "" || runningInfo === "finish") {
+          client.deactivate();
+          setClient(null);
+        }
+      }
+    }, [runningInfo, isRunning]);
   useEffect(() => {
     if (!client && runningInfo !== "" && runningInfo !== "finish") {
       const newClient = new Client({
@@ -140,7 +147,6 @@ export function useStomp() {
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
       };
-      console.log(newBody);
       client.publish({
         destination: `/app/crew-participant/course/${selectedCourse}/crew/${runningInfo}`,
         body: JSON.stringify(newBody),
@@ -160,6 +166,7 @@ export function useStomp() {
         latitude: location?.latitude,
         longitude: location?.longitude,
       };
+      
       client?.publish({
         destination: `/app/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
         body: JSON.stringify(newBody),

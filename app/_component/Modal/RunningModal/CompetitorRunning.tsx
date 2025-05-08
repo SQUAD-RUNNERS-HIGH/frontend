@@ -1,11 +1,9 @@
 import { StyleSheet, Text } from "react-native";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { useCompetitorRunning } from "@/app/_hooks/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
 import { RunningText } from "../../RunningText";
-import { useEffect, useState } from "react";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";

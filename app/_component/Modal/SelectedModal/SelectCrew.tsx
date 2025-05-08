@@ -10,7 +10,6 @@ import {
 import Button from "../../Button";
 import { useState } from "react";
 import Checkbox from "expo-checkbox";
-import { useLocation } from "@/app/_hooks/useLocation";
 import { fetchPersonRanks } from "@/app/(tabs)/map/_lib/fetchPersonRanks";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchMyCrew } from "@/app/(tabs)/crew/_lib/fetchMyCrew";

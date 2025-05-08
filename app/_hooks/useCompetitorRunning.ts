@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "./useLocation";
 import { fetchCompetitor } from "../(tabs)/map/_lib/fetchCompetitor";
 import { useEffect, useRef, useState } from "react";
 import { getDistance, getPathLength } from "geolib";

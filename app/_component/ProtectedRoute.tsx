@@ -1,7 +1,6 @@
 // components/ProtectedRoute.js
 import { ReactNode, useEffect } from "react";
 import { useAuth } from "../_hooks/useAuth";
-import { useFocusEffect, useRouter, useSegments } from "expo-router";
 import { Redirect } from "expo-router";
 export const ProtectedRoute = ({
   children,
