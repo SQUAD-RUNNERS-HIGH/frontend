@@ -18,6 +18,7 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
+import { useAuthStore } from "@/store/useAuthStore";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -26,7 +27,8 @@ export default function Index() {
     enabled: !!region,
   });
   useLocationTracking();
-
+  const userName = useAuthStore(state => state.userName);
+  console.log(userName);
   const {
     selectedCourse,
     currentCourses,

@@ -5,8 +5,8 @@ import CourseIcon from "./CourseIcon";
 import CrewIcon from "./CrewIcon";
 import { useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/app/_hooks/useAuth";
 import { tabBarFill } from "@/app/_constants";
+import { useAuthStore } from "@/store/useAuthStore";
 function TabBar() {
   const segments = useSegments();
   const [show, setShow] = useState(false);
@@ -22,7 +22,7 @@ function TabBar() {
       setShow(false);
     }
   }, [segments]);
-  const { logout } = useAuth();
+  const logout  = useAuthStore(state => state.logout);
   return (
     <View style={[styles.rootContainer, !show && styles.hide]}>
       <View style={styles.container}>
