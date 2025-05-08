@@ -12,6 +12,7 @@ import { location, Place } from "../_types";
 import { usePlacesSearch } from "../_hooks/usePlacesSearch";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Region } from "react-native-maps/lib/sharedTypes";
+import { useSegments } from "expo-router";
 
 function Header() {
   const {
@@ -27,6 +28,7 @@ function Header() {
   const setMapLocation = useLocationStore(state => state.setMapLocation);
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
+  console.log(segments);
   const [selectedLocation,setSelectedLocation] = useState<Region | null>();
   const [type, setType] = useState<"crew" | "location" | "chat">("location");
   useEffect(() => {
