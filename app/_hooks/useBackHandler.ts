@@ -44,9 +44,9 @@ export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
   }, [backPressCases, isRunning, setIsRunning, setSelectedCourse, backPressCount]);
 
   useEffect(() => {
-    BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    const backHanlder = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => {
-      BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+      backHanlder.remove();
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
