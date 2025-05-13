@@ -1,23 +1,13 @@
 import { Tabs } from "expo-router";
 import TabBar from "../_component/TabBar";
 import Header from "../_component/Header";
-import { DevToolsBubble } from "react-native-react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
+import { useReactQueryDevTools } from "@dev-plugins/react-query";
 
 const queryClient = new QueryClient();
 export default function TabLayout() {
-  const onCopy = async (text: string) => {
-    try {
-      // For Expo:
-      await Clipboard.setStringAsync(text);
-      // OR for React Native CLI:
-      // await Clipboard.setString(text);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  useReactQueryDevTools(queryClient);
   return (
     <QueryClientProvider client={queryClient}>
       <Header />
@@ -26,14 +16,10 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "index",
-            headerShown: false, // 헤더를 숨김
             tabBarStyle: { display: "none" }, // 탭바 숨김
           }}
         />
-        <Tabs.Screen
-          name="login"
-          options={{ title: "login", headerShown: false }}
-        />
+        <Tabs.Screen name="login" options={{ title: "login" }} />
         <Tabs.Screen
           name="signup"
           options={{ title: "signup", headerShown: false }}
@@ -41,7 +27,6 @@ export default function TabLayout() {
         <Tabs.Screen name="map" options={{ title: "map" }} />
         <Tabs.Screen name="crew" options={{ title: "crew" }} />
       </Tabs>
-      <DevToolsBubble onCopy={onCopy} />
     </QueryClientProvider>
   );
 }
