@@ -28,7 +28,6 @@ function Header() {
   const setMapLocation = useLocationStore(state => state.setMapLocation);
   const [show, setShow] = useState<boolean>(false);
   const segments = useSegments();
-  console.log(segments);
   const [selectedLocation,setSelectedLocation] = useState<Region | null>();
   const [type, setType] = useState<"crew" | "location" | "chat">("location");
   useEffect(() => {
@@ -45,7 +44,7 @@ function Header() {
 
   useEffect(() => {
     if (
-      segments.length !== 1 &&
+      segments.length > 1 &&
       segments[segments.length - 1] !== "login" &&
       segments[segments.length - 1] !== "signup"
     ) {

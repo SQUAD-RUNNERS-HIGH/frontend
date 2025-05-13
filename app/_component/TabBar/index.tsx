@@ -13,7 +13,7 @@ function TabBar() {
   const router = useRouter();
   useEffect(() => {
     if (
-      segments.length !== 1 &&
+      segments.length > 1 &&
       segments[segments.length - 1] !== "login" &&
       segments[segments.length - 1] !== "signup"
     ) {
