@@ -39,14 +39,12 @@ const CrewDetail = () => {
 
     return () => subscription.remove(); // 컴포넌트 언마운트 시 해제
   }, [router]);
-
-  console.log(detail);
   return (
     <View style={styles.container}>
       <View style={styles.crewTitleContainer}>
         <Image
           style={styles.crewImage}
-          source={require("@/assets/images/crewImage.png")}
+          source={detail?.image? {uri: detail?.image}: require('@/assets/images/crewImage.png')}
         />
         <View>
           <Text style={[styles.crewTitle, { fontSize: 20 }]}>

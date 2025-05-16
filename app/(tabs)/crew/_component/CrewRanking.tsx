@@ -16,12 +16,12 @@ function CrewRaking() {
       return (
     <View style={styles.container}>
       {crewRanking?.data?.crewRankResponses.map((crew,index) => (
-        <Pressable onPress = {() => {router.push(`/crew/detail/${crew.crewId}`);}} key={crew.id} style={styles.crewContainer}>
+        <Pressable onPress = {() => {router.push(`/crew/detail/${crew.crewId}`);}} key={crew.crewId} style={styles.crewContainer}>
           <View style = {styles.crewLeftContainer}>
             <View style = {styles.rankingContainer}>
               <Text style = {styles.ranking}>{index+1}</Text>
             </View>
-            <Image source = {require('@/assets/images/crewImage.png')} style = {styles.profile} />
+            <Image source = {{uri: crew.image}} style = {styles.profile} />
             <Text>{crew.crewName}</Text>
           </View>
           <Text style= {styles.crewRightContainer}>
