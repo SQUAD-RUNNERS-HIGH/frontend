@@ -15,7 +15,6 @@ function SurroundCrews() {
   });
   const flatContents =
     surroundCrews?.pages?.flatMap((page) => page.data.content) ?? [];
-  console.log(flatContents);
   return (
     <View style={styles.container}>
       {flatContents.map((crew, index) => (

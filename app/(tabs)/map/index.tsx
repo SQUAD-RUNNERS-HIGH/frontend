@@ -28,7 +28,6 @@ export default function Index() {
   });
   useLocationTracking();
   const userName = useAuthStore(state => state.userName);
-  console.log(userName);
   const {
     selectedCourse,
     currentCourses,

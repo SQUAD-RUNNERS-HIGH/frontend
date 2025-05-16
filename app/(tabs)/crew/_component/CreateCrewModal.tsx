@@ -44,7 +44,6 @@ export function CreateCrewModal({
     const response = await fetchCrewCreate(formData);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
-
       queryClient.invalidateQueries({ queryKey: ["myCrew"] });
       setModalVisible(false);
     }

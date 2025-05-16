@@ -39,7 +39,6 @@ const ImageUpload = ({
         type: "image/jpeg",
       });
     }
-    console.log(result);
   };
   return (
     <Pressable

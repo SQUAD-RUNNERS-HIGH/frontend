@@ -43,7 +43,6 @@ export const CrewApplyModal = ({
           <Text style={styles.modalTitle}>크루 가입 신청</Text>
           <View style={styles.crewContainer}>
             {data?.applicantResponse.map((applicant) => {
-              console.log(applicant);
               return (
               <View style={styles.crew} key={applicant.id}>
                 <View style={styles.crewInfo}>

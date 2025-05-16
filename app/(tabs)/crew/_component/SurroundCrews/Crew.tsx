@@ -2,7 +2,6 @@ import Button from "@/app/_component/Button";
 import { useRouter } from "expo-router";
 import { View, StyleSheet, Text, Pressable, Alert } from "react-native";
 import { fetchCrewApply } from "../../detail/_lib/fetchCrewApply";
-import { useState } from "react";
 
 function Crew({
   id,
