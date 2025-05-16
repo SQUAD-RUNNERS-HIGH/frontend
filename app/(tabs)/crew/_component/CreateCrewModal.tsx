@@ -28,7 +28,20 @@ export function CreateCrewModal({
 }) {
   const queryClient = useQueryClient();
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
-    const response = await fetchCrewCreate(data);
+    const formData = new FormData();
+    const { image, ...rest } = data;
+    //JSON part
+    // JSON 데이터를 문자열화
+    // JSON 데이터를 문자열화
+    // crewCreateRequest를 JSON 파일처럼 취급
+    formData.append("crewCreateRequest", {
+      string: JSON.stringify(rest),
+      type: "application/json",
+    });
+
+    // 이미지 추가 (이미 올바르게 설정된 것으로 보임)
+    formData.append("image", image as any);
+    const response = await fetchCrewCreate(formData);
     if (response?.status === 200) {
       Alert.alert("크루가 생성되었습니다!");
 

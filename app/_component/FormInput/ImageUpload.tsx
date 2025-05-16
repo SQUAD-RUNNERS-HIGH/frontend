@@ -1,8 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, Image, StyleSheet, Pressable, ImageBackground } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  ImageBackground,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { ControllerRenderProps } from "react-hook-form";
-import { pick } from "lodash";
+import { pick, random } from "lodash";
 interface ImageUploadProps {
   errorMessage?: string;
   type?: string;
@@ -25,20 +32,25 @@ const ImageUpload = ({
       aspect: [4, 3],
       quality: 1,
     });
-
     if (!result.canceled) {
-      field.onChange(result.assets[0].uri);
+      field.onChange({
+        uri: result.assets[0].uri,
+        name: result.assets[0].fileName ?? `photo.jpg`,
+        type: "image/jpeg",
+      });
     }
+    console.log(result);
   };
-
   return (
-    <Pressable style={[styles.container,{ paddingVertical: field.value? 0: 24}]} onPress={pickImage}>
+    <Pressable
+      style={[styles.container, { paddingVertical: field.value ? 0 : 24 }]}
+      onPress={pickImage}
+    >
       {field.value ? (
-        <ImageBackground
-          source={{ uri: field.value }}
-          style={{ width: '100%', height:'100%' }}
+        <Image
+          source={{ uri: field.value.uri }}
+          style={{ width: "100%", height: "100%" }}
           resizeMode="contain"
-
         />
       ) : (
         <>
@@ -48,9 +60,7 @@ const ImageUpload = ({
             source={require("@/assets/images/camera.png")}
           />
           <View style={styles.textContainer}>
-            <Text style={[styles.mainText]}>
-              이미지를 선택하세요
-            </Text>
+            <Text style={[styles.mainText]}>이미지를 선택하세요</Text>
             <Text style={[styles.subText]}>PNG,JPG,GIF (최대 2MB)</Text>
           </View>
         </>
@@ -70,8 +80,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: "#D1D5DB",
-    width: '100%',
-    maxHeight:130,
+    width: "100%",
+    maxHeight: 130,
     gap: 12,
   },
   textContainer: {
