@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { StyleSheet, View, Text, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import RhSplashScreen from "../_component/RhSplashScreen";
-import Button from "../_component/Button";
+import RhSplashScreen from "../../component/RhSplashScreen";
+import Button from "../../component/Button";
 import { useNavigation, useRouter } from "expo-router";
-import { ProtectedRoute } from "../_component/ProtectedRoute";
+import { ProtectedRoute } from "../../component/ProtectedRoute";
 
 // Splash Screen을 유지
 // SplashScreen.preventAutoHideAsync();
@@ -39,7 +39,7 @@ export default function Index() {
       >
         <View style={styles.container}>
           <View style={styles.innerContainer}>
-            <Image source={require("../../assets/images/logo.png")} />
+            <Image source={require("@/assets/images/logo.png")} />
             <Text style={styles.text}>Runner's High</Text>
           </View>
           <View style={styles.buttonGroup}>

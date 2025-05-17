@@ -1,4 +1,4 @@
-import { CourseResponse, runningLocation } from "@/app/_types";
+import { CourseResponse, runningLocation } from "@/types";
 import {
   LocationObjectCoords,
   LocationPermissionResponse,

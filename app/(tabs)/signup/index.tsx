@@ -11,13 +11,13 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import FormInput from "../../_component/FormInput";
-import Button from "../../_component/Button";
+import FormInput from "../../../component/FormInput";
+import Button from "../../../component/Button";
 import { useRouter } from "expo-router";
-import { signUpSchema } from "./_lib/signUpSchema";
-import { fetchSignup } from "./_lib/fetchSignup";
-import { userSignupType } from "@/app/_types";
-import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
+import { signUpSchema } from "../../../lib/signup/signUpSchema";
+import { fetchSignup } from "../../../lib/signup/fetchSignup";
+import { userSignupType } from "@/types";
+import { ProtectedRoute } from "@/component/ProtectedRoute";
 
 export default function Signup() {
   const {

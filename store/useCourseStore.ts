@@ -1,4 +1,4 @@
-import { CourseResponse } from '@/app/_types';
+import { CourseResponse } from '@/types';
 import { create } from 'zustand';
 
 interface CourseStore {

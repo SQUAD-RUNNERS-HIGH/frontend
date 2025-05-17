@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Text, ScrollView, Modal } from "react-native";
-import MyCrew from "../_component/MyCrew";
-import Button from "@/app/_component/Button";
-import SurroundCrews from "../_component/SurroundCrews";
-import CrewRaking from "../_component/CrewRanking";
-import { CreateCrewModal } from "../_component/CreateCrewModal";
+import MyCrew from "../../../../component/crew/home/MyCrew";
+import Button from "@/component/Button";
+import SurroundCrews from "../../../../component/crew/home/SurroundCrews";
+import CrewRaking from "../../../../component/crew/home/CrewRanking";
+import { CreateCrewModal } from "../../../../component/crew/home/CreateCrewModal";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMyCrew } from "../_lib/fetchMyCrew";
+import { fetchMyCrew } from "../../../../lib/crew/home/fetchMyCrew";
 
 export function CrewHome() {
   const [modalVisible, setModalVisible] = useState(false);

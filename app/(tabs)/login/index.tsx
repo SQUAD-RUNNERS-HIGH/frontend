@@ -12,12 +12,12 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import FormInput from "../../_component/FormInput";
-import Button from "../../_component/Button";
-import { loginSchema } from "./_lib/loginSchema";
-import { fetchLogin } from "./_lib/fetchLogin";
+import FormInput from "../../../component/FormInput";
+import Button from "../../../component/Button";
+import { loginSchema } from "../../../lib/login/loginSchema";
+import { fetchLogin } from "../../../lib/login/fetchLogin";
 import { useRouter } from "expo-router";
-import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
+import { ProtectedRoute } from "@/component/ProtectedRoute";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Login() {
@@ -57,7 +57,7 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
               <Text style={styles.title}>로그인</Text>
               <Image
                 style={{ width: 111, height: 113, marginTop: 38 }}
-                source={require("../../../assets/images/logo.png")}
+                source={require("@/assets/images/logo.png")}
               />
               <View style={styles.formContainer}>
                 <FormInput

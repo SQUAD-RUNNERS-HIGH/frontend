@@ -1,14 +1,13 @@
-import Button from "@/app/_component/Button";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, StyleSheet, Image, Alert, BackHandler } from "react-native";
-import { fetchCrewDetail } from "./_lib/fetchCrewDetail";
+import Button from "@/component/Button";
 import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Alert, BackHandler, Image, StyleSheet, Text, View } from "react-native";
+import { fetchCrewDetail } from "../../../../lib/crew/detail/fetchCrewDetail";
 
-import { fetchCrewApply } from "./_lib/fetchCrewApply";
-import { CrewMember } from "./_components/CrewMember";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
-import { CrewApplyModal } from "./_components/CrewApplyModal";
+import { CrewApplyModal } from "../../../../component/crew/detail/CrewApplyModal";
+import { CrewMember } from "../../../../component/crew/detail/CrewMember";
+import { fetchCrewApply } from "../../../../lib/crew/detail/fetchCrewApply";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();

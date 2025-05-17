@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
-import TabBar from "../_component/TabBar";
-import Header from "../_component/Header";
+import TabBar from "../../component/TabBar";
+import Header from "../../component/Header";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";

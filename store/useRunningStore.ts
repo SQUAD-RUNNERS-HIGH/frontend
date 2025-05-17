@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { soloRunningRecord, competitorRunningRecord } from '@/app/_types';
+import { soloRunningRecord, competitorRunningRecord } from '@/types';
 
 type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
 

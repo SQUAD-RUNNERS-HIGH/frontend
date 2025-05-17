@@ -8,12 +8,12 @@ import MapView, {
   Region,
 } from "react-native-maps";
 import { Image } from "react-native";
-import { Modal } from "../../_component/Modal";
-import { ProtectedRoute } from "@/app/_component/ProtectedRoute";
+import { Modal } from "../../../component/Modal";
+import { ProtectedRoute } from "@/component/ProtectedRoute";
 import MyLocation from "@/assets/images/svg/Mylocation";
-import { fetchCourses } from "./_lib/fetchCourses";
+import { fetchCourses } from "@/lib/map/fetchCourses";
 import { useQuery } from "@tanstack/react-query";
-import { useLocationTracking } from "@/app/_hooks/useLocationTracking";
+import { useLocationTracking } from "@/hooks/useLocationTracking";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";

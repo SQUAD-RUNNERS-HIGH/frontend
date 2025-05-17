@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { apiClient } from '@/api/apiClient';
-import { UserLoginResponse } from '@/app/_types';
+import { UserLoginResponse } from '@/types';
 
 interface AuthState {
   accessToken: string | null;
