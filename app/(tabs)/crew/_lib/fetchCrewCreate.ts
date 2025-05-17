@@ -1,18 +1,19 @@
-import axios from "axios";
-import { Alert } from "react-native";
-import { CreateCrewApi, userSignupType } from "@/app/_types";
-import { z } from "zod";
-import { crewSchema } from "./crewSchema";
 import { apiClient } from "@/api/apiClient";
 
-export async function fetchCrewCreate(data: z.infer<typeof crewSchema>) {
+// FormData 요청 시 별도 설정
+export async function fetchCrewCreate(formData) {
   try {
-    const {image, ...rest} = data;
-    const response = await apiClient.post(`/crew`, rest);
+    const response = await apiClient.post("/crew", formData, {
+      headers: {
+        "Content-Type": 'multipart/form-data; boundary="boundary"',
+      },
+    });
     return response;
   } catch (error) {
+    console.error("에러 발생:", error);
     if (error?.response) {
       Alert.alert(error.response.data.serverErrorMessage);
     }
+    throw error;
   }
 }

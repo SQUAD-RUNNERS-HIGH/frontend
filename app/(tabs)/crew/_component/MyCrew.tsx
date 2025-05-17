@@ -8,8 +8,9 @@ interface MyCrewType {
   crewName: string;
   numberOfParticipants: number;
   crewRole:string;
+  image: string;
 }
-function Mycrew({ id, crewName, numberOfParticipants, crewRole }: MyCrewType) {
+function Mycrew({ id, crewName, numberOfParticipants, crewRole, image }: MyCrewType) {
   const router = useRouter();
   return (
     <Pressable
@@ -20,7 +21,7 @@ function Mycrew({ id, crewName, numberOfParticipants, crewRole }: MyCrewType) {
     >
       <View style={styles.crewInfo}>
         <Image
-          source={require("@/assets/images/crewImage.png")}
+          source={{uri: image}}
           style={styles.image}
         />
         <View>

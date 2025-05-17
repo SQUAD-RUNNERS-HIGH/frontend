@@ -9,7 +9,6 @@ export function useCrewApplyDecline() {
       fetchCrewApplyDecline(id, applicantId),
     onSuccess: (_, variables) => {
       const { id } = variables;
-      console.log(id);
 
       queryClient.invalidateQueries({ queryKey: ["crewDetail", id] });
       queryClient.invalidateQueries({ queryKey: ["crewParticipants", id] });

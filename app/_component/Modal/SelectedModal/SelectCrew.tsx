@@ -27,7 +27,6 @@ export function SelectCrew() {
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 5,
     });
-  console.log(myCrewResponse);
   return (
     <>
       {myCrewResponse?.myCrews?.length === 0 ? (

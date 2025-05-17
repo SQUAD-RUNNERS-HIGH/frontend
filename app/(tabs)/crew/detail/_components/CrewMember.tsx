@@ -15,7 +15,6 @@ export const CrewMember = ({ id }: { id: string }) => {
     enabled: !!id,
     staleTime:0,
   });
-  console.log(participants);
   return (
     <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
       <Text style={styles.crewTitle}>크루원</Text>

@@ -26,7 +26,6 @@ const CompetitorRunning = () => {
     competitorProgress,
     totalDistance,
   } = useCompetitorRunning();
-  console.log(runDistance);
   return (
     <>
       {
