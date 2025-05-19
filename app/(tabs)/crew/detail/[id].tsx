@@ -1,7 +1,14 @@
 import Button from "@/component/Button";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Alert, BackHandler, Image, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  BackHandler,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { fetchCrewDetail } from "../../../../lib/crew/detail/fetchCrewDetail";
 
 import { useEffect, useState } from "react";
@@ -11,8 +18,7 @@ import { fetchCrewApply } from "../../../../lib/crew/detail/fetchCrewApply";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();
-  const [isHost, setIsHost] = useState<boolean>();
-  const [applyModal, setApplyModal] =  useState<boolean>(false);
+  const [applyModal, setApplyModal] = useState<boolean>(false);
   const router = useRouter();
 
   const {
@@ -23,7 +29,7 @@ const CrewDetail = () => {
     queryKey: ["crewDetail", id],
     queryFn: () => fetchCrewDetail(id),
     enabled: !!id,
-    staleTime:0,
+    staleTime: 0,
   });
   useEffect(() => {
     const onBackPress = () => {
@@ -32,7 +38,7 @@ const CrewDetail = () => {
     };
 
     const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
+      "hardwareBackPress",
       onBackPress
     );
 
@@ -43,7 +49,11 @@ const CrewDetail = () => {
       <View style={styles.crewTitleContainer}>
         <Image
           style={styles.crewImage}
-          source={detail?.image? {uri: detail?.image}: require('@/assets/images/crewImage.png')}
+          source={
+            detail?.image
+              ? { uri: detail?.image }
+              : require("@/assets/images/crewImage.png")
+          }
         />
         <View>
           <Text style={[styles.crewTitle, { fontSize: 20 }]}>
@@ -58,7 +68,7 @@ const CrewDetail = () => {
           <Button
             style={{ paddingHorizontal: 12, paddingVertical: 5 }}
             onPress={async () => {
-              if (!(detail?.crewUserRole === 'LEADER')) {
+              if (!(detail?.crewUserRole === "LEADER")) {
                 const confirmApply = () => {
                   return new Promise((resolve) => {
                     Alert.alert(
@@ -81,10 +91,13 @@ const CrewDetail = () => {
                 }
               } else {
                 setApplyModal(true);
-              };              }}
+              }
+            }}
             theme="secondary"
           >
-            {`${detail?.crewUserRole === 'LEADER'? '신청자 보기': '가입 신청'}`}
+            {`${
+              detail?.crewUserRole === "LEADER" ? "신청자 보기" : "가입 신청"
+            }`}
           </Button>
         </View>
         <Text style={[styles.crewSecondary, { color: "#485563" }]}>
@@ -123,11 +136,11 @@ const CrewDetail = () => {
       <View style={[styles.crewDescriptionContainer, { marginTop: 10 }]}>
         <View style={styles.crewInfoContainer}>
           <CrewMember id={id} />
-          </View>
+        </View>
       </View>
-      {applyModal && 
-      <CrewApplyModal  id={id} applyModal setApplyModal={setApplyModal}/>}
-      
+      {applyModal && (
+        <CrewApplyModal id={id} applyModal setApplyModal={setApplyModal} />
+      )}
     </View>
   );
 };

@@ -1,31 +1,27 @@
-import { SetStateAction } from "react";
 import { Modal, Pressable, StyleSheet, View, Image, Text } from "react-native";
-import Button from "./Button";
+import Button from "../Button";
+import { useAlertStore } from "@/store/useAlertStore";
 
-const AlertModal = ({
-  visible,
-  setVisible,
-  title,
-  description
-}: {
-  visible: boolean;
-  setVisible: React.Dispatch<SetStateAction<boolean>>;
-  title: string;
-  description: string;
-}) => {
+const AlertModal = () => {
+    const {
+    visible,
+    title,
+    description,
+    hideAlert,
+  } = useAlertStore();
   return (
     <Modal
       animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={() => {
-        setVisible(false);
+        hideAlert();
       }}
     >
       <Pressable
         style={styles.modalOverlay}
         onPress={() => {
-          setVisible(false);
+          hideAlert();
         }}
       ></Pressable>
       <View style={styles.modalBackground}>
@@ -34,9 +30,16 @@ const AlertModal = ({
             source={require("@/assets/images/check.png")}
             style={styles.image}
           />
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
-          <Button style = {{marginTop:8, width: '100%'}} onPress={() => {setVisible(false)}}>
+          <Text style={styles.title}>{title || "크루 생성 완료"}</Text>
+          <Text style={styles.description}>
+            {description || "크루가 생성되었습니다."}
+          </Text>
+          <Button
+            style={{ marginTop: 8, width: "100%" }}
+            onPress={() => {
+              hideAlert();
+            }}
+          >
             확인
           </Button>
         </View>
@@ -45,6 +48,7 @@ const AlertModal = ({
   );
 };
 export default AlertModal;
+
 const styles = StyleSheet.create({
   modalBackground: {
     padding: 16,
@@ -52,9 +56,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: "100%",
+    position: "fixed",
   },
   modalOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     bottom: 0,
     left: 0,
@@ -62,13 +67,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)", // 반투명 배경
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 10,
+    zIndex: 30,
   },
   container: {
     padding: 24,
     width: "100%",
     backgroundColor: "white",
-    zIndex: 20,
+    zIndex: 40,
     justifyContent: "center",
     alignItems: "center",
     gap: 8,

@@ -4,6 +4,7 @@ import Header from "../../component/Header";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
+import GlobalModal from "@/component/GlobalModal";
 
 const queryClient = new QueryClient();
 export default function TabLayout() {
@@ -11,6 +12,8 @@ export default function TabLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <Header />
+      <GlobalModal />
+
       <Tabs screenOptions={{ headerShown: false }} tabBar={() => <TabBar />}>
         <Tabs.Screen
           name="index"
