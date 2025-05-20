@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/apiClient";
+import { useAlertStore } from "@/store/useAlertStore";
 import { CourseDetail } from "@/types";
 import { Alert } from "react-native";
 
@@ -11,7 +12,7 @@ export async function fetchCrewParticipants(id:string) {
   } catch (error) {
     console.error(error);
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError({title: '문제가 발생했어요', description: error.response.data.serverErrorMessage});
     }
   }
 }

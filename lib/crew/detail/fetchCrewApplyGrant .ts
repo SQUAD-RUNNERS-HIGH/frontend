@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/apiClient";
+import { useAlertStore } from "@/store/useAlertStore";
 import { Alert } from "react-native";
 
 export const fetchCrewApplyGrant = async (id: number, applicantId: number) => {
@@ -15,7 +16,7 @@ export const fetchCrewApplyGrant = async (id: number, applicantId: number) => {
   } catch (error) {
     console.error(error);
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError({title: '문제가 발생했어요', description: error.response.data.serverErrorMessage});
     }
   }
 };

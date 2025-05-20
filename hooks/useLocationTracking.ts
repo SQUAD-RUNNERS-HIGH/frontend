@@ -3,17 +3,19 @@ import * as Location from "expo-location";
 import { Alert, AppState } from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
+import { useAlertStore } from "@/store/useAlertStore";
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
   const [permissionStatus, requestPermission] =
     Location.useForegroundPermissions();
+  const showError = useAlertStore(s => s.showError);
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
   const isRunning  = useRunningStore(state => state.isRunning);
   const askPermission = async () => {
     if (!permissionStatus || !permissionStatus.granted) {
       const permission = await requestPermission();
       if (!permission.granted) {
-        Alert.alert("위치 권한 필요", "위치 권한을 허용해주세요.");
+       showError({title: "위치 권한 필요", description: "위치 권한을 허용해주세요."});
       }
     }
   };

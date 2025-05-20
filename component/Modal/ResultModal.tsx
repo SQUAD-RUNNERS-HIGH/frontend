@@ -25,6 +25,7 @@ import { fetchSaveCourses } from "@/lib/map/fetchSaveCourse";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
+import { useAlertStore } from "@/store/useAlertStore";
 
 const ResultModal = () => {
   const { selectedCourse, currentCourses, setSelectedCourse } = useCourseStore(
@@ -51,6 +52,7 @@ const ResultModal = () => {
     }))
   );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
+  const showError = useAlertStore(state => state.showError);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -111,7 +113,7 @@ const ResultModal = () => {
         setSelectedCourse("");
         setRunDistance(0);
       } catch (error) {
-        Alert.alert(`기록 저장 실패: ${error}`);
+        showError({title: '기록 저장 실패', description: `${error}`});
       } finally {
         setIsLoading(false);
       }
