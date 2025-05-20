@@ -1,15 +1,27 @@
 import { Modal, Pressable, StyleSheet, View, Image, Text } from "react-native";
 import Button from "../Button";
 import { useAlertStore } from "@/store/useAlertStore";
+import { useShallow } from "zustand/react/shallow";
 
 const AlertModal = () => {
     const {
-    visible,
-    title,
-    description,
-    hideAlert,
-  } = useAlertStore();
-  return (
+  visible,
+  title,
+  theme,
+  description,
+  hideAlert,
+} = useAlertStore(
+  useShallow((state) => ({
+    visible: state.visible,
+    title: state.title,
+    theme: state.theme,
+    description: state.description,
+    hideAlert: state.hideAlert,
+  }))
+);
+const icon = theme === 'Alert'
+  ? require('@/assets/images/check.png')
+  : require('@/assets/images/xCircle.png');  return (
     <Modal
       animationType="fade"
       transparent={true}
@@ -27,7 +39,7 @@ const AlertModal = () => {
       <View style={styles.modalBackground}>
         <View style={styles.container}>
           <Image
-            source={require("@/assets/images/check.png")}
+            source={icon}
             style={styles.image}
           />
           <Text style={styles.title}>{title || "크루 생성 완료"}</Text>
