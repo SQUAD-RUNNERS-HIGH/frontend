@@ -11,7 +11,7 @@ export async function fetchCourseDetail(id:string) {
   } catch (error) {
     console.error(error);
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError({title: '문제가 발생했어요', description: error.response.data.serverErrorMessage});
     }
   }
 }

@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/apiClient";
+import { useAlertStore } from "@/store/useAlertStore";
 import { CourseDetail } from "@/types";
 import { Alert } from "react-native";
 
@@ -11,7 +12,7 @@ export async function fetchCrewApplicants(id) {
   } catch (error) {
     console.error(error);
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError(error.response.data.serverErrorMessage);
     }
   }
 }

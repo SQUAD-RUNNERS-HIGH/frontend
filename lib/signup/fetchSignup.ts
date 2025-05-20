@@ -2,6 +2,7 @@ import axios from "axios";
 import { Alert } from "react-native";
 import { userSignupType } from "@/types";
 import { signUpSchema } from "./signUpSchema";
+import { useAlertStore } from "@/store/useAlertStore";
 
 export async function fetchSignup(data: userSignupType) {
   try {
@@ -9,7 +10,7 @@ export async function fetchSignup(data: userSignupType) {
     return response;
   } catch (error) {
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError({title: '문제가 발생했어요', description: error.response.data.serverErrorMessage});
     }
   }
 }

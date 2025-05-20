@@ -1,3 +1,4 @@
+import { useAlertStore } from "@/store/useAlertStore";
 import { userLoginType } from "@/types";
 import axios from "axios";
 import { useRouter } from "expo-router";
@@ -14,7 +15,7 @@ export async function fetchLogin(data: userLoginType) {
   } catch (error) {
     console.error(error);
     if (error?.response) {
-      Alert.alert(error.response.data.serverErrorMessage);
+      useAlertStore.getState().showError({title: '문제가 발생했어요', description: error.response.data.serverErrorMessage});
     }
   }
 }
