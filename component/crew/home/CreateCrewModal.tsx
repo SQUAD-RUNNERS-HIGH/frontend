@@ -18,6 +18,7 @@ import Button from "@/component/Button";
 import { useRouter } from "expo-router";
 import { fetchCrewCreate } from "../../../lib/crew/home/fetchCrewCreate";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAlertStore } from "@/store/useAlertStore";
 
 export function CreateCrewModal({
   modalVisible,
@@ -27,6 +28,8 @@ export function CreateCrewModal({
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }) {
   const queryClient = useQueryClient();
+  const showAlert = useAlertStore(s => s.showAlert);
+
   const onSubmit = async (data: z.infer<typeof crewSchema>) => {
     const formData = new FormData();
     const { image, ...rest } = data;
@@ -38,12 +41,16 @@ export function CreateCrewModal({
       string: JSON.stringify(rest),
       type: "application/json",
     });
-
-    // 이미지 추가 (이미 올바르게 설정된 것으로 보임)
+    // 이미지 추가
     formData.append("image", image as any);
+    console.log(formData);
     const response = await fetchCrewCreate(formData);
     if (response?.status === 200) {
-      Alert.alert("크루가 생성되었습니다!");
+      showAlert({
+        title: "크루 생성 완료",
+        description: "크루 생성이 완료되었습니다!",
+      });
+
       queryClient.invalidateQueries({ queryKey: ["myCrew"] });
       setModalVisible(false);
     }
@@ -57,6 +64,8 @@ export function CreateCrewModal({
     resolver: zodResolver(crewSchema),
     mode: "onChange",
   });
+  console.log(errors);
+  console.log(isValid);
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능

@@ -18,6 +18,7 @@ import { signUpSchema } from "../../../lib/signup/signUpSchema";
 import { fetchSignup } from "../../../lib/signup/fetchSignup";
 import { userSignupType } from "@/types";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
+import { useAlertStore } from "@/store/useAlertStore";
 
 export default function Signup() {
   const {
@@ -28,6 +29,7 @@ export default function Signup() {
     resolver: zodResolver(signUpSchema),
     mode: "onChange",
   });
+  const showAlert = useAlertStore(s => s.showAlert);
   const router = useRouter();
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     const { gender, age, height, weight, ...rest } = data;
@@ -42,7 +44,7 @@ export default function Signup() {
     };
     const response = await fetchSignup(newData);
     if (response?.status === 200) {
-      Alert.alert("가입되었습니다! Runners high에 오신 걸 환영합니다!");
+      showAlert({title: '가입 신청 완료', description: '러너스하이의 회원이 되신 것을 환영합니다!'});
       router.push('/login');
     }
   };
