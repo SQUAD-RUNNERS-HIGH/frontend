@@ -19,38 +19,47 @@ import { useCourseStore } from "@/store/useCourseStore";
 
 export function SelectCompetitor() {
   const [selectedId, setSelectedId] = useState<string>("");
-  const selectedCourse = useCourseStore(state => state.selectedCourse);
-  const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state) => ({
-    runningInfo:state.runningInfo,
-    setRunningInfo: state.setRunningInfo
-  })))
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+  const { runningInfo, setRunningInfo, setRunningStatus } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ["personalRanks", selectedCourse],
+      queryKey: ["personalRanks", selectedCourseId],
       queryFn: fetchPersonRanks,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage?.nextPage,
-      staleTime: 0
+      staleTime: 0,
     });
+  // useEffect(() => {
+  //   if (data) {
+  //     apiClient.post(`/test-data/${selectedCourseId}`);
+  //   }
+  // }, []);
   const seen = new Set();
+  console.log(data?.pages);
   const competitors =
     data?.pages
       .flatMap((page) => page?.items.personalRunningTimes)
       .filter((item) => {
-        if (item.userName === "러너스하이") return false;
         if (seen.has(item.historyId)) return false;
         seen.add(item.historyId);
         return true;
       }) || [];
-
+  console.log(competitors);
   const loadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   };
   useEffect(() => {
-    apiClient.post(`/test-data/${selectedCourse}`);
-  },[])
+    apiClient.post(`/test-data/${selectedCourseId}`);
+  }, []);
 
   return (
     <>
@@ -73,9 +82,7 @@ export function SelectCompetitor() {
           }
           renderItem={({ item: competitor }) => (
             <>
-              {competitor.userName === "러너스하이" ? (
-                <View></View>
-              ) : (
+              {
                 <View style={styles.competitor}>
                   <Text style={styles.name}>{competitor.userName}</Text>
                   <View style={styles.checkContainer}>
@@ -93,7 +100,7 @@ export function SelectCompetitor() {
                     />
                   </View>
                 </View>
-              )}
+              }
             </>
           )}
         />
@@ -103,7 +110,9 @@ export function SelectCompetitor() {
           <Button
             style={{ flex: 1 }}
             onPress={() => {
-              if (selectedId) setRunningInfo(selectedId);
+              if (selectedId)
+                setRunningInfo({ mode: "competitor", id: selectedId });
+              setRunningStatus("prepare");
             }}
           >
             선택 하기

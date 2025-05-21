@@ -10,7 +10,7 @@ import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
 
 export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
-  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const selectedCourseId = useCourseStore(state => state.selectedCourseId);
   const client = useStompStore(state => state.client);
   const { myLocation, stompLocation } = useLocationStore(
     useShallow((state) => ({
@@ -18,36 +18,12 @@ export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
       stompLocation: state.stompLocation,
     }))
   );
-  const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
+  const { runningInfo, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
-      setIsRunning: state.setIsRunning,
-      setPreRunning: state.setPreRunning,
+      setRunningStatus: state.setRunningStatus
     }))
   );
-  const {
-    data: detail,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["courseDetail", selectedCourse],
-    queryFn: () => {
-      return fetchCourseDetail(selectedCourse);
-    },
-    enabled: !!(
-      selectedCourse &&
-      selectedCourse !== "solo" &&
-      runningInfo !== "solo"
-    ), // selectedCourse가 있을 때만 실행,
-    staleTime: 100000,
-  });
-  // const { connected, sendLocation } = useStomp();
-
-  // useEffect(() => {
-  //   if (client.current && myLocation && connected) {
-  //     sendLocation(myLocation);
-  //   }
-  // }, [myLocation, connected]); // ✅
 
   return (
     <>

@@ -16,7 +16,7 @@ const RunningInfo = ({seconds, rest, speed}: RunningInfoProps) => {
           </View>
           <View style={styles.info}>
             <Text style={styles.value}>{rest}m</Text>
-            <Text style={styles.key}>{`${runningInfo === 'solo' ? '뛴 ':'남은 '}`}거리</Text>
+            <Text style={styles.key}>{`${runningInfo.mode === 'solo' ? '뛴 ':'남은 '}`}거리</Text>
           </View>
           <View style={styles.info}>
             <Text style={styles.value}>{speed}</Text>

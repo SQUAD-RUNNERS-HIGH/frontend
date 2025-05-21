@@ -3,36 +3,35 @@ import { BackHandler, ToastAndroid } from "react-native";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 
-export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
+export const useBackHandler = ( setSelectedCourseId, theme, setTheme) => {
   const [backPressCount, setBackPressCount] = useState(0);
   const timeoutRef = useRef(null);
-  const { isRunning, setIsRunning, setRunningInfo } = useRunningStore(
+  const {runningStatus, setRunningInfo, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
-      isRunning: state.isRunning,
-      setIsRunning: state.setIsRunning,
+      runningStatus: state.runningStatus,
+      setRunningStatus: state.setRunningStatus,
       setRunningInfo: state.setRunningInfo,
     }))
   );
   const backPressCases = useCallback(() => {
     if (theme === "info") {
-      setSelectedCourse("");
+      setSelectedCourseId("");
     }
-    if (theme !== "info" && !isRunning) {
+    if (theme !== "info" && runningStatus === 'idle') {
       setTheme("info");
       setBackPressCount(0); // ✅ useState를 사용하여 변경하면 즉시 반영됨
     }
-    if (isRunning) {
+    if (runningStatus === 'go') {
       ToastAndroid.show(
         "한 번 더 누르면 러닝이 종료됩니다.",
         ToastAndroid.SHORT
       );
     }
-  }, [backPressCount, isRunning, theme, setTheme, setSelectedCourse]);
+  }, [backPressCount, runningStatus, theme, setTheme, setSelectedCourseId]);
   
   const onBackPress = useCallback(() => {
-    if (isRunning && backPressCount === 1) {
-      setRunningInfo('finish')
-      setIsRunning(false);
+    if (runningStatus === 'go' && backPressCount === 1) {
+      setRunningStatus('finished')
       return true;
     }
     backPressCases();
@@ -41,7 +40,7 @@ export const useBackHandler = ( setSelectedCourse, theme, setTheme) => {
     setTimeout(() => setBackPressCount(0), 2000);
   
     return true;
-  }, [backPressCases, isRunning, setIsRunning, setSelectedCourse, backPressCount]);
+  }, [backPressCases, runningStatus, setRunningStatus, setSelectedCourseId, backPressCount]);
 
   useEffect(() => {
     const backHanlder = BackHandler.addEventListener("hardwareBackPress", onBackPress);

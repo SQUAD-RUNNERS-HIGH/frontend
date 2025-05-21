@@ -4,8 +4,8 @@ import { create } from 'zustand';
 interface CourseStore {
   currentCourses: CourseResponse[] | null;
   setCurrentCourses: (courses: CourseResponse[] | null) => void;
-  selectedCourse: string;
-  setSelectedCourse: (courseId: string) => void;
+  selectedCourseId: string;
+  setSelectedCourseId: (courseId: string) => void;
   isDropdownVisible: boolean;
   setIsDropdownVisible: (visible: boolean) => void;
 }
@@ -13,8 +13,8 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>((set) => ({
   currentCourses: null,
   setCurrentCourses: (courses) => set({ currentCourses: courses }),
-  selectedCourse: '',
-  setSelectedCourse: (courseId) => set({ selectedCourse: courseId }),
+  selectedCourseId: '',
+  setSelectedCourseId: (courseId) => set({ selectedCourseId: courseId }),
   isDropdownVisible: false,
   setIsDropdownVisible: (visible) => set({ isDropdownVisible: visible }),
 }));

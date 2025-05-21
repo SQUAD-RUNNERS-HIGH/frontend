@@ -1,38 +1,50 @@
-import { create } from 'zustand';
-import { soloRunningRecord, competitorRunningRecord } from '@/types';
+import { create } from "zustand";
+import { soloRunningRecord, competitorRunningRecord } from "@/types";
+import RunningInfo from "@/component/Modal/RunningModal/RunningInfo";
 
 type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
 
-interface RunningState {
-  isRunning: boolean;
-  setIsRunning: (value: boolean) => void;
+type RunningInfo =
+  | { mode: "solo" }
+  | { mode: "competitor"; id: string }
+  | { mode: "crew"; id: number };
 
-  runningInfo: string;
-  setRunningInfo: (value: string) => void;
+type RunningStatus =
+  | "idle"
+  | "prepare"
+  | "countdown"
+  | "go"
+  | "paused"
+  | "finished";
+
+interface RunningState {
+  runningInfo: RunningInfo;
+  setRunningInfo: (value: RunningInfo) => void;
 
   runDistance: number;
-  setRunDistance: (value: number) => void;
+  setRunDistance: (value: number | ((prev: number) => number)) => void;
 
   runningRecord: RunningRecord;
   setRunningRecord: (record: RunningRecord) => void;
 
-  preRunning: boolean;
-  setPreRunning: (value: boolean) => void;
+  runningStatus: RunningStatus;
+  setRunningStatus: (value: RunningStatus) => void;
 }
 
 export const useRunningStore = create<RunningState>((set) => ({
-  isRunning: false,
-  setIsRunning: (value) => set({ isRunning: value }),
-
-  runningInfo: '',
+  runningInfo: { mode: "solo" },
   setRunningInfo: (value) => set({ runningInfo: value }),
 
   runDistance: 0,
-  setRunDistance: (value) => set({ runDistance: value }),
-
+  setRunDistance: (updater) =>
+    set((state) => ({
+      runDistance:
+        typeof updater === "function" ? updater(state.runDistance) : updater,
+    })),
+    
   runningRecord: null,
   setRunningRecord: (record) => set({ runningRecord: record }),
 
-  preRunning: false,
-  setPreRunning: (value) => set({ preRunning: value }),
+  runningStatus: "idle",
+  setRunningStatus: (value) => set({ runningStatus: value }),
 }));

@@ -9,17 +9,17 @@ import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
 
 export function useStomp() {
-  const selectedCourse = useCourseStore((state) => state.selectedCourse);
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
   const { client, setClient } = useStompStore(
     useShallow((state) => ({
       client: state.client,
       setClient: state.setClient,
     }))
   );
-  const { runningInfo, isRunning } = useRunningStore(
+  const { runningInfo, runningStatus } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
-      isRunning: state.isRunning,
+      runningStatus: state.runningStatus,
     }))
   );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
@@ -30,12 +30,12 @@ export function useStomp() {
     // if (!isRunning && !isNaN(Number(runningInfo))) {
     //   setRunningParticipants(data?.nearByParticipants);
     // } else {
-    setStompLocation((prev) => ({
-      ...prev,
+    setStompLocation({
       runningStatus: data?.runningStatus,
       latitude: data?.latitude,
       longitude: data?.longitude,
-    }));
+    }
+    );
     // }
     // setRunningLocation((prev) => ({
     //   ...prev,
@@ -45,15 +45,15 @@ export function useStomp() {
     // }));
   }, []);
   useEffect(() => {
-      if (client && !isRunning) {
-        if (runningInfo === "" || runningInfo === "finish") {
-          client.deactivate();
-          setClient(null);
-        }
+    if (client) {
+      if (runningStatus === "idle" || runningStatus === "finished") {
+        client.deactivate();
+        setClient(null);
       }
-    }, [runningInfo, isRunning]);
+    }
+  }, [client, runningInfo, runningStatus]);
   useEffect(() => {
-    if (!client && runningInfo !== "" && runningInfo !== "finish") {
+    if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
         brokerURL: "wss://runners-high.shop/running",
         reconnectDelay: 5000,
@@ -65,7 +65,7 @@ export function useStomp() {
       });
       setClient(newClient);
     }
-  }, [selectedCourse, handleMessage]);
+  }, [selectedCourseId, handleMessage, runningStatus]);
   useEffect(() => {
     if (client) {
       client.activate();
@@ -79,9 +79,9 @@ export function useStomp() {
         console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
-        if (!isNaN(Number(runningInfo)) && isRunning) {
+        if (runningInfo.mode === "crew" && runningStatus === "go") {
           subscription = client?.subscribe(
-            `/topic/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo}`,
             (message: IMessage) => {
               const data = JSON.parse(message.body);
               console.log(data);
@@ -115,17 +115,13 @@ export function useStomp() {
         console.error("[STOMP] WebSsocket error:", event);
       };
     }
-  }, [client, runningInfo, isRunning, selectedCourse, handleMessage]);
+  }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
   const sendLocation = async (location: location, ready?: boolean) => {
     // 러닝
-    if (
-      client &&
-      client?.connected &&
-      isNaN(Number(runningInfo))
-    ) {
+    if (client && client?.connected && runningInfo.mode === "competitor") {
       client.publish({
-        destination: `/app/course/${selectedCourse}`,
+        destination: `/app/course/${selectedCourseId}`,
         body: JSON.stringify(location),
       });
       return;
@@ -134,8 +130,8 @@ export function useStomp() {
     if (
       client &&
       client?.connected &&
-      !isNaN(Number(runningInfo)) &&
-      !isRunning
+      runningInfo.mode === "crew" &&
+      runningStatus === "go"
     ) {
       const userId = await AsyncStorage.getItem("userId");
       const userName = await AsyncStorage.getItem("userName");
@@ -148,7 +144,7 @@ export function useStomp() {
         isReady: ready, // 추가로 받은 ready 사용
       };
       client.publish({
-        destination: `/app/crew-participant/course/${selectedCourse}/crew/${runningInfo}`,
+        destination: `/app/crew-participant/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
       });
       return;
@@ -156,8 +152,8 @@ export function useStomp() {
     if (
       client &&
       client?.connected &&
-      !isNaN(Number(runningInfo)) &&
-      isRunning
+      runningInfo.mode === "crew" &&
+      runningStatus === "go"
     ) {
       const userId = await AsyncStorage.getItem("userId");
 
@@ -166,9 +162,9 @@ export function useStomp() {
         latitude: location?.latitude,
         longitude: location?.longitude,
       };
-      
+
       client?.publish({
-        destination: `/app/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+        destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo}`,
         body: JSON.stringify(newBody),
       });
       return;

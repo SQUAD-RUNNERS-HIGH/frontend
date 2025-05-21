@@ -10,14 +10,14 @@ import { useShallow } from "zustand/react/shallow";
 export const useSoloRunning = () => {
 
   const {
-    preRunning,
+    runningStatus,
     setRunDistance,
     runningRecord,
     setRunningRecord,
     runDistance,
   } = useRunningStore(
     useShallow((state) => ({
-      preRunning: state.preRunning,
+      runningStatus: state.runningStatus,
       setRunDistance: state.setRunDistance,
       runningRecord: state.runningRecord,
       setRunningRecord: state.setRunningRecord,
@@ -29,7 +29,7 @@ export const useSoloRunning = () => {
   const [progress, setProgress] = useState<location[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
   useEffect(() => {
-    if (!preRunning) {
+    if (runningStatus === 'go') {
 
       const interval = setInterval(() => {
         setSeconds(prev => prev+1);
@@ -39,9 +39,9 @@ export const useSoloRunning = () => {
         clearInterval(interval);
       }
     }
-  }, [preRunning])
+  }, [runningStatus])
   useEffect(() => {
-    if (preRunning && myLocation) {
+    if (runningStatus === 'countdown' && myLocation) {
       setRunningRecord({
         runningTime: 0,
         courseName: "",
@@ -50,7 +50,7 @@ export const useSoloRunning = () => {
       });
     }
 
-    if (!preRunning && myLocation) {
+    if (runningStatus === 'go' && myLocation) {
       setSpeed(convertSpeedToPace(myLocation?.speed));
       const interval = setInterval(() => {
         setProgress((prev) => [

@@ -10,13 +10,13 @@ export function RunningModal() {
     setRunDistance,
     runningInfo,
     setRunningInfo,
-    setIsRunning,
+    setRunningStatus
   } = useRunningStore(
     useShallow((state) => ({
       setRunDistance: state.setRunDistance,
       runningInfo: state.runningInfo,
       setRunningInfo: state.setRunningInfo,
-      setIsRunning: state.setIsRunning,
+      setRunningStatus: state.setRunningStatus
     }))
   );
   const confirmExit = () => {
@@ -41,14 +41,12 @@ export function RunningModal() {
             <CrewRunning />
           </>
         )}*/}
-      {runningInfo !== "solo" &&
-        isNaN(Number(runningInfo)) &&
-        runningInfo !== "finish" && (
+      {runningInfo.mode === 'competitor' && (
           <>
             <CompetitorRunning />
           </>
         )}
-      {runningInfo === "solo" && (
+      {runningInfo.mode === 'solo'&& (
         <>
           <SoloRunning />
         </>
@@ -59,13 +57,7 @@ export function RunningModal() {
           onPress={async () => {
             const exit = await confirmExit();
             if (exit) {
-              if (runningInfo === "solo") {
-                setRunningInfo("soloFinish");
-              }
-              if (runningInfo !== "solo" && isNaN(Number(runningInfo))) {
-                setRunningInfo("competitorFinish");
-              }
-              setIsRunning(false);
+              setRunningStatus('finished');
             }
           }}
         >

@@ -13,64 +13,67 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 const PrepareRunModal = () => {
-  const { selectedCourse, currentCourses } = useCourseStore(
+  const { selectedCourseId, currentCourses } = useCourseStore(
     useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
+      selectedCourseId: state.selectedCourseId,
       currentCourses: state.currentCourses,
     }))
   );
-  const {runningInfo, setRunningInfo} = useRunningStore(useShallow((state)=> ({
-    runningInfo: state.runningInfo,
-    setRunningInfo: state.setRunningInfo
-  })));
+  const { runningInfo, setRunningInfo, runningStatus, setRunningStatus } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        setRunningInfo: state.setRunningInfo,
+        runningStatus: state.runningStatus,
+        setRunningStatus: state.setRunningStatus,
+      }))
+    );
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
- 
+
   useEffect(() => {
-    if (courseCoordinates && runningInfo !== 'solo') {
+    if (courseCoordinates && runningInfo.mode !== "solo") {
       const total = getPathLength(courseCoordinates);
       setTotalDistance(total);
     }
   }, [courseCoordinates]);
   useEffect(() => {
-    if (currentCourses && runningInfo !== 'solo') {
+    if (currentCourses && runningInfo.mode !== "solo") {
       setCourseCoordinates(
         currentCourses
-          .find((course) => course.courseId === selectedCourse)
+          .find((course) => course.courseId === selectedCourseId)
           .coordinates[0].map(([longitude, latitude]) => ({
             latitude,
             longitude,
           }))
       );
     }
-  }, [selectedCourse]);
+  }, [selectedCourseId]);
 
   return (
     <Modal
       animationType="slide" // fade, slide, none 가능
       transparent={true} // 배경을 투명하게 설정
-      visible={runningInfo !== ""}
+      visible={runningStatus === "prepare"}
       onRequestClose={() => {
-        setRunningInfo("");
+        setRunningStatus("idle");
       }} // 안드로이드 뒤로가기 대응
     >
       <Pressable
         style={styles.modalOverlay}
         onPress={() => {
-          setRunningInfo("");
+          setRunningStatus("idle");
         }}
       ></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
-          {runningInfo === "solo" && <PrepareSolo />}
-          {runningInfo !== "" &&
-            runningInfo !== "solo" &&
-            isNaN(Number(runningInfo)) && (
-              <PrepareCompetitor
-                totalDistance={totalDistance}
-              />
+          {runningInfo.mode === "solo" && <PrepareSolo />}
+          {runningInfo.mode === "competitor" && (
+              <PrepareCompetitor totalDistance={totalDistance} />
             )}
-            {!isNaN(Number(runningInfo)) && <PrepareCrew totalDistance={totalDistance} />}
+          {runningInfo.mode === "crew" && (
+            <PrepareCrew totalDistance={totalDistance} />
+          )}
         </View>
       </View>
     </Modal>
