@@ -15,18 +15,23 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchMyCrew } from "@/lib/crew/home/fetchMyCrew";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
+import { useShallow } from "zustand/react/shallow";
 
 export function SelectCrew() {
   const [selectedId, setSelectedId] = useState<number>(-1);
-  const selectedCourseId = useCourseStore(state => state.selectedCourseId);
-  const setRunningInfo = useRunningStore(state => state.setRunningInfo);
-  const { data: myCrewResponse } =
-    useQuery({
-      queryKey: ["myCrew", selectedCourseId],
-      queryFn: fetchMyCrew,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 5,
-    });
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+  const { setRunningInfo, setRunningStatus } = useRunningStore(
+    useShallow((state) => ({
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
+  const { data: myCrewResponse } = useQuery({
+    queryKey: ["myCrew", selectedCourseId],
+    queryFn: fetchMyCrew,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 5,
+  });
   return (
     <>
       {myCrewResponse?.myCrews?.length === 0 ? (
@@ -65,7 +70,8 @@ export function SelectCrew() {
           <Button
             style={{ flex: 1 }}
             onPress={() => {
-              if (selectedId) setRunningInfo({mode: 'crew', id: selectedId});
+              if (selectedId) setRunningInfo({ mode: "crew", id: selectedId});
+              setRunningStatus('prepare');
             }}
           >
             선택 하기

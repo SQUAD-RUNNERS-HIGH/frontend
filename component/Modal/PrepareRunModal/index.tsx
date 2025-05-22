@@ -12,6 +12,7 @@ import { PrepareCrew } from "./PrepareCrew";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
+import { useStompStore } from "@/store/useStompStore";
 const PrepareRunModal = () => {
   const { selectedCourseId, currentCourses } = useCourseStore(
     useShallow((state) => ({
@@ -28,6 +29,8 @@ const PrepareRunModal = () => {
         setRunningStatus: state.setRunningStatus,
       }))
     );
+  const client = useStompStore((state) => state.client);
+
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
 
@@ -52,25 +55,27 @@ const PrepareRunModal = () => {
 
   return (
     <Modal
-      animationType="slide" // fade, slide, none 가능
+      animationType="fade" // fade, slide, none 가능
       transparent={true} // 배경을 투명하게 설정
       visible={runningStatus === "prepare"}
       onRequestClose={() => {
         setRunningStatus("idle");
+        client?.deactivate();
       }} // 안드로이드 뒤로가기 대응
     >
       <Pressable
         style={styles.modalOverlay}
         onPress={() => {
           setRunningStatus("idle");
+          client?.deactivate();
         }}
       ></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
           {runningInfo.mode === "solo" && <PrepareSolo />}
           {runningInfo.mode === "competitor" && (
-              <PrepareCompetitor totalDistance={totalDistance} />
-            )}
+            <PrepareCompetitor totalDistance={totalDistance} />
+          )}
           {runningInfo.mode === "crew" && (
             <PrepareCrew totalDistance={totalDistance} />
           )}

@@ -22,11 +22,10 @@ import { useStompStore } from "@/store/useStompStore";
 const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
   const selectedCourseId = useCourseStore(state => state.selectedCourseId);
   const client = useStompStore(state => state.client);
-  const { runningInfo, setRunningStatus, setRunningInfo } = useRunningStore(
+  const { runningInfo, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
       setRunningStatus: state.setRunningStatus,
-      setRunningInfo: state.setRunningInfo
     }))
   );
   const { myLocation, stompLocation } = useLocationStore(
@@ -51,7 +50,6 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
     ), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
-  console.log(runningInfo.id);
   const {
     data,
     isSuccess: completeCompetitorRecord,
@@ -67,12 +65,11 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
     ), // selectedCourse가 있을 때만 실행,
   });
   const { connected, sendLocation } = useStomp();
-  console.log(stompLocation);
   useEffect(() => {
     if (client && myLocation && connected) {
       sendLocation(myLocation);
     }
-  }, [myLocation, connected]); // ✅
+  }, [myLocation, connected]);
   return (
     <>
       {completeCompetitorRecord ? (

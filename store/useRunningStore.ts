@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { soloRunningRecord, competitorRunningRecord } from "@/types";
+import { soloRunningRecord, competitorRunningRecord, RunningParticipant } from "@/types";
 import RunningInfo from "@/component/Modal/RunningModal/RunningInfo";
 
 type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
@@ -7,7 +7,7 @@ type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
 type RunningInfo =
   | { mode: "solo" }
   | { mode: "competitor"; id: string }
-  | { mode: "crew"; id: number };
+  | { mode: "crew"; id: number; };
 
 type RunningStatus =
   | "idle"
@@ -29,6 +29,10 @@ interface RunningState {
 
   runningStatus: RunningStatus;
   setRunningStatus: (value: RunningStatus) => void;
+
+  runningParticipants: RunningParticipant[];
+  setRunningParticipants: (value: RunningParticipant[] | ((prev: RunningParticipant[]) => RunningParticipant[])) => void;
+
 }
 
 export const useRunningStore = create<RunningState>((set) => ({
@@ -47,4 +51,11 @@ export const useRunningStore = create<RunningState>((set) => ({
 
   runningStatus: "idle",
   setRunningStatus: (value) => set({ runningStatus: value }),
+
+  runningParticipants: [],
+  setRunningParticipants: (updater) =>
+    set((state) => ({
+      runningParticipants:
+        typeof updater === "function" ? updater(state.runningParticipants) : updater,
+    })),
 }));

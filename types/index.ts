@@ -119,10 +119,10 @@ export interface Crew {
 export interface myCrewResponse {
   myCrews: Crew[];
 }
-export type Participant = {
+export type RunningParticipant = {
   userId: string;
   isReady: boolean;
-  userName: string;
+  username: string;
   longitude: number;
   latitude: number;
 };

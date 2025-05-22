@@ -7,6 +7,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export function useStomp() {
   const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
@@ -16,42 +17,36 @@ export function useStomp() {
       setClient: state.setClient,
     }))
   );
-  const { runningInfo, runningStatus } = useRunningStore(
+  const { userId, userName } = useAuthStore(
+    useShallow((state) => ({
+      userId: state.userId,
+      userName: state.userName,
+    }))
+  );
+  const { runningInfo, runningStatus, setRunningParticipants } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
       runningStatus: state.runningStatus,
+      setRunningParticipants: state.setRunningParticipants
     }))
   );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
+
   const handleMessage = useCallback((data) => {
-    console.log(data);
     console.log("message");
-    // if (!isRunning && !isNaN(Number(runningInfo))) {
-    //   setRunningParticipants(data?.nearByParticipants);
-    // } else {
-    setStompLocation({
-      runningStatus: data?.runningStatus,
-      latitude: data?.latitude,
-      longitude: data?.longitude,
+    if (runningInfo.mode === "crew" && runningStatus === "prepare") {
+      setRunningParticipants(data?.nearByParticipants);
+    } else {
+      setStompLocation((prev) => ({
+        ...prev,
+        runningStatus: data?.runningStatus,
+        latitude: data?.latitude,
+        longitude: data?.longitude,
+      }));
     }
-    );
-    // }
-    // setRunningLocation((prev) => ({
-    //   ...prev,
-    //   status: data?.status,
-    //   latitude: prev.latitude + 0.0001,
-    //   longitude: prev.longitude + 0.0001,
-    // }));
   }, []);
-  useEffect(() => {
-    if (client) {
-      if (runningStatus === "idle" || runningStatus === "finished") {
-        client.deactivate();
-        setClient(null);
-      }
-    }
-  }, [client, runningInfo, runningStatus]);
+
   useEffect(() => {
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
@@ -92,7 +87,6 @@ export function useStomp() {
           subscription = client?.subscribe(
             "/user/queue/reply",
             (message: IMessage) => {
-              console.log("aaaa");
               const data = JSON.parse(message.body);
               handleMessage(data);
             }
@@ -131,14 +125,12 @@ export function useStomp() {
       client &&
       client?.connected &&
       runningInfo.mode === "crew" &&
-      runningStatus === "go"
+      runningStatus === "prepare"
     ) {
-      const userId = await AsyncStorage.getItem("userId");
-      const userName = await AsyncStorage.getItem("userName");
-
+      console.log('username',userName);
       const newBody = {
         userId: Number(userId),
-        userName,
+        username: userName,
         latitude: location?.latitude,
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
@@ -149,6 +141,7 @@ export function useStomp() {
       });
       return;
     }
+    // 크루러닝 시작
     if (
       client &&
       client?.connected &&

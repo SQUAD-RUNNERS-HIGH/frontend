@@ -8,70 +8,56 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
+import { useStomp } from "@/hooks/running/useStomp";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
-  const selectedCourseId = useCourseStore(state => state.selectedCourseId);
-  const client = useStompStore(state => state.client);
+  // const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+  const client = useStompStore((state) => state.client);
+  const { connected, sendLocation } = useStomp();
+  const [isReady, setIsReady] = useState(false);
   const { myLocation, stompLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
       stompLocation: state.stompLocation,
     }))
   );
-  const { runningInfo, setRunningStatus } = useRunningStore(
-    useShallow((state) => ({
-      runningInfo: state.runningInfo,
-      setRunningStatus: state.setRunningStatus
-    }))
-  );
-
+  const { runningInfo, setRunningStatus, runningParticipants } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        setRunningStatus: state.setRunningStatus,
+        runningParticipants: state.runningParticipants,
+      }))
+    );
+  console.log(runningParticipants);
+  useEffect(() => {
+    if (client && myLocation && connected) {
+      sendLocation(myLocation, isReady);
+    }
+  }, [myLocation, connected, isReady]);
   return (
     <>
       <Text style={styles.modalTitle}>주변 크루원</Text>
       <View style={styles.crewContainer}>
-        <View style = {styles.crew}>
-          <Text>
-            김서연{`[`}크루명{`]`}
-          </Text>
-          <View style={styles.checkBoxContainer}>
-            <Text>준비</Text>
-            <Checkbox style={styles.checkBox} />
+        {runningParticipants.map((crew) => (
+          <View style={styles.crew} key={crew.userId}>
+            <Text>{crew.username}</Text>
+            <View style={styles.checkBoxContainer}>
+              <Text style = {styles.checkBoxName}>준비</Text>
+              <Checkbox style={styles.checkBox} value = {crew.isReady}/>
+            </View>
           </View>
-        </View>
-        <View style = {styles.crew}>
-          <Text>
-            김서연{`[`}크루명{`]`}
-          </Text>
-          <View style={styles.checkBoxContainer}>
-            <Text>준비</Text>
-            <Checkbox style={styles.checkBox} />
-          </View>
-          
-        </View>
-        <View style = {styles.crew}>
-          <Text>
-            김서연{`[`}크루명{`]`}
-          </Text>
-          <View style={styles.checkBoxContainer}>
-            <Text>준비</Text>
-            <Checkbox style={styles.checkBox} />
-          </View>
-          
-        </View>
-        <View style = {styles.crew}>
-          <Text>
-            김서연{`[`}크루명{`]`}
-          </Text>
-          <View style={styles.checkBoxContainer}>
-            <Text>준비</Text>
-            <Checkbox style={styles.checkBox} />
-          </View>
-          
-        </View>
+        ))}
       </View>
-      <View style = {styles.buttonContainer}>
-        <Text style = {styles.description}>함께할 크루원은 30m 이내로 가까이 모여주세요</Text>
-        <Button onPress={() => {}} style = {styles.button}>준비하기</Button>
+      <View style={styles.buttonContainer}>
+        <Text style={styles.description}>
+          함께할 크루원은 30m 이내로 가까이 모여주세요
+        </Text>
+        <Button onPress={() => {setIsReady(prev => !prev)}} style={styles.button}>
+          {isReady? '준비취소': '준비하기'}
+        </Button>
       </View>
       {/* {connected ? (
         <>
@@ -144,13 +130,15 @@ const styles = StyleSheet.create({
   crewContainer: {
     gap: 12,
   },
-  crew:{
-    flexDirection:'row',
-    gap:100,
-    padding:12,
-    backgroundColor:'#F9FAFB',
+  crew: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#F9FAFB",
     borderRadius: 8,
-    alignItems:'center'
+    alignItems: "center",
   },
   crewName: {
     minWidth: 100,
@@ -160,21 +148,25 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
+  checkBoxName:{
+    fontSize:14,
+    lineHeight: 14,
+  },
   checkBoxContainer: {
-    flexDirection:'row',
-    gap:16
-  }, 
+    flexDirection: "row",
+    gap: 16,
+    alignContent: "center",
+  },
   buttonContainer: {
-    width: '100%',
-    marginTop:42,
-    gap:32,
-    alignItems: 'center'
+    width: "100%",
+    marginTop: 42,
+    gap: 32,
+    alignItems: "center",
   },
   description: {
-    color: '#4B5563'
+    color: "#4B5563",
   },
   button: {
-    width: '100%',
-  }
-  
+    width: "100%",
+  },
 });
