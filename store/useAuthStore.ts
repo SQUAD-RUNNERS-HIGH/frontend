@@ -9,7 +9,7 @@ import { UserLoginResponse } from '@/types';
 interface AuthState {
   accessToken: string | null;
   userId: string | null;
-  userName: string | null;
+  username: string | null;
   setAuth: (data:UserLoginResponse) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
@@ -20,17 +20,18 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       accessToken: null,
       userId: null,
-      userName: null,
+      username: null,
 
-      setAuth: async ({tokenResponse, userId, userName}) => {
+      setAuth: async ({tokenResponse, userId, username}) => {
         await SecureStore.setItemAsync('refreshToken', tokenResponse.refreshToken);
-        set({ accessToken: tokenResponse.accessToken, userId: userId.toString(), userName });
+        console.log(username);
+        set({ accessToken: tokenResponse.accessToken, userId: userId.toString(), username });
       },
 
       logout: async () => {
         await SecureStore.deleteItemAsync('refreshToken');
         await AsyncStorage.removeItem('auth'); // zustand persist 기본 키
-        set({ accessToken: null, userId: null, userName: null });
+        set({ accessToken: null, userId: null, username: null });
       },
 
       refreshAccessToken: async () => {
@@ -56,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) =>
-            ['accessToken', 'userId', 'userName'].includes(key)
+            ['accessToken', 'userId', 'username'].includes(key)
           )
         ),
     }

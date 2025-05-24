@@ -5,20 +5,20 @@ import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useStompStore } from "@/store/useStompStore";
 export function RunningModal() {
-  const {
-    setRunDistance,
-    runningInfo,
-    setRunningInfo,
-    setRunningStatus
-  } = useRunningStore(
-    useShallow((state) => ({
-      setRunDistance: state.setRunDistance,
-      runningInfo: state.runningInfo,
-      setRunningInfo: state.setRunningInfo,
-      setRunningStatus: state.setRunningStatus
-    }))
-  );
+  const { setRunDistance, runningInfo, setRunningInfo, setRunningStatus } =
+    useRunningStore(
+      useShallow((state) => ({
+        setRunDistance: state.setRunDistance,
+        runningInfo: state.runningInfo,
+        setRunningInfo: state.setRunningInfo,
+        setRunningStatus: state.setRunningStatus,
+      }))
+    );
+  const client = useStompStore((state) => state.client);
+  const setClient = useStompStore((state) => state.setClient);
+
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -34,19 +34,17 @@ export function RunningModal() {
 
   return (
     <>
-      {/* {runningInfo !== "solo" &&
-        !isNaN(Number(runningInfo)) &&
-        runningInfo !== "finish" && (
-          <>
-            <CrewRunning />
-          </>
-        )}*/}
-      {runningInfo.mode === 'competitor' && (
-          <>
-            <CompetitorRunning />
-          </>
-        )}
-      {runningInfo.mode === 'solo'&& (
+      {/* {runningInfo.mode === "crew" && (
+        <>
+          <CrewRunning />
+        </>
+      )} */}
+      {runningInfo.mode === "competitor" && (
+        <>
+          <CompetitorRunning />
+        </>
+      )}
+      {runningInfo.mode === "solo" && (
         <>
           <SoloRunning />
         </>
@@ -56,8 +54,10 @@ export function RunningModal() {
         <Button
           onPress={async () => {
             const exit = await confirmExit();
-            if (exit) {
-              setRunningStatus('finished');
+            if (exit && client) {
+              setRunningStatus("finished");
+              client.deactivate();
+              setClient(null);
             }
           }}
         >

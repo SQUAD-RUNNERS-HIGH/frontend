@@ -27,7 +27,7 @@ export default function Index() {
     enabled: !!region,
   });
   useLocationTracking();
-
+  const username = useAuthStore(state => state.username);
   const {
     selectedCourseId,
     currentCourses,

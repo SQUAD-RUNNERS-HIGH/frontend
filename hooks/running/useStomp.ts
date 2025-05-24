@@ -17,10 +17,10 @@ export function useStomp() {
       setClient: state.setClient,
     }))
   );
-  const { userId, userName } = useAuthStore(
+  const { userId, username } = useAuthStore(
     useShallow((state) => ({
       userId: state.userId,
-      userName: state.userName,
+      username: state.username,
     }))
   );
   const { runningInfo, runningStatus, setRunningParticipants } = useRunningStore(
@@ -127,10 +127,10 @@ export function useStomp() {
       runningInfo.mode === "crew" &&
       runningStatus === "prepare"
     ) {
-      console.log('username',userName);
+      console.log('username',username);
       const newBody = {
         userId: Number(userId),
-        username: userName,
+        username,
         latitude: location?.latitude,
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
