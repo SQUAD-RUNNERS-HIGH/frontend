@@ -11,12 +11,15 @@ import { useStompStore } from "@/store/useStompStore";
 import { useStomp } from "@/hooks/running/useStomp";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
+import useInterval from "@/hooks/running/useInterval";
 
 export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
   // const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+
   const client = useStompStore((state) => state.client);
   const { connected, sendLocation } = useStomp();
   const [isReady, setIsReady] = useState(false);
+  const [allReady, setAllReady] = useState(false);
   const { myLocation, stompLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
@@ -31,12 +34,15 @@ export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
         runningParticipants: state.runningParticipants,
       }))
     );
-  console.log(runningParticipants);
+
+  useInterval(() => {
+    sendLocation(myLocation, isReady);
+  }, 1000);
+
   useEffect(() => {
-    if (client && myLocation && connected) {
-      sendLocation(myLocation, isReady);
-    }
-  }, [myLocation, connected, isReady]);
+    sendLocation(myLocation, isReady);
+  }, [isReady]);
+  console.log(runningParticipants);
   return (
     <>
       <Text style={styles.modalTitle}>주변 크루원</Text>
@@ -45,8 +51,8 @@ export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
           <View style={styles.crew} key={crew.userId}>
             <Text>{crew.username}</Text>
             <View style={styles.checkBoxContainer}>
-              <Text style = {styles.checkBoxName}>준비</Text>
-              <Checkbox style={styles.checkBox} value = {crew.isReady}/>
+              <Text style={styles.checkBoxName}>준비</Text>
+              <Checkbox style={styles.checkBox} value={crew.isReady} />
             </View>
           </View>
         ))}
@@ -55,23 +61,27 @@ export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
         <Text style={styles.description}>
           함께할 크루원은 30m 이내로 가까이 모여주세요
         </Text>
-        <Button onPress={() => {setIsReady(prev => !prev)}} style={styles.button}>
-          {isReady? '준비취소': '준비하기'}
+        <Button
+          onPress={() => {
+            setIsReady((prev) => !prev);
+          }}
+          style={styles.button}
+        >
+          {isReady ? "준비취소" : "준비하기"}
         </Button>
       </View>
       {/* {connected ? (
         <>
-          {runningLocation?.runningStatus === "ONGOING" ? (
+          {stompLocation?.runningStatus === "ONGOING" ? (
             <>
               <Text style={[styles.modalDepscription2, { fontWeight: 700 }]}>
-                =러닝을 시작합니다.
+                러닝을 시작합니다.
               </Text>
 
               <Button
                 style={{ marginTop: 6, width: "100%" }}
                 onPress={() => {
-                  setPreRunning(true);
-                  setIsRunning(true);
+                  setRunningStatus('countdown');
                 }}
               >
                 러닝 시작!
@@ -127,6 +137,12 @@ const styles = StyleSheet.create({
     color: "#000000",
     marginBottom: 24,
   },
+  modalDepscription2: {
+    fontWeight: 300,
+    fontSize: 16,
+    lineHeight: 28,
+    color: "#000000",
+  },
   crewContainer: {
     gap: 12,
   },
@@ -140,6 +156,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
+  courseText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "red",
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: 12,
+  },
   crewName: {
     minWidth: 100,
   },
@@ -148,8 +172,8 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
-  checkBoxName:{
-    fontSize:14,
+  checkBoxName: {
+    fontSize: 14,
     lineHeight: 14,
   },
   checkBoxContainer: {
