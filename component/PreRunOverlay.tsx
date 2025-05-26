@@ -11,7 +11,6 @@ export const PreRunOverlay = ({ onFinish }: { onFinish: () => void }) => {
   const [visible, setVisible] = useState(true);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
-
   useEffect(() => {
     if (index < countdownArray.length) {
       // 애니메이션 시작

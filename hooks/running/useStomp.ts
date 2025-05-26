@@ -23,21 +23,23 @@ export function useStomp() {
       username: state.username,
     }))
   );
-  const { runningInfo, runningStatus, setRunningParticipants } = useRunningStore(
-    useShallow((state) => ({
-      runningInfo: state.runningInfo,
-      runningStatus: state.runningStatus,
-      setRunningParticipants: state.setRunningParticipants
-    }))
-  );
+  const { runningInfo, runningStatus, setRunningParticipants } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        runningStatus: state.runningStatus,
+        setRunningParticipants: state.setRunningParticipants,
+      }))
+    );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
 
   const handleMessage = useCallback((data) => {
-    console.log("message");
+       console.log(data);
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
       setRunningParticipants(data?.nearByParticipants);
     } else {
+   
       setStompLocation((prev) => ({
         ...prev,
         runningStatus: data?.runningStatus,
@@ -74,9 +76,9 @@ export function useStomp() {
         console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
-        if (runningInfo.mode === "crew" && runningStatus === "go") {
+        if (runningInfo.mode === "crew" && runningStatus === "countdown") {
           subscription = client?.subscribe(
-            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo}`,
+            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
             (message: IMessage) => {
               const data = JSON.parse(message.body);
               console.log(data);
@@ -111,7 +113,7 @@ export function useStomp() {
     }
   }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
-  const sendLocation = async (location: location, ready?: boolean) => {
+  const sendLocation = async (location: location, ready=false) => {
     // 러닝
     if (client && client?.connected && runningInfo.mode === "competitor") {
       client.publish({
@@ -127,7 +129,7 @@ export function useStomp() {
       runningInfo.mode === "crew" &&
       runningStatus === "prepare"
     ) {
-      console.log('username',username);
+      console.log("username", username);
       const newBody = {
         userId: Number(userId),
         username,
@@ -135,6 +137,8 @@ export function useStomp() {
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
       };
+      console.log(newBody);
+
       client.publish({
         destination: `/app/crew-participant/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
@@ -148,16 +152,16 @@ export function useStomp() {
       runningInfo.mode === "crew" &&
       runningStatus === "go"
     ) {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = useAuthStore.getState().userId;
 
       const newBody = {
         userId: Number(userId),
         latitude: location?.latitude,
         longitude: location?.longitude,
       };
-
+      console.log(newBody);
       client?.publish({
-        destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo}`,
+        destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
       });
       return;

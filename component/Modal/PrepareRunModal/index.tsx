@@ -20,11 +20,10 @@ const PrepareRunModal = () => {
       currentCourses: state.currentCourses,
     }))
   );
-  const { runningInfo, setRunningInfo, runningStatus, setRunningStatus } =
+  const { runningInfo, runningStatus, setRunningStatus } =
     useRunningStore(
       useShallow((state) => ({
         runningInfo: state.runningInfo,
-        setRunningInfo: state.setRunningInfo,
         runningStatus: state.runningStatus,
         setRunningStatus: state.setRunningStatus,
       }))
@@ -77,7 +76,7 @@ const PrepareRunModal = () => {
             <PrepareCompetitor totalDistance={totalDistance} />
           )}
           {runningInfo.mode === "crew" && (
-            <PrepareCrew totalDistance={totalDistance} />
+            <PrepareCrew />
           )}
         </View>
       </View>

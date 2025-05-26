@@ -1,23 +1,17 @@
-import { fetchCourseDetail } from "@/lib/map/fetchCourseDetail";
-import { useQuery } from "@tanstack/react-query";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import Button from "../../Button";
 import Checkbox from "expo-checkbox";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
-import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
 import { useStomp } from "@/hooks/running/useStomp";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
 import useInterval from "@/hooks/running/useInterval";
 
-export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
-  // const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
-
+export const PrepareCrew = () => {
   const client = useStompStore((state) => state.client);
-  const { connected, sendLocation } = useStomp();
+  const { sendLocation } = useStomp();
   const [isReady, setIsReady] = useState(false);
   const [allReady, setAllReady] = useState(false);
   const { myLocation, stompLocation } = useLocationStore(
@@ -26,23 +20,38 @@ export const PrepareCrew = ({ totalDistance }: { totalDistance: number }) => {
       stompLocation: state.stompLocation,
     }))
   );
-  const { runningInfo, setRunningStatus, runningParticipants } =
-    useRunningStore(
-      useShallow((state) => ({
-        runningInfo: state.runningInfo,
-        setRunningStatus: state.setRunningStatus,
-        runningParticipants: state.runningParticipants,
-      }))
-    );
+  const { runningParticipants, setRunningStatus } = useRunningStore(
+    useShallow((state) => ({
+      runningParticipants: state.runningParticipants,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
 
-  useInterval(() => {
-    sendLocation(myLocation, isReady);
-  }, 1000);
+  useInterval(
+    () => {
+      sendLocation(myLocation, isReady);
+    },
+    myLocation ? 1000 : null
+  );
 
   useEffect(() => {
     sendLocation(myLocation, isReady);
   }, [isReady]);
-  console.log(runningParticipants);
+  useEffect(() => {
+    console.log(runningParticipants);
+    if (
+      runningParticipants.length > 0 &&
+      runningParticipants.every((item) => item.isReady === true)
+    ) {
+      setAllReady(true);
+    }
+  }, [runningParticipants]);
+  useEffect(() => {
+    if (allReady) {
+      client?.deactivate();
+      setRunningStatus("countdown");
+    }
+  }, [allReady]);
   return (
     <>
       <Text style={styles.modalTitle}>주변 크루원</Text>

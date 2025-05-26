@@ -35,7 +35,7 @@ export interface UserLoginResponse {
     refreshToken: string;
   };
   userId: number;
-  userName: string;
+  username: string;
 };
 export interface location {
   latitude: number;
