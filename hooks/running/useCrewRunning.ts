@@ -107,7 +107,7 @@ export const useCrewRunning = () => {
       setCrewRunningParticipants(userId, {
         latitude,
         longitude,
-        distance,
+        distance:prevDistance+distance,
         userId,
       });
     } else {
