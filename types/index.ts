@@ -24,6 +24,7 @@ export interface runningLocation extends LocationObjectCoords {
 export interface crewRunningLocation extends LocationObjectCoords {
   runningStatus: 'ONGOING' | 'ESCAPED';
   userId: string;
+  username: string;
 }
 
 export interface userLoginType {

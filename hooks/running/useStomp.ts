@@ -45,6 +45,7 @@ export function useStomp() {
         latitude: data?.latitude,
         longitude: data?.longitude,
         userId: data?.userId,
+        username: data?.username,
       }));
     }
   }, []);

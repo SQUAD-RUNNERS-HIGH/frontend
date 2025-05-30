@@ -18,6 +18,7 @@ const CrewRunning = () => {
   const stompLocation = useLocationStore((state) => state.stompLocation);
   const totalDistance = useCourseStore((state) => state.totalDistance);
   const { speed, seconds, text } = useCrewRunning();
+  console.log(crewRunningParticipants);
   return (
         <>
           <RunningInfo
@@ -28,9 +29,9 @@ const CrewRunning = () => {
           {crewRunningParticipants && (
             <ProgressList
               records={Array.from(crewRunningParticipants.entries()).map(
-                ([userId, participant]) => { 
+                ([_, participant]) => { 
                   return ({
-                  name: userId,
+                  name: participant.username,
                   progress:
                     totalDistance > 0
                       ? participant.distance / totalDistance

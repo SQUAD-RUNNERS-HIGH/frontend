@@ -85,7 +85,7 @@ export const useCrewRunning = () => {
     )
       return;
 
-    const { latitude, longitude, userId } = stompLocation;
+    const { latitude, longitude, userId, username } = stompLocation;
 
     const prevParticipant = crewRunningParticipant.get(userId);
 
@@ -109,6 +109,7 @@ export const useCrewRunning = () => {
         longitude,
         distance:prevDistance+distance,
         userId,
+        username
       });
     } else {
       setCrewRunningParticipants(userId, {
@@ -116,6 +117,7 @@ export const useCrewRunning = () => {
         longitude,
         distance,
         userId,
+        username
       });
     }
   }, [stompLocation]);
