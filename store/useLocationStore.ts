@@ -1,4 +1,4 @@
-import { CourseResponse, runningLocation } from "@/types";
+import { CourseResponse, crewRunningLocation, runningLocation } from "@/types";
 import {
   LocationObjectCoords,
   LocationPermissionResponse,
@@ -18,9 +18,9 @@ interface LocationState {
   mapLocation: Region | null;
   setMapLocation: (region: Region | null) => void;
 
-  stompLocation: runningLocation | null;
+  stompLocation: runningLocation | crewRunningLocation |  null;
   setStompLocation: (
-    loc: runningLocation | ((prev: runningLocation | null) => runningLocation)
+    loc:  runningLocation | crewRunningLocation  | ((prev: runningLocation | crewRunningLocation |  null) => runningLocation | crewRunningLocation)
   ) => void;
 }
 

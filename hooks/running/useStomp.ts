@@ -23,12 +23,12 @@ export function useStomp() {
       username: state.username,
     }))
   );
-  const { runningInfo, runningStatus, setRunningParticipants } =
+  const { runningInfo, runningStatus, setCrewRunningPrepareParticipant} =
     useRunningStore(
       useShallow((state) => ({
         runningInfo: state.runningInfo,
         runningStatus: state.runningStatus,
-        setRunningParticipants: state.setRunningParticipants,
+        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant,
       }))
     );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
@@ -37,14 +37,14 @@ export function useStomp() {
   const handleMessage = useCallback((data) => {
        console.log(data);
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
-      setRunningParticipants(data?.nearByParticipants);
+      setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
-   
       setStompLocation((prev) => ({
         ...prev,
         runningStatus: data?.runningStatus,
         latitude: data?.latitude,
         longitude: data?.longitude,
+        userId: data?.userId,
       }));
     }
   }, []);
@@ -81,7 +81,6 @@ export function useStomp() {
             `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
             (message: IMessage) => {
               const data = JSON.parse(message.body);
-              console.log(data);
               handleMessage(data);
             }
           );
@@ -113,7 +112,7 @@ export function useStomp() {
     }
   }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
-  const sendLocation = async (location: location, ready=false) => {
+  const sendLocation = async (location: location, ready=false, progress=0) => {
     // 러닝
     if (client && client?.connected && runningInfo.mode === "competitor") {
       client.publish({
@@ -129,7 +128,6 @@ export function useStomp() {
       runningInfo.mode === "crew" &&
       runningStatus === "prepare"
     ) {
-      console.log("username", username);
       const newBody = {
         userId: Number(userId),
         username,
@@ -137,8 +135,6 @@ export function useStomp() {
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
       };
-      console.log(newBody);
-
       client.publish({
         destination: `/app/crew-participant/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
@@ -152,14 +148,13 @@ export function useStomp() {
       runningInfo.mode === "crew" &&
       runningStatus === "go"
     ) {
-      const userId = useAuthStore.getState().userId;
-
       const newBody = {
         userId: Number(userId),
         latitude: location?.latitude,
         longitude: location?.longitude,
+        username: username,
+        progress
       };
-      console.log(newBody);
       client?.publish({
         destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),

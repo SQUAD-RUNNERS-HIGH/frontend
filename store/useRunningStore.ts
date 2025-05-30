@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { soloRunningRecord, competitorRunningRecord, RunningParticipant } from "@/types";
+import { soloRunningRecord, competitorRunningRecord, CrewRunningPrepareParticipant, CrewRunningParticipant } from "@/types";
 import RunningInfo from "@/component/Modal/RunningModal/RunningInfo";
 
 type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
@@ -30,9 +30,12 @@ interface RunningState {
   runningStatus: RunningStatus;
   setRunningStatus: (value: RunningStatus) => void;
 
-  runningParticipants: RunningParticipant[];
-  setRunningParticipants: (value: RunningParticipant[] | ((prev: RunningParticipant[]) => RunningParticipant[])) => void;
+  crewRunningPrepareParticipant: CrewRunningPrepareParticipant[];
+  setCrewRunningPrepareParticipant: (value: CrewRunningPrepareParticipant[] | ((prev: CrewRunningPrepareParticipant[]) => CrewRunningPrepareParticipant[])) => void;
 
+  crewRunningParticipants: Map<string, CrewRunningParticipant>;
+
+  setCrewRunningParticipants: (key: string, value: CrewRunningParticipant) => void;
 }
 
 export const useRunningStore = create<RunningState>((set) => ({
@@ -52,10 +55,15 @@ export const useRunningStore = create<RunningState>((set) => ({
   runningStatus: "idle",
   setRunningStatus: (value) => set({ runningStatus: value }),
 
-  runningParticipants: [],
-  setRunningParticipants: (updater) =>
+  crewRunningPrepareParticipant: [],
+  setCrewRunningPrepareParticipant: (updater) =>
     set((state) => ({
-      runningParticipants:
-        typeof updater === "function" ? updater(state.runningParticipants) : updater,
+      crewRunningPrepareParticipant:
+        typeof updater === "function" ? updater(state.crewRunningPrepareParticipant) : updater,
+    })),
+  crewRunningParticipants: new Map(),
+  setCrewRunningParticipants:  (key, value) =>
+    set((state) => ({
+      crewRunningParticipants : new Map(state.crewRunningParticipants).set(key, value),
     })),
 }));

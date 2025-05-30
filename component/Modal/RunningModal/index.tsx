@@ -6,14 +6,16 @@ import SoloRunning from "./SoloRunning";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useStompStore } from "@/store/useStompStore";
+import CrewRunning from "./CrewRunning";
 export function RunningModal() {
-  const { setRunDistance, runningInfo, setRunningInfo, setRunningStatus } =
+  const { setRunDistance, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
     useRunningStore(
       useShallow((state) => ({
         setRunDistance: state.setRunDistance,
         runningInfo: state.runningInfo,
         setRunningInfo: state.setRunningInfo,
         setRunningStatus: state.setRunningStatus,
+        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant
       }))
     );
   const client = useStompStore((state) => state.client);
@@ -34,11 +36,11 @@ export function RunningModal() {
 
   return (
     <>
-      {/* {runningInfo.mode === "crew" && (
+      {runningInfo.mode === "crew" && (
         <>
           <CrewRunning />
         </>
-      )} */}
+      )}
       {runningInfo.mode === "competitor" && (
         <>
           <CompetitorRunning />
@@ -56,6 +58,7 @@ export function RunningModal() {
             const exit = await confirmExit();
             if (exit && client) {
               setRunningStatus("finished");
+              setCrewRunningPrepareParticipant([]);
               client.deactivate();
               setClient(null);
             }

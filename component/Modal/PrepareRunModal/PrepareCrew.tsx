@@ -20,9 +20,9 @@ export const PrepareCrew = () => {
       stompLocation: state.stompLocation,
     }))
   );
-  const { runningParticipants, setRunningStatus } = useRunningStore(
+  const { crewRunningPrepareParticipant, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
-      runningParticipants: state.runningParticipants,
+      crewRunningPrepareParticipant: state.crewRunningPrepareParticipant,
       setRunningStatus: state.setRunningStatus,
     }))
   );
@@ -38,14 +38,13 @@ export const PrepareCrew = () => {
     sendLocation(myLocation, isReady);
   }, [isReady]);
   useEffect(() => {
-    console.log(runningParticipants);
     if (
-      runningParticipants.length > 0 &&
-      runningParticipants.every((item) => item.isReady === true)
+      crewRunningPrepareParticipant.length > 0 &&
+      crewRunningPrepareParticipant.every((item) => item.isReady === true)
     ) {
       setAllReady(true);
     }
-  }, [runningParticipants]);
+  }, [crewRunningPrepareParticipant]);
   useEffect(() => {
     if (allReady) {
       client?.deactivate();
@@ -56,7 +55,7 @@ export const PrepareCrew = () => {
     <>
       <Text style={styles.modalTitle}>주변 크루원</Text>
       <View style={styles.crewContainer}>
-        {runningParticipants.map((crew) => (
+        {crewRunningPrepareParticipant.map((crew) => (
           <View style={styles.crew} key={crew.userId}>
             <Text>{crew.username}</Text>
             <View style={styles.checkBoxContainer}>

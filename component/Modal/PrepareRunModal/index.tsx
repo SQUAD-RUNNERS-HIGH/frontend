@@ -14,10 +14,11 @@ import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
 const PrepareRunModal = () => {
-  const { selectedCourseId, currentCourses } = useCourseStore(
+  const { selectedCourseId, currentCourses, setTotalDistance } = useCourseStore(
     useShallow((state) => ({
       selectedCourseId: state.selectedCourseId,
       currentCourses: state.currentCourses,
+      setTotalDistance: state.setTotalDistance,
     }))
   );
   const { runningInfo, runningStatus, setRunningStatus } =
@@ -30,7 +31,6 @@ const PrepareRunModal = () => {
     );
   const client = useStompStore((state) => state.client);
 
-  const [totalDistance, setTotalDistance] = useState<number>(0);
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
 
   useEffect(() => {
