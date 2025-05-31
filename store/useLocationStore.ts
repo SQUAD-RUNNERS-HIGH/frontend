@@ -1,13 +1,13 @@
-import { CourseResponse, runningLocation } from "@/types";
+import { CourseResponse, crewRunningLocation, runningLocation } from "@/types";
 import {
   LocationObjectCoords,
   LocationPermissionResponse,
   LocationSubscription,
 } from "expo-location";
-import * as Location from 'expo-location';
-import { Alert } from 'react-native';
+import * as Location from "expo-location";
+import { Alert } from "react-native";
 import { Region } from "react-native-maps/lib/sharedTypes";
-import {create} from 'zustand';
+import { create } from "zustand";
 interface LocationState {
   myLocation: LocationObjectCoords | null;
   setMyLocation: (loc: LocationObjectCoords | null) => void;
@@ -18,8 +18,10 @@ interface LocationState {
   mapLocation: Region | null;
   setMapLocation: (region: Region | null) => void;
 
-  stompLocation: runningLocation | null;
-  setStompLocation: (loc: runningLocation | null) => void;
+  stompLocation: runningLocation | crewRunningLocation |  null;
+  setStompLocation: (
+    loc:  runningLocation | crewRunningLocation  | ((prev: runningLocation | crewRunningLocation |  null) => runningLocation | crewRunningLocation)
+  ) => void;
 }
 
 export const useLocationStore = create<LocationState>((set, get) => ({
@@ -34,6 +36,11 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setMyLocation: (loc) => set({ myLocation: loc }),
   setPermissionStatus: (perm) => set({ permissionStatus: perm }),
   setMapLocation: (region) => set({ mapLocation: region }),
-  setStompLocation: (loc) => set({ stompLocation: loc }),
-
+  setStompLocation: (locOrUpdater) =>
+    set((state) => ({
+      stompLocation:
+        typeof locOrUpdater === "function"
+          ? locOrUpdater(state.stompLocation)
+          : locOrUpdater,
+    })),
 }));

@@ -67,19 +67,4 @@ const CompetitorRunning = () => {
     </>
   );
 };
-const styles = StyleSheet.create({
-  progressBar: {
-    height: 16,
-    borderRadius: 12,
-  },
-  statusTextContainer: {
-    width: '100%',
-    alignItems:'center',
-    marginTop:-12,
-    marginBottom:-12,
-  },
-  statusText: {
-    fontSize:14,
-  }
-});
 export default CompetitorRunning;

@@ -5,20 +5,22 @@ import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useStompStore } from "@/store/useStompStore";
+import CrewRunning from "./CrewRunning";
 export function RunningModal() {
-  const {
-    setRunDistance,
-    runningInfo,
-    setRunningInfo,
-    setIsRunning,
-  } = useRunningStore(
-    useShallow((state) => ({
-      setRunDistance: state.setRunDistance,
-      runningInfo: state.runningInfo,
-      setRunningInfo: state.setRunningInfo,
-      setIsRunning: state.setIsRunning,
-    }))
-  );
+  const { seconds, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
+    useRunningStore(
+      useShallow((state) => ({
+        seconds: state.seconds,
+        runningInfo: state.runningInfo,
+        setRunningInfo: state.setRunningInfo,
+        setRunningStatus: state.setRunningStatus,
+        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant
+      }))
+    );
+  const client = useStompStore((state) => state.client);
+  const setClient = useStompStore((state) => state.setClient);
+
   const confirmExit = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -34,21 +36,17 @@ export function RunningModal() {
 
   return (
     <>
-      {/* {runningInfo !== "solo" &&
-        !isNaN(Number(runningInfo)) &&
-        runningInfo !== "finish" && (
-          <>
-            <CrewRunning />
-          </>
-        )}*/}
-      {runningInfo !== "solo" &&
-        isNaN(Number(runningInfo)) &&
-        runningInfo !== "finish" && (
-          <>
-            <CompetitorRunning />
-          </>
-        )}
-      {runningInfo === "solo" && (
+      {runningInfo.mode === "crew" && (
+        <>
+          <CrewRunning />
+        </>
+      )}
+      {runningInfo.mode === "competitor" && (
+        <>
+          <CompetitorRunning />
+        </>
+      )}
+      {runningInfo.mode === "solo" && (
         <>
           <SoloRunning />
         </>
@@ -58,14 +56,11 @@ export function RunningModal() {
         <Button
           onPress={async () => {
             const exit = await confirmExit();
-            if (exit) {
-              if (runningInfo === "solo") {
-                setRunningInfo("soloFinish");
-              }
-              if (runningInfo !== "solo" && isNaN(Number(runningInfo))) {
-                setRunningInfo("competitorFinish");
-              }
-              setIsRunning(false);
+            if (exit && client) {
+              setRunningStatus("finished");
+              setCrewRunningPrepareParticipant([]);
+              client.deactivate();
+              setClient(null);
             }
           }}
         >

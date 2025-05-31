@@ -19,6 +19,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import CustomMarker from "@/assets/images/svg/CustomMarker";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -27,32 +28,38 @@ export default function Index() {
     enabled: !!region,
   });
   useLocationTracking();
-  const userName = useAuthStore(state => state.userName);
+  const userId = useAuthStore((state) => state.userId);
   const {
-    selectedCourse,
+    selectedCourseId,
     currentCourses,
     setCurrentCourses,
-    setSelectedCourse,
+    setSelectedCourseId,
     setIsDropdownVisible,
   } = useCourseStore(
     useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
+      selectedCourseId: state.selectedCourseId,
       currentCourses: state.currentCourses,
       setCurrentCourses: state.setCurrentCourses,
-      setSelectedCourse: state.setSelectedCourse,
+      setSelectedCourseId: state.setSelectedCourseId,
       setIsDropdownVisible: state.setIsDropdownVisible,
     }))
   );
+  const {
+    runningInfo,
+    runningStatus,
+    crewRunningParticipants,
+    setRunningInfo,
+    setRunningStatus,
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      runningStatus: state.runningStatus,
+      crewRunningParticipants: state.crewRunningParticipants,
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
 
-  const { runningInfo, isRunning, setRunningInfo, setIsRunning } =
-    useRunningStore(
-      useShallow((state) => ({
-        runningInfo: state.runningInfo,
-        isRunning: state.isRunning,
-        setRunningInfo: state.setRunningInfo,
-        setIsRunning: state.setIsRunning,
-      }))
-    );
   const { myLocation, stompLocation, mapLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
@@ -62,6 +69,22 @@ export default function Index() {
   );
   const mapRef = useRef<MapView>(null);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
+  const isRunning = runningStatus === "go" || runningStatus === "countdown";
+  const myMarkerLocation =
+    userId && isRunning && stompLocation
+      ? runningInfo.mode === "crew"
+        ? {
+            latitude: crewRunningParticipants.get(userId)?.latitude,
+            longitude: crewRunningParticipants.get(userId)?.longitude,
+          }
+        : {
+            latitude: stompLocation?.latitude,
+            longitude: stompLocation?.longitude,
+          }
+      : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
+const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
+  .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
+  .map(([_, participant]) => participant);  
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
@@ -76,24 +99,16 @@ export default function Index() {
     };
   }, []);
   useEffect(() => {
-    if (selectedCourse === "") {
-      setIsRunning(false);
+    if (selectedCourseId === "") {
+      setRunningStatus("idle");
     }
-  }, [selectedCourse]);
+  }, [selectedCourseId]);
   useEffect(() => {
     if (mapLocation) {
       mapRef.current?.animateToRegion(mapLocation);
     }
   }, [mapLocation]);
-  // useEffect(() => {
-  //   async function updateCourses() {
-  //     if (region) {
-  //       const response = await fetchCourses(region);
-  //       setCurrentCourses(response.courseResponses);
-  //     }
-  //   }
-  //   updateCourses();
-  // }, [region]);
+
   useEffect(() => {
     if (data) {
       setCurrentCourses(data.courseResponses);
@@ -103,19 +118,24 @@ export default function Index() {
   useEffect(() => {
     // 지도 중심을 새로운 위치로 이동
 
-    if (isRunning && stompLocation && runningInfo !== "solo" && myLocation) {
+    if (
+      isRunning &&
+      stompLocation &&
+      myLocation &&
+      runningInfo.mode !== "solo"
+    ) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: stompLocation?.latitude,
-          longitude: stompLocation?.longitude,
+          latitude: myMarkerLocation?.latitude!,
+          longitude: myMarkerLocation?.longitude!,
         },
         pitch: 60, // 기울기 (0~90도)
-        heading: stompLocation?.heading, // 방향 (나아가는 방향)
-        altitude: stompLocation?.altitude, // 고도
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 19, // 줌 레벨
       });
     }
-    if (isRunning && runningInfo === "solo" && myLocation) {
+    if (isRunning && runningInfo.mode === "solo" && myLocation) {
       mapRef.current?.animateCamera({
         center: {
           latitude: myLocation?.latitude,
@@ -127,7 +147,7 @@ export default function Index() {
         zoom: 18, // 줌 레벨
       });
     }
-    if (!isRunning && runningInfo.includes("Finish")) {
+    if (runningStatus === "finished") {
       mapRef.current?.animateCamera(
         {
           center: {
@@ -141,8 +161,19 @@ export default function Index() {
         { duration: 1000 }
       );
     }
-  }, [isRunning, myLocation, stompLocation]);
+  }, [runningStatus, myLocation, stompLocation]);
 
+  const isCrewRunning = isRunning && runningInfo.mode === "crew";
+
+  const selectedCourse = currentCourses?.find(
+    (course) => course.courseId === selectedCourseId
+  );
+
+  const polylineCoordinates =
+    selectedCourse?.coordinates?.[0]?.map(([longitude, latitude]) => ({
+      latitude,
+      longitude,
+    })) ?? []; // fallback to empty array if not found
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -177,8 +208,8 @@ export default function Index() {
               }
             }}
             onPress={() => {
-              if (selectedCourse !== "" && region && !isRunning) {
-                setSelectedCourse("");
+              if (selectedCourseId !== "" && region && !isRunning) {
+                setSelectedCourseId("");
                 mapRef.current?.animateToRegion(region);
               }
               if (!isKeyBoardShow) {
@@ -186,31 +217,47 @@ export default function Index() {
               }
             }}
             onRegionChangeComplete={(region) => {
-              if (selectedCourse === "") {
+              if (selectedCourseId === "") {
                 setRegion(region);
               }
             }}
           >
             <View style={{ flex: 1 }}>
-              <Marker
-                coordinate={{
-                  latitude:
-                    isRunning && stompLocation
-                      ? stompLocation?.latitude
-                      : myLocation?.latitude,
-                  longitude:
-                    isRunning && stompLocation
-                      ? stompLocation?.longitude
-                      : myLocation?.longitude,
-                }}
-                style={{ zIndex: 3 }}
-              >
-                <Image
-                  width={20}
-                  height={20}
-                  source={require("@/assets/images/marker.png")}
-                />
-              </Marker>
+              {myLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: myMarkerLocation.latitude!,
+                    longitude: myMarkerLocation.longitude!,
+                  }}
+                  style={{ zIndex: 3 }}
+                >
+                  <Image
+                    width={20}
+                    height={20}
+                    source={require("@/assets/images/marker.png")}
+                  />
+                </Marker>
+              )}
+              {isCrewRunning &&
+                restCrewMarkerLocation?.map(
+                  (participant) => (
+                    <Marker
+                      key={participant?.userId}
+                      coordinate={{
+                        latitude: participant?.latitude,
+                        longitude: participant?.longitude,
+                      }}
+                      style={{ zIndex: 3 }}
+                    >
+                      <Image
+                        width={20}
+                        height={20}
+                        source={require("@/assets/images/crewMarker.png")}
+                      />
+                    </Marker>
+                  )
+                )}
+
               {currentCourses?.map((course, index) => {
                 if (!course) return;
                 const courseStart: LatLng = {
@@ -223,7 +270,7 @@ export default function Index() {
                     coordinate={courseStart}
                     style={{ zIndex: 3 }}
                     onPress={async () => {
-                      setSelectedCourse(course.courseId);
+                      setSelectedCourseId(course.courseId);
                       setIsDropdownVisible(false);
                       if (mapRef.current) {
                         const formattedCoordinates = currentCourses[
@@ -248,20 +295,13 @@ export default function Index() {
                 );
               })}
               {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourse !== "" &&
-                selectedCourse !== "solo" &&
-                runningInfo !== "solo" && (
-                  <Polyline
-                    coordinates={currentCourses
-                      ?.find((course) => course.courseId === selectedCourse)
-                      .coordinates[0].map(([longitude, latitude]) => ({
-                        latitude,
-                        longitude,
-                      }))}
-                    strokeColor="#4169E1"
-                    strokeWidth={4}
-                  />
-                )}
+              {selectedCourseId !== "" && selectedCourseId !== "solo" && (
+                <Polyline
+                  coordinates={polylineCoordinates}
+                  strokeColor="#4169E1"
+                  strokeWidth={4}
+                />
+              )}
             </View>
           </MapView>
         )}
@@ -284,13 +324,14 @@ export default function Index() {
                   { duration: 1000 }
                 );
               }
-              setRunningInfo("solo");
-              setSelectedCourse("solo");
+              setRunningInfo({ mode: "solo" });
+              setRunningStatus("prepare");
+              setSelectedCourseId("solo");
             }}
             style={[
               styles.runningContainer,
-              selectedCourse !== "" &&
-                selectedCourse !== "solo" && { display: "none" },
+              selectedCourseId !== "" &&
+                selectedCourseId !== "solo" && { display: "none" },
             ]}
           >
             <Image
@@ -321,7 +362,7 @@ export default function Index() {
             }}
             style={[
               styles.locationContainer,
-              selectedCourse !== "" && styles.whenModal,
+              selectedCourseId !== "" && styles.whenModal,
             ]}
           >
             <MyLocation />

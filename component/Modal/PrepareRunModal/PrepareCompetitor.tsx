@@ -20,13 +20,12 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
 const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
-  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const selectedCourseId = useCourseStore(state => state.selectedCourseId);
   const client = useStompStore(state => state.client);
-  const { runningInfo, setIsRunning, setPreRunning } = useRunningStore(
+  const { runningInfo, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
-      setIsRunning: state.setIsRunning,
-      setPreRunning: state.setPreRunning,
+      setRunningStatus: state.setRunningStatus,
     }))
   );
   const { myLocation, stompLocation } = useLocationStore(
@@ -40,14 +39,14 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["courseDetail", selectedCourse],
+    queryKey: ["courseDetail", selectedCourseId],
     queryFn: () => {
-      return fetchCourseDetail(selectedCourse);
+      return fetchCourseDetail(selectedCourseId);
     },
     enabled: !!(
-      selectedCourse &&
-      selectedCourse !== "solo" &&
-      runningInfo !== "solo"
+      selectedCourseId &&
+      selectedCourseId !== "solo" &&
+      runningInfo.mode === "competitor"
     ), // selectedCourse가 있을 때만 실행,
     staleTime: 100000,
   });
@@ -56,16 +55,21 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
     isSuccess: completeCompetitorRecord,
     error: errorCompetitorRecord,
   } = useQuery({
-    queryKey: ["courseHistory", runningInfo, selectedCourse],
-    queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
+    queryKey: ["courseHistory", runningInfo.id, selectedCourseId],
+    queryFn: () => fetchCompetitor(runningInfo.id, selectedCourseId),
     staleTime: 100000,
+    enabled: !!(
+      selectedCourseId &&
+      selectedCourseId !== "solo" &&
+      runningInfo.mode === "competitor"
+    ), // selectedCourse가 있을 때만 실행,
   });
   const { connected, sendLocation } = useStomp();
   useEffect(() => {
     if (client && myLocation && connected) {
       sendLocation(myLocation);
     }
-  }, [myLocation, connected]); // ✅
+  }, [myLocation, connected]);
   return (
     <>
       {completeCompetitorRecord ? (
@@ -94,8 +98,7 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
               <Button
                 style={{ marginTop: 6, width: "100%" }}
                 onPress={() => {
-                  setPreRunning(true);
-                  setIsRunning(true);
+                  setRunningStatus('countdown');
                 }}
               >
                 러닝 시작!

@@ -4,15 +4,14 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 const PrepareSolo = () => {
-  const { selectedCourse, setSelectedCourse } = useCourseStore(
+  const { selectedCourseId, setSelectedCourseId } = useCourseStore(
     useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
-      setSelectedCourse: state.setSelectedCourse,
+      selectedCourseId: state.selectedCourseId,
+      setSelectedCourseId: state.setSelectedCourseId,
     }))
-  );  const { setPreRunning, setIsRunning, setRunningInfo } = useRunningStore(
+  );  const { setRunningStatus , setRunningInfo } = useRunningStore(
     useShallow((state) => ({
-      setPreRunning: state.setPreRunning,
-      setIsRunning: state.setIsRunning,
+      setRunningStatus: state.setRunningStatus,
       setRunningInfo: state.setRunningInfo,
     }))
   );  return (
@@ -24,8 +23,7 @@ const PrepareSolo = () => {
       <View style = {styles.buttonContainer}>
       <Button
         onPress={() => {
-          setPreRunning(true);
-          setIsRunning(true);
+          setRunningStatus('countdown');
         }}
         style = {styles.button}
       >
@@ -33,9 +31,9 @@ const PrepareSolo = () => {
       </Button>
       <Button
         onPress={() => {
-          setRunningInfo('');
-          if(selectedCourse === 'solo'){
-            setSelectedCourse('');
+          setRunningStatus('idle');
+          if(selectedCourseId === 'solo'){
+            setSelectedCourseId('');
           }
         }}
         style = {styles.button}

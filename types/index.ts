@@ -16,12 +16,15 @@ export interface userSignupType {
     specificLocation: string;
   }
 };
-export interface location {
-  latitude: number;
-  longitude: number;
-}
+
 export interface runningLocation extends LocationObjectCoords {
   runningStatus: 'ONGOING' | 'ESCAPED';
+}
+
+export interface crewRunningLocation extends LocationObjectCoords {
+  runningStatus: 'ONGOING' | 'ESCAPED';
+  userId: string;
+  username: string;
 }
 
 export interface userLoginType {
@@ -35,7 +38,7 @@ export interface UserLoginResponse {
     refreshToken: string;
   };
   userId: number;
-  userName: string;
+  username: string;
 };
 export interface location {
   latitude: number;
@@ -119,10 +122,18 @@ export interface Crew {
 export interface myCrewResponse {
   myCrews: Crew[];
 }
-export type Participant = {
+export type CrewRunningPrepareParticipant = {
   userId: string;
   isReady: boolean;
-  userName: string;
+  username: string;
   longitude: number;
   latitude: number;
 };
+
+export interface CrewRunningParticipant {
+  longitude: number;
+  latitude: number;
+  userId: string;
+  distance: number;
+  username: string;
+} 

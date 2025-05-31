@@ -1,8 +1,5 @@
-import { fetchCompetitor } from "@/lib/map/fetchCompetitor";
-import { useStomp } from "@/hooks/running/useStomp";
 import { location } from "@/types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getPathLength } from "geolib";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -11,11 +8,9 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import Button from "../Button";
 import { fetchSaveRecord } from "@/lib/map/fetchSaveRecord";
-import FormInput from "../FormInput";
 import Input from "../Input";
 import {
   isCompetitorRunningRecord,
@@ -28,19 +23,25 @@ import { useCourseStore } from "@/store/useCourseStore";
 import { useAlertStore } from "@/store/useAlertStore";
 
 const ResultModal = () => {
-  const { selectedCourse, currentCourses, setSelectedCourse } = useCourseStore(
-    useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
-      currentCourses: state.currentCourses,
-      setSelectedCourse: state.setSelectedCourse,
-    }))
-  );  const {
+  const { selectedCourseId, currentCourses, setSelectedCourseId } =
+    useCourseStore(
+      useShallow((state) => ({
+        selectedCourseId: state.selectedCourseId,
+        currentCourses: state.currentCourses,
+        setSelectedCourseId: state.setSelectedCourseId,
+      }))
+    );
+  const {
     runningInfo,
     setRunningInfo,
     runningRecord,
     setRunningRecord,
     runDistance,
     setRunDistance,
+    runningStatus,
+    seconds,
+    setRunningStatus,
+    crewRunningParticipants,
   } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -49,38 +50,44 @@ const ResultModal = () => {
       setRunningRecord: state.setRunningRecord,
       runDistance: state.runDistance,
       setRunDistance: state.setRunDistance,
+      runningStatus: state.runningStatus,
+      setRunningStatus: state.setRunningStatus,
+      seconds: state.seconds,
+      crewRunningParticipants:state.crewRunningParticipants
     }))
   );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
-  const showError = useAlertStore(state => state.showError);
+  const showError = useAlertStore((s) => s.showError);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   useEffect(() => {
-    if (currentCourses && selectedCourse !== "solo") {
+    if (currentCourses && selectedCourseId !== "solo") {
       setCourseCoordinates(
         currentCourses
-          .find((course) => course.courseId === selectedCourse)
+          .find((course) => course.courseId === selectedCourseId)
           .coordinates[0].map(([longitude, latitude]) => ({
             latitude,
             longitude,
           }))
       );
     }
-  }, [selectedCourse]);
+  }, [selectedCourseId]);
 
   const handleSaveRecord = async () => {
     if (runningRecord) {
       setIsLoading(true);
       try {
         if (
-          runningInfo === "competitorFinish" &&
+          runningStatus === "finished" &&
+          runningInfo.mode === 'competitor' && 
           isCompetitorRunningRecord(runningRecord)
         ) {
           await fetchSaveRecord(runningRecord);
           queryClient.invalidateQueries({ queryKey: ["personalRanks"] });
         }
         if (
-          runningInfo === "soloFinish" &&
+          runningStatus === "finished" &&
+          runningInfo.mode === 'solo' && 
           isSoloRunningRecord(runningRecord)
         ) {
           const totalDistance = runningRecord?.progress.reduce(
@@ -109,11 +116,11 @@ const ResultModal = () => {
           });
           queryClient.invalidateQueries({ queryKey: ["courses"] });
         }
-        setRunningInfo("");
-        setSelectedCourse("");
+        setRunningStatus("idle");
+        setSelectedCourseId("");
         setRunDistance(0);
       } catch (error) {
-        showError({title: '기록 저장 실패', description: `${error}`});
+        showError({ title: "기록 저장 실패", description: `${error}` });
       } finally {
         setIsLoading(false);
       }
@@ -124,15 +131,15 @@ const ResultModal = () => {
     <Modal
       animationType="slide"
       transparent={true}
-      visible={runningInfo !== ""}
+      visible={runningStatus === "finished"}
       onRequestClose={() => {}}
     >
       <Pressable style={styles.modalOverlay}></Pressable>
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
-          {runningInfo === "soloFinish" &&
+          {runningStatus === "finished" &&
             runningRecord &&
-            isSoloRunningRecord(runningRecord) && (
+            isSoloRunningRecord(runningRecord) && runningInfo.mode === 'solo' && (
               <Input
                 type="text"
                 onChange={(text) => {
@@ -147,9 +154,17 @@ const ResultModal = () => {
                 placeholder="코스 이름을 입력하세요."
               />
             )}
+            {runningInfo.mode === 'crew' && (
+            <Text style={styles.modalDepscription2}>
+            <Text style={{ fontWeight: "500" }}>
+              크루원 {crewRunningParticipants.size}명
+            </Text>{" "}
+              끼리
+          </Text>
+            )}
           <Text style={styles.modalDepscription2}>
             <Text style={{ fontWeight: "500" }}>
-              {Number(runningRecord?.runningTime).toFixed(0)}초
+              {Number(seconds).toFixed(0)}초
             </Text>{" "}
             동안
           </Text>
@@ -177,8 +192,8 @@ const ResultModal = () => {
               <Button
                 style={{ marginTop: 6, width: "100%", paddingHorizontal: 12 }}
                 onPress={() => {
-                  setRunningInfo("");
-                  setSelectedCourse("");
+                  setRunningStatus('idle');
+                  setSelectedCourseId("");
                   setRunDistance(0);
                 }}
               >
@@ -218,12 +233,13 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     padding: 24,
-    paddingHorizontal: 40,
+    paddingHorizontal: 60,
     flex: 1,
     borderRadius: 14,
     alignItems: "center",
     zIndex: 20,
     gap: 10,
+    width: '100%',
   },
   modalTitle: {
     fontWeight: 700,

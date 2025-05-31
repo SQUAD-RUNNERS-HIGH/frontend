@@ -1,7 +1,6 @@
 import { StyleSheet, View, Text, ActivityIndicator } from "react-native";
 import Button from "../Button";
-import { SetStateAction, useEffect, useState } from "react";
-import { CourseDetail } from "@/types";
+import { SetStateAction, useState } from "react";
 import { fetchCourseDetail } from "@/lib/map/fetchCourseDetail";
 import { LineChart } from "react-native-chart-kit";
 import { useQuery } from "@tanstack/react-query";
@@ -14,9 +13,8 @@ export function InfoModal({
 }: {
   setTheme: React.Dispatch<SetStateAction<string>>;
 }) {
-  const [loading, setLoading] = useState(true);
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
-  const selectedCourse = useCourseStore(state => state.selectedCourse);
+  const selectedCourseId = useCourseStore(state => state.selectedCourseId);
   const { runningInfo, setRunningInfo } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -28,13 +26,12 @@ export function InfoModal({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["courseDetail", selectedCourse],
-    queryFn: () => fetchCourseDetail(selectedCourse),
+    queryKey: ["courseDetail", selectedCourseId],
+    queryFn: () => fetchCourseDetail(selectedCourseId),
     enabled: !!(
-      selectedCourse &&
-      selectedCourse !== "solo" &&
-      runningInfo !== "solo"
-    ), // selectedCourse가 있을 때만 실행,
+      selectedCourseId &&
+      selectedCourseId !== "solo"
+    ),
     staleTime: 100000,
   });
   return (
@@ -58,7 +55,7 @@ export function InfoModal({
                 {detail?.courseElevations && (
                   <LineChart
                     data={{
-                      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                      labels: ["1", "2", "3", "4", "5", "6"],
                       datasets: [
                         {
                           data: detail?.courseElevations.map((elevation) => {
@@ -133,7 +130,7 @@ export function InfoModal({
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setRunningInfo("solo");
+                setRunningInfo({mode:'solo'});
               }}
             >
               혼자 뛰기

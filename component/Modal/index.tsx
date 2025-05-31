@@ -1,4 +1,4 @@
-import { BackHandler, StyleSheet, ToastAndroid, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { InfoModal } from "./InfoModal";
 import { SelectedModal } from "./SelectedModal";
@@ -12,64 +12,67 @@ import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 export function Modal() {
   const [theme, setTheme] = useState<string>("");
-  const { selectedCourse, setSelectedCourse } = useCourseStore(
+  const { selectedCourseId, setSelectedCourseId } = useCourseStore(
     useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
-      setSelectedCourse: state.setSelectedCourse,
+      selectedCourseId: state.selectedCourseId,
+      setSelectedCourseId: state.setSelectedCourseId,
     }))
   );
-  const {isRunning, runningRecord, preRunning, runningInfo, setPreRunning } = useRunningStore(
-    useShallow((state) => ({
-      isRunning: state.isRunning,
-      runningRecord: state.runningRecord,
-      preRunning: state.preRunning,
-      setPreRunning: state.setPreRunning,
-      runningInfo: state.runningInfo,
-    }))
-  )
+  const {
+  runningStatus,
+  runningRecord,
+  runningInfo,
+  setRunningStatus,
+} = useRunningStore(
+  useShallow((state) => ({
+    runningStatus: state.runningStatus,
+    runningRecord: state.runningRecord,
+    runningInfo: state.runningInfo,
+    setRunningStatus: state.setRunningStatus,
+  }))
+);
   useEffect(() => {
-    if (selectedCourse !== "" && !runningInfo.includes("solo")) {
+    if (selectedCourseId !== "" && runningStatus !== 'go') {
       setTheme("info");
     }
-    if (selectedCourse === "solo" && runningInfo.includes("solo")) {
+    if (selectedCourseId === "solo" && runningInfo.mode === "solo" && runningStatus === 'go') {
       setTheme("");
     }
-  }, [selectedCourse, runningInfo]);
-
-  useBackHandler(setSelectedCourse, theme, setTheme);
+  }, [selectedCourseId, runningInfo]);
+  const isRunning = runningStatus === 'go' || runningStatus === 'countdown';
+  useBackHandler(setSelectedCourseId, theme, setTheme);
   return (
     <>
-      {selectedCourse !== "" && (
+      {selectedCourseId !== "" && (
         <>
           <View
             style={[
               styles.rootContainer,
-              isRunning && styles.runningModalBackground,
+              runningStatus === 'go' && styles.runningModalBackground,
             ]}
           >
-            {theme === "info" && !isRunning && (
+            {theme === "info" && runningStatus === 'idle' && !isRunning && (
               <InfoModal setTheme={setTheme} />
             )}
             {theme.includes("select") && !isRunning && (
-              <SelectedModal theme = {theme} setTheme={setTheme} />
+              <SelectedModal theme={theme} setTheme={setTheme} />
             )}
             {isRunning && <RunningModal />}
           </View>
 
-          {!isRunning && runningInfo.includes("Finish") && runningRecord && (
-            <ResultModal />
+          {runningStatus === 'prepare' && runningInfo.mode && (
+            <PrepareRunModal />
           )}
+
+          {runningStatus === 'countdown' && (
+            <PreRunOverlay
+              onFinish={() => {
+                setRunningStatus('go');
+              }}
+            />
+          )}
+          {runningStatus === 'finished' && runningRecord && <ResultModal />}
         </>
-      )}
-      {isRunning && preRunning && (
-        <PreRunOverlay
-          onFinish={() => {
-            setPreRunning(false);
-          }}
-        />
-      )}
-      {!isRunning && runningInfo !== "" && !runningInfo.includes("Finish") && (
-        <PrepareRunModal />
       )}
     </>
   );

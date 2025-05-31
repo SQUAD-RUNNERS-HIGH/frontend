@@ -10,23 +10,23 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 export const useCompetitorRunning = () => {
-  const { selectedCourse, currentCourses } = useCourseStore(
+  const { selectedCourseId, currentCourses } = useCourseStore(
     useShallow((state) => ({
-      selectedCourse: state.selectedCourse,
+      selectedCourseId: state.selectedCourseId,
       currentCourses: state.currentCourses,
     }))
   );
   const {
     runningInfo,
     setRunningRecord,
-    preRunning,
+    runningStatus,
     setRunDistance,
     runDistance,
   } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
       setRunningRecord: state.setRunningRecord,
-      preRunning: state.preRunning,
+      runningStatus: state.runningStatus,
       setRunDistance: state.setRunDistance,
       runDistance: state.runDistance,
     }))
@@ -39,8 +39,8 @@ export const useCompetitorRunning = () => {
   )
   const { sendLocation } = useStomp();
   const { data } = useQuery({
-    queryKey: ["courseHistory", runningInfo, selectedCourse],
-    queryFn: () => fetchCompetitor(runningInfo, selectedCourse),
+    queryKey: ["courseHistory", runningInfo.id, selectedCourseId],
+    queryFn: () => fetchCompetitor(runningInfo.id, selectedCourseId),
     staleTime: 100000,
   });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
@@ -55,17 +55,17 @@ export const useCompetitorRunning = () => {
   const [index, setIndex] = useState<number>(0);
   const [text, setText] = useState<string>('');
   useEffect(() => {
-    if (selectedCourse) {
+    if (selectedCourseId) {
       setRunningRecord({
         runningTime: 0,
         progress: [0],
-        courseId: selectedCourse,
+        courseId: selectedCourseId,
       });
     }
     if (currentCourses) {
       setCurrentCourse(
         currentCourses
-          ?.find((course) => course.courseId === selectedCourse)
+          ?.find((course) => course.courseId === selectedCourseId)
           .coordinates[0].map(([longitude, latitude]) => ({
             latitude,
             longitude,
@@ -74,15 +74,15 @@ export const useCompetitorRunning = () => {
     }
   }, []);
   useEffect(() => {
-    if (data && !preRunning) {
+    if (data && runningStatus ==='go') {
       const interval = setInterval(() => {
         setSeconds((prev) => prev + 1);
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [data, preRunning]);
+  }, [data, runningStatus]);
   useEffect(() => {
-    if (myLocation && !preRunning && data) {
+    if (myLocation && runningStatus === 'go' && data) {
       const interval = setInterval(() => {
         if (index < data?.progress.length-1) {
           setIndex((prev) => prev + 1);
@@ -93,7 +93,7 @@ export const useCompetitorRunning = () => {
       }, 500);
       return () => clearInterval(interval);
     }
-  }, [myLocation, preRunning, data]);
+  }, [myLocation, runningStatus, data]);
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
       const total = getPathLength(currentCourse);
@@ -151,7 +151,7 @@ export const useCompetitorRunning = () => {
     setRunningRecord({
       runningTime: seconds,
       progress: progress,
-      courseId: selectedCourse,
+      courseId: selectedCourseId,
     });
   }, [progress, index, totalDistance, runDistance]);
   return {

@@ -34,6 +34,7 @@ export default function Login() {
   async function onSubmit(data: z.infer<typeof loginSchema>) {
     const response = await fetchLogin(data);
     if (response?.status === 200) {
+      console.log(response?.data.data);
       await setAuth(
         response?.data.data
       );

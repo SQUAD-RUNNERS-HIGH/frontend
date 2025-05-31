@@ -13,8 +13,6 @@ export function CrewHome() {
   const { data: myCrewResponse, isLoading } = useQuery({
     queryKey: ["myCrew"],
     queryFn: fetchMyCrew,
-    staleTime:0,
-    gcTime:0,
   });
   return (
     <ScrollView>

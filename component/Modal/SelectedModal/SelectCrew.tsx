@@ -15,18 +15,23 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { fetchMyCrew } from "@/lib/crew/home/fetchMyCrew";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
+import { useShallow } from "zustand/react/shallow";
 
 export function SelectCrew() {
-  const [selectedId, setSelectedId] = useState<string>("");
-  const selectedCourse = useCourseStore(state => state.selectedCourse);
-  const setRunningInfo = useRunningStore(state => state.setRunningInfo);
-  const { data: myCrewResponse } =
-    useQuery({
-      queryKey: ["myCrew", selectedCourse],
-      queryFn: fetchMyCrew,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 5,
-    });
+  const [selectedId, setSelectedId] = useState<number>(-1);
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
+  const { setRunningInfo, setRunningStatus } = useRunningStore(
+    useShallow((state) => ({
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
+  const { data: myCrewResponse } = useQuery({
+    queryKey: ["myCrew", selectedCourseId],
+    queryFn: fetchMyCrew,
+    staleTime: 0,
+    gcTime: 0,
+  });
   return (
     <>
       {myCrewResponse?.myCrews?.length === 0 ? (
@@ -49,7 +54,7 @@ export function SelectCrew() {
                   value={selectedId === crew.crewId}
                   onValueChange={() => {
                     if (selectedId === crew.crewId) {
-                      setSelectedId("");
+                      setSelectedId(-1);
                     } else {
                       setSelectedId(crew.crewId);
                     }
@@ -60,12 +65,13 @@ export function SelectCrew() {
           )}
         />
       )}
-      {myCrewResponse?.myCrews.length > 0 && (
+      {myCrewResponse?.myCrews && myCrewResponse?.myCrews.length > 0 && (
         <View style={styles.buttonContainer}>
           <Button
             style={{ flex: 1 }}
             onPress={() => {
-              if (selectedId) setRunningInfo(`${selectedId}`);
+              if (selectedId) setRunningInfo({ mode: "crew", id: selectedId});
+              setRunningStatus('prepare');
             }}
           >
             선택 하기
@@ -76,7 +82,7 @@ export function SelectCrew() {
   );
 }
 const styles = StyleSheet.create({
-  competitorContainer: {
+  crewContainer: {
     width: "100%",
     minHeight: 40,
     maxHeight: 220,

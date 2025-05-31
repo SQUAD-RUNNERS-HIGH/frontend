@@ -1,38 +1,106 @@
-import { create } from 'zustand';
-import { soloRunningRecord, competitorRunningRecord } from '@/types';
+import { create } from "zustand";
+import {
+  soloRunningRecord,
+  competitorRunningRecord,
+  CrewRunningPrepareParticipant,
+  CrewRunningParticipant,
+} from "@/types";
+import RunningInfo from "@/component/Modal/RunningModal/RunningInfo";
 
 type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
 
-interface RunningState {
-  isRunning: boolean;
-  setIsRunning: (value: boolean) => void;
+type RunningInfo =
+  | { mode: "solo" }
+  | { mode: "competitor"; id: string }
+  | { mode: "crew"; id: number };
 
-  runningInfo: string;
-  setRunningInfo: (value: string) => void;
+type RunningStatus =
+  | "idle"
+  | "prepare"
+  | "countdown"
+  | "go"
+  | "paused"
+  | "finished";
+
+interface RunningState {
+  runningInfo: RunningInfo;
+  setRunningInfo: (value: RunningInfo) => void;
 
   runDistance: number;
-  setRunDistance: (value: number) => void;
+  setRunDistance: (value: number | ((prev: number) => number)) => void;
+
+  seconds: number;
+  setSeconds: (value: number | ((prev: number) => number)) => void;
 
   runningRecord: RunningRecord;
-  setRunningRecord: (record: RunningRecord) => void;
+  setRunningRecord: (
+    updater:
+      | ((prev: RunningRecord | null) => RunningRecord | null)
+      | RunningRecord
+      | null
+  ) => void;
+  runningStatus: RunningStatus;
+  setRunningStatus: (value: RunningStatus) => void;
 
-  preRunning: boolean;
-  setPreRunning: (value: boolean) => void;
+  crewRunningPrepareParticipant: CrewRunningPrepareParticipant[];
+  setCrewRunningPrepareParticipant: (
+    value:
+      | CrewRunningPrepareParticipant[]
+      | ((
+          prev: CrewRunningPrepareParticipant[]
+        ) => CrewRunningPrepareParticipant[])
+  ) => void;
+
+  crewRunningParticipants: Map<string, CrewRunningParticipant>;
+
+  setCrewRunningParticipants: (
+    key: string,
+    value: CrewRunningParticipant
+  ) => void;
 }
 
 export const useRunningStore = create<RunningState>((set) => ({
-  isRunning: false,
-  setIsRunning: (value) => set({ isRunning: value }),
-
-  runningInfo: '',
+  runningInfo: { mode: "solo" },
   setRunningInfo: (value) => set({ runningInfo: value }),
 
+  seconds: 0,
+  setSeconds: (updater) =>
+    set((state) => ({
+      seconds:
+        typeof updater === "function" ? updater(state.seconds) : updater,
+    })),
+
   runDistance: 0,
-  setRunDistance: (value) => set({ runDistance: value }),
+  setRunDistance: (updater) =>
+    set((state) => ({
+      runDistance:
+        typeof updater === "function" ? updater(state.runDistance) : updater,
+    })),
 
   runningRecord: null,
-  setRunningRecord: (record) => set({ runningRecord: record }),
+  setRunningRecord: (updater) =>
+    set((state) => ({
+      runningRecord:
+        typeof updater === "function" ? updater(state.runningRecord) : updater,
+    })),
 
-  preRunning: false,
-  setPreRunning: (value) => set({ preRunning: value }),
+  runningStatus: "idle",
+  setRunningStatus: (value) => set({ runningStatus: value }),
+
+  crewRunningPrepareParticipant: [],
+  setCrewRunningPrepareParticipant: (updater) =>
+    set((state) => ({
+      crewRunningPrepareParticipant:
+        typeof updater === "function"
+          ? updater(state.crewRunningPrepareParticipant)
+          : updater,
+    })),
+  crewRunningParticipants: new Map(),
+  setCrewRunningParticipants: (key, value) =>
+    set((state) => ({
+      crewRunningParticipants: new Map(state.crewRunningParticipants).set(
+        key,
+        value
+      ),
+    })),
 }));

@@ -7,55 +7,57 @@ import { useShallow } from "zustand/react/shallow";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export function useStomp() {
-  const selectedCourse = useCourseStore((state) => state.selectedCourse);
+  const selectedCourseId = useCourseStore((state) => state.selectedCourseId);
   const { client, setClient } = useStompStore(
     useShallow((state) => ({
       client: state.client,
       setClient: state.setClient,
     }))
   );
-  const { runningInfo, isRunning } = useRunningStore(
+  const { userId, username } = useAuthStore(
     useShallow((state) => ({
-      runningInfo: state.runningInfo,
-      isRunning: state.isRunning,
+      userId: state.userId,
+      username: state.username,
     }))
   );
+  const { runningInfo, runningStatus, setCrewRunningPrepareParticipant } =
+    useRunningStore(
+      useShallow((state) => ({
+        runningInfo: state.runningInfo,
+        runningStatus: state.runningStatus,
+        setCrewRunningPrepareParticipant:
+          state.setCrewRunningPrepareParticipant,
+      }))
+    );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
+
   const handleMessage = useCallback((data) => {
     console.log(data);
-    console.log("message");
-    // if (!isRunning && !isNaN(Number(runningInfo))) {
-    //   setRunningParticipants(data?.nearByParticipants);
-    // } else {
-    setStompLocation((prev) => ({
-      ...prev,
-      runningStatus: data?.runningStatus,
-      latitude: data?.latitude,
-      longitude: data?.longitude,
-    }));
-    // }
-    // setRunningLocation((prev) => ({
-    //   ...prev,
-    //   status: data?.status,
-    //   latitude: prev.latitude + 0.0001,
-    //   longitude: prev.longitude + 0.0001,
-    // }));
+    if (runningInfo.mode === "crew" && runningStatus === "prepare") {
+      setCrewRunningPrepareParticipant(data?.nearByParticipants);
+    } else {
+      setStompLocation((prev) => ({
+        ...prev,
+        runningStatus: data?.runningStatus,
+        latitude: data?.latitude,
+        longitude: data?.longitude,
+        userId: data?.userId,
+        username: data?.username,
+      }));
+    }
   }, []);
+
   useEffect(() => {
-      if (client && !isRunning) {
-        if (runningInfo === "" || runningInfo === "finish") {
-          client.deactivate();
-          setClient(null);
-        }
-      }
-    }, [runningInfo, isRunning]);
-  useEffect(() => {
-    if (!client && runningInfo !== "" && runningInfo !== "finish") {
+    if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
-        brokerURL: "wss://runners-high.shop/running",
+        brokerURL: "wss://runners-high.shop/ws",
+        connectHeaders: {
+          Authorization: `Bearer ${useAuthStore.getState().userId}`,
+        },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
         forceBinaryWSFrames: true,
@@ -65,7 +67,7 @@ export function useStomp() {
       });
       setClient(newClient);
     }
-  }, [selectedCourse, handleMessage]);
+  }, [selectedCourseId, handleMessage, runningStatus]);
   useEffect(() => {
     if (client) {
       client.activate();
@@ -79,12 +81,11 @@ export function useStomp() {
         console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
-        if (!isNaN(Number(runningInfo)) && isRunning) {
+        if (runningInfo.mode === "crew" && runningStatus === "countdown") {
           subscription = client?.subscribe(
-            `/topic/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
             (message: IMessage) => {
               const data = JSON.parse(message.body);
-              console.log(data);
               handleMessage(data);
             }
           );
@@ -92,7 +93,6 @@ export function useStomp() {
           subscription = client?.subscribe(
             "/user/queue/reply",
             (message: IMessage) => {
-              console.log("aaaa");
               const data = JSON.parse(message.body);
               handleMessage(data);
             }
@@ -115,17 +115,17 @@ export function useStomp() {
         console.error("[STOMP] WebSsocket error:", event);
       };
     }
-  }, [client, runningInfo, isRunning, selectedCourse, handleMessage]);
+  }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
-  const sendLocation = async (location: location, ready?: boolean) => {
+  const sendLocation = async (
+    location: location,
+    ready = false,
+    progress = 0
+  ) => {
     // 러닝
-    if (
-      client &&
-      client?.connected &&
-      isNaN(Number(runningInfo))
-    ) {
+    if (client && client?.connected && runningInfo.mode === "competitor") {
       client.publish({
-        destination: `/app/course/${selectedCourse}`,
+        destination: `/app/course/${selectedCourseId}`,
         body: JSON.stringify(location),
       });
       return;
@@ -134,41 +134,38 @@ export function useStomp() {
     if (
       client &&
       client?.connected &&
-      !isNaN(Number(runningInfo)) &&
-      !isRunning
+      runningInfo.mode === "crew" &&
+      runningStatus === "prepare"
     ) {
-      const userId = await AsyncStorage.getItem("userId");
-      const userName = await AsyncStorage.getItem("userName");
-
       const newBody = {
         userId: Number(userId),
-        userName,
+        username,
         latitude: location?.latitude,
         longitude: location?.longitude,
         isReady: ready, // 추가로 받은 ready 사용
       };
       client.publish({
-        destination: `/app/crew-participant/course/${selectedCourse}/crew/${runningInfo}`,
+        destination: `/app/crew-participant/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
       });
       return;
     }
+    // 크루러닝 시작
     if (
       client &&
       client?.connected &&
-      !isNaN(Number(runningInfo)) &&
-      isRunning
+      runningInfo.mode === "crew" &&
+      runningStatus === "go"
     ) {
-      const userId = await AsyncStorage.getItem("userId");
-
       const newBody = {
         userId: Number(userId),
         latitude: location?.latitude,
         longitude: location?.longitude,
+        username: username,
+        progress,
       };
-      
       client?.publish({
-        destination: `/app/crew-run/course/${selectedCourse}/crew/${runningInfo}`,
+        destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
         body: JSON.stringify(newBody),
       });
       return;
