@@ -19,6 +19,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import CustomMarker from "@/assets/images/svg/CustomMarker";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -27,7 +28,7 @@ export default function Index() {
     enabled: !!region,
   });
   useLocationTracking();
-  const username = useAuthStore(state => state.username);
+  const userId = useAuthStore((state) => state.userId);
   const {
     selectedCourseId,
     currentCourses,
@@ -43,17 +44,21 @@ export default function Index() {
       setIsDropdownVisible: state.setIsDropdownVisible,
     }))
   );
-
-  const { runningInfo, runningStatus, setRunningInfo, setRunningStatus } =
-    useRunningStore(
-      useShallow((state) => ({
-        runningInfo: state.runningInfo,
-        runningStatus: state.runningStatus,
-        setRunningInfo: state.setRunningInfo,
-        setRunningStatus: state.setRunningStatus,
-      }))
-    );
-  const isRunning = runningStatus === "go" || runningStatus === "countdown";
+  const {
+    runningInfo,
+    runningStatus,
+    crewRunningParticipants,
+    setRunningInfo,
+    setRunningStatus,
+  } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      runningStatus: state.runningStatus,
+      crewRunningParticipants: state.crewRunningParticipants,
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
 
   const { myLocation, stompLocation, mapLocation } = useLocationStore(
     useShallow((state) => ({
@@ -64,6 +69,22 @@ export default function Index() {
   );
   const mapRef = useRef<MapView>(null);
   const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
+  const isRunning = runningStatus === "go" || runningStatus === "countdown";
+  const myMarkerLocation =
+    userId && isRunning && stompLocation
+      ? runningInfo.mode === "crew"
+        ? {
+            latitude: crewRunningParticipants.get(userId)?.latitude,
+            longitude: crewRunningParticipants.get(userId)?.longitude,
+          }
+        : {
+            latitude: stompLocation?.latitude,
+            longitude: stompLocation?.longitude,
+          }
+      : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
+const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
+  .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
+  .map(([_, participant]) => participant);  
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
@@ -87,15 +108,7 @@ export default function Index() {
       mapRef.current?.animateToRegion(mapLocation);
     }
   }, [mapLocation]);
-  // useEffect(() => {
-  //   async function updateCourses() {
-  //     if (region) {
-  //       const response = await fetchCourses(region);
-  //       setCurrentCourses(response.courseResponses);
-  //     }
-  //   }
-  //   updateCourses();
-  // }, [region]);
+
   useEffect(() => {
     if (data) {
       setCurrentCourses(data.courseResponses);
@@ -113,12 +126,12 @@ export default function Index() {
     ) {
       mapRef.current?.animateCamera({
         center: {
-          latitude: stompLocation?.latitude,
-          longitude: stompLocation?.longitude,
+          latitude: myMarkerLocation?.latitude!,
+          longitude: myMarkerLocation?.longitude!,
         },
         pitch: 60, // 기울기 (0~90도)
-        heading: stompLocation?.heading, // 방향 (나아가는 방향)
-        altitude: stompLocation?.altitude, // 고도
+        heading: myLocation?.heading, // 방향 (나아가는 방향)
+        altitude: myLocation?.altitude, // 고도
         zoom: 19, // 줌 레벨
       });
     }
@@ -149,6 +162,8 @@ export default function Index() {
       );
     }
   }, [runningStatus, myLocation, stompLocation]);
+
+  const isCrewRunning = isRunning && runningInfo.mode === "crew";
 
   const selectedCourse = currentCourses?.find(
     (course) => course.courseId === selectedCourseId
@@ -208,25 +223,41 @@ export default function Index() {
             }}
           >
             <View style={{ flex: 1 }}>
-              <Marker
-                coordinate={{
-                  latitude:
-                    isRunning && stompLocation
-                      ? stompLocation?.latitude
-                      : myLocation?.latitude,
-                  longitude:
-                    isRunning && stompLocation
-                      ? stompLocation?.longitude
-                      : myLocation?.longitude,
-                }}
-                style={{ zIndex: 3 }}
-              >
-                <Image
-                  width={20}
-                  height={20}
-                  source={require("@/assets/images/marker.png")}
-                />
-              </Marker>
+              {myLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: myMarkerLocation.latitude!,
+                    longitude: myMarkerLocation.longitude!,
+                  }}
+                  style={{ zIndex: 3 }}
+                >
+                  <Image
+                    width={20}
+                    height={20}
+                    source={require("@/assets/images/marker.png")}
+                  />
+                </Marker>
+              )}
+              {isCrewRunning &&
+                restCrewMarkerLocation?.map(
+                  (participant) => (
+                    <Marker
+                      key={participant?.userId}
+                      coordinate={{
+                        latitude: participant?.latitude,
+                        longitude: participant?.longitude,
+                      }}
+                      style={{ zIndex: 3 }}
+                    >
+                      <Image
+                        width={20}
+                        height={20}
+                        source={require("@/assets/images/crewMarker.png")}
+                      />
+                    </Marker>
+                  )
+                )}
+
               {currentCourses?.map((course, index) => {
                 if (!course) return;
                 const courseStart: LatLng = {

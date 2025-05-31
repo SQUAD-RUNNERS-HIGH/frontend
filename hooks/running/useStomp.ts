@@ -23,19 +23,20 @@ export function useStomp() {
       username: state.username,
     }))
   );
-  const { runningInfo, runningStatus, setCrewRunningPrepareParticipant} =
+  const { runningInfo, runningStatus, setCrewRunningPrepareParticipant } =
     useRunningStore(
       useShallow((state) => ({
         runningInfo: state.runningInfo,
         runningStatus: state.runningStatus,
-        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant,
+        setCrewRunningPrepareParticipant:
+          state.setCrewRunningPrepareParticipant,
       }))
     );
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
 
   const handleMessage = useCallback((data) => {
-       console.log(data);
+    console.log(data);
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
       setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
@@ -53,7 +54,10 @@ export function useStomp() {
   useEffect(() => {
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
-        brokerURL: "wss://runners-high.shop/running",
+        brokerURL: "wss://runners-high.shop/ws",
+        connectHeaders: {
+          Authorization: `Bearer ${useAuthStore.getState().userId}`,
+        },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
         forceBinaryWSFrames: true,
@@ -113,7 +117,11 @@ export function useStomp() {
     }
   }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
-  const sendLocation = async (location: location, ready=false, progress=0) => {
+  const sendLocation = async (
+    location: location,
+    ready = false,
+    progress = 0
+  ) => {
     // 러닝
     if (client && client?.connected && runningInfo.mode === "competitor") {
       client.publish({
@@ -154,7 +162,7 @@ export function useStomp() {
         latitude: location?.latitude,
         longitude: location?.longitude,
         username: username,
-        progress
+        progress,
       };
       client?.publish({
         destination: `/app/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,

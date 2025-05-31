@@ -20,9 +20,16 @@ export const PrepareCrew = () => {
       stompLocation: state.stompLocation,
     }))
   );
-  const { crewRunningPrepareParticipant, setRunningStatus } = useRunningStore(
+  const {
+    crewRunningPrepareParticipant,
+    crewRunningParticipants,
+    setRunningStatus,
+    setCrewRunningParticipants,
+  } = useRunningStore(
     useShallow((state) => ({
       crewRunningPrepareParticipant: state.crewRunningPrepareParticipant,
+      crewRunningParticipants: state.crewRunningParticipants,
+      setCrewRunningParticipants: state.setCrewRunningParticipants,
       setRunningStatus: state.setRunningStatus,
     }))
   );
@@ -44,6 +51,15 @@ export const PrepareCrew = () => {
     ) {
       setAllReady(true);
     }
+    crewRunningPrepareParticipant.forEach((participant) => {
+      const { isReady, ...rest } = participant;
+      const newParticipant = {
+        ...rest,
+        distance: 0,
+      };
+      // userId 또는 원하는 key로 삽입
+      setCrewRunningParticipants(participant.userId, newParticipant);
+    });
   }, [crewRunningPrepareParticipant]);
   useEffect(() => {
     if (allReady) {
