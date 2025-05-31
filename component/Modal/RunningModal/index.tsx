@@ -8,10 +8,10 @@ import { useShallow } from "zustand/react/shallow";
 import { useStompStore } from "@/store/useStompStore";
 import CrewRunning from "./CrewRunning";
 export function RunningModal() {
-  const { setRunDistance, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
+  const { seconds, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
     useRunningStore(
       useShallow((state) => ({
-        setRunDistance: state.setRunDistance,
+        seconds: state.seconds,
         runningInfo: state.runningInfo,
         setRunningInfo: state.setRunningInfo,
         setRunningStatus: state.setRunningStatus,

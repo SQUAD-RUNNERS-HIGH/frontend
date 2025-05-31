@@ -21,15 +21,18 @@ export const useCrewRunning = () => {
   const {
     setRunningRecord,
     runningStatus,
+    seconds,
     setRunDistance,
-    runDistance,
+    setSeconds,
     crewRunningParticipant,
     setCrewRunningParticipants,
   } = useRunningStore(
     useShallow((state) => ({
       setRunningRecord: state.setRunningRecord,
       runningStatus: state.runningStatus,
+      seconds: state.seconds,
       setRunDistance: state.setRunDistance,
+      setSeconds: state.setSeconds,
       runDistance: state.runDistance,
       crewRunningParticipant: state.crewRunningParticipants,
       setCrewRunningParticipants: state.setCrewRunningParticipants,
@@ -44,7 +47,6 @@ export const useCrewRunning = () => {
   const totalDistance = useCourseStore((state) => state.totalDistance);
   const { sendLocation } = useStomp();
   const client = useStompStore((state) => state.client);
-  const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [index, setIndex] = useState<number>(0);
   const [text, setText] = useState<string>("");
@@ -121,10 +123,17 @@ export const useCrewRunning = () => {
       });
     }
   }, [stompLocation]);
-
+  // 크루 평균 거리 갱신
+  useEffect(() => {
+    let sum = 0;
+    crewRunningParticipant.forEach((participant,_) => {
+      sum += participant.distance;
+    })
+    setRunDistance(Math.floor(sum/crewRunningParticipant.size));
+  }, [crewRunningParticipant]);
+  
   return {
     speed,
-    seconds,
     text,
     index,
     totalDistance,

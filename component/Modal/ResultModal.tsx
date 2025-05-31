@@ -39,7 +39,9 @@ const ResultModal = () => {
     runDistance,
     setRunDistance,
     runningStatus,
-    setRunningStatus
+    seconds,
+    setRunningStatus,
+    crewRunningParticipants,
   } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -49,7 +51,9 @@ const ResultModal = () => {
       runDistance: state.runDistance,
       setRunDistance: state.setRunDistance,
       runningStatus: state.runningStatus,
-      setRunningStatus: state.setRunningStatus
+      setRunningStatus: state.setRunningStatus,
+      seconds: state.seconds,
+      crewRunningParticipants:state.crewRunningParticipants
     }))
   );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
@@ -150,9 +154,17 @@ const ResultModal = () => {
                 placeholder="코스 이름을 입력하세요."
               />
             )}
+            {runningInfo.mode === 'crew' && (
+            <Text style={styles.modalDepscription2}>
+            <Text style={{ fontWeight: "500" }}>
+              크루원 {crewRunningParticipants.size}명
+            </Text>{" "}
+              끼리
+          </Text>
+            )}
           <Text style={styles.modalDepscription2}>
             <Text style={{ fontWeight: "500" }}>
-              {Number(runningRecord?.runningTime).toFixed(0)}초
+              {Number(seconds).toFixed(0)}초
             </Text>{" "}
             동안
           </Text>
@@ -221,12 +233,13 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     padding: 24,
-    paddingHorizontal: 40,
+    paddingHorizontal: 60,
     flex: 1,
     borderRadius: 14,
     alignItems: "center",
     zIndex: 20,
     gap: 10,
+    width: '100%',
   },
   modalTitle: {
     fontWeight: 700,

@@ -9,21 +9,23 @@ import { useCourseStore } from "@/store/useCourseStore";
 import { useCrewRunning } from "@/hooks/running/useCrewRunning";
 import { useAuthStore } from "@/store/useAuthStore";
 const CrewRunning = () => {
-  const { crewRunningParticipants } =
+  const { crewRunningParticipants, runDistance, seconds } =
     useRunningStore(
       useShallow((state) => ({
         crewRunningParticipants: state.crewRunningParticipants,
+        runDistance: state.runDistance,
+        seconds: state.seconds
       }))
     );
   const userId = useAuthStore(state => state.userId);
   const stompLocation = useLocationStore((state) => state.stompLocation);
   const totalDistance = useCourseStore((state) => state.totalDistance);
-  const { speed, seconds, text } = useCrewRunning();
+  const { speed, text } = useCrewRunning();
   return (
         <>
           <RunningInfo
             seconds={seconds}
-            rest={totalDistance - crewRunningParticipants.get(userId!)?.distance}
+            rest={(totalDistance - runDistance)>=0?(totalDistance-runDistance):0}
             speed={speed}
           />
           {crewRunningParticipants && (
