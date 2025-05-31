@@ -17,7 +17,7 @@ type AlertActions = {
 };
 
 export const useAlertStore = create<AlertState & AlertActions>((set, get) => ({
-  visible: true,
+  visible: false,
   title: "",
   description: "",
   onClose: undefined,
