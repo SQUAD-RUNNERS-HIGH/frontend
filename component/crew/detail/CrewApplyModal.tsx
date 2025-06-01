@@ -25,7 +25,7 @@ export const CrewApplyModal = ({
 
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={applyModal}
       onRequestClose={() => {

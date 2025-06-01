@@ -68,7 +68,7 @@ export function CreateCrewModal({
   console.log(isValid);
   return (
     <Modal
-      animationType="slide" // fade, slide, none 가능
+      animationType="fade" // fade, slide, none 가능
       transparent={true} // 배경을 투명하게 설정
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)} // 안드로이드 뒤로가기 대응
