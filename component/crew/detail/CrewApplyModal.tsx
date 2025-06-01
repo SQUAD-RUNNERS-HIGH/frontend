@@ -11,12 +11,12 @@ export const CrewApplyModal = ({
   applyModal,
   setApplyModal,
 }: {
-  id: string;
+  id: number;
   applyModal: boolean;
   setApplyModal: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const { data } = useQuery({
-    queryKey: ["crewApplicant", id],
+    queryKey: ["crewApplicant", Number(id)],
     queryFn: () => fetchCrewApplicants(id),
     staleTime:0,
   });

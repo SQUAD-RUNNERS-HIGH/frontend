@@ -10,7 +10,7 @@ const crewImages = [
 
 export const CrewMember = ({ id }: { id: string }) => {
   const { data: participants, isLoading: isParticipantsLoading } = useQuery({
-    queryKey: ["crewParticipants", id],
+    queryKey: ["crewParticipants", Number(id)],
     queryFn: () => fetchCrewParticipants(id),
     enabled: !!id,
     staleTime:0,
