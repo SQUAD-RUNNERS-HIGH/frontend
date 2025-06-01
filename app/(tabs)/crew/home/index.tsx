@@ -1,21 +1,54 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Text, ScrollView, Modal } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  Text,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import MyCrew from "../../../../component/crew/home/MyCrew";
 import Button from "@/component/Button";
 import SurroundCrews from "../../../../component/crew/home/SurroundCrews";
 import CrewRaking from "../../../../component/crew/home/CrewRanking";
 import { CreateCrewModal } from "../../../../component/crew/home/CreateCrewModal";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchMyCrew } from "../../../../lib/crew/home/fetchMyCrew";
 
 export function CrewHome() {
+  const queryClient = useQueryClient();
+
   const [modalVisible, setModalVisible] = useState(false);
-  const { data: myCrewResponse, isLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const {
+    data: myCrewResponse,
+    isRefetching,
+    refetch,
+  } = useQuery({
     queryKey: ["myCrew"],
     queryFn: fetchMyCrew,
   });
+  // 렌더링 될 때마다 함수 생성 방지(최적화)
+  const onRefresh = useCallback(async () => {
+  try {
+    setRefreshing(true);
+
+    // 각각의 쿼리 refetch
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['surroundCrews']}),
+      queryClient.refetchQueries({ queryKey: ['crewRanking']}),
+      queryClient.refetchQueries({ queryKey: ['myCrew'] }),
+    ]);
+  } finally {
+    setRefreshing(false);
+  }
+}, []);
   return (
-    <ScrollView>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.container}>
         <Text style={styles.title}>크루</Text>
         <View style={styles.innerContainer}>
@@ -37,9 +70,16 @@ export function CrewHome() {
               id={crew?.crewId}
               crewName={crew?.crewName}
               numberOfParticipants={crew?.numberOfParticipants}
-              crewRole = {crew?.crewUserRole? crew.crewUserRole: 'LEADER'}
+              crewRole={crew?.crewUserRole ? crew.crewUserRole : "LEADER"}
             />
           ))}
+          {
+            myCrewResponse?.myCrews?.length === 0 && (
+              <View style = {styles.noCrews}>
+              <Text>아직 내 크루가 없습니다!</Text>
+              </View>
+            )
+          }
         </View>
         <View style={styles.innerContainer}>
           <View style={styles.innerTitleContainer}>
@@ -131,5 +171,10 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 12,
   },
+  noCrews: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 12,
+  }
 });
 export default CrewHome;
