@@ -12,6 +12,7 @@ type RunningRecord = soloRunningRecord | competitorRunningRecord | null;
 type RunningInfo =
   | { mode: "solo" }
   | { mode: "competitor"; id: string }
+  | { mode: "soloCourse"; id: string }
   | { mode: "crew"; id: number };
 
 type RunningStatus =
@@ -29,6 +30,9 @@ interface RunningState {
   runDistance: number;
   setRunDistance: (value: number | ((prev: number) => number)) => void;
 
+  targetPace : string;
+  setTargetPace: (value: string) => void
+
   seconds: number;
   setSeconds: (value: number | ((prev: number) => number)) => void;
 
@@ -39,6 +43,7 @@ interface RunningState {
       | RunningRecord
       | null
   ) => void;
+
   runningStatus: RunningStatus;
   setRunningStatus: (value: RunningStatus) => void;
 
@@ -52,7 +57,6 @@ interface RunningState {
   ) => void;
 
   crewRunningParticipants: Map<string, CrewRunningParticipant>;
-
   setCrewRunningParticipants: (
     key: string,
     value: CrewRunningParticipant
@@ -66,9 +70,11 @@ export const useRunningStore = create<RunningState>((set) => ({
   seconds: 0,
   setSeconds: (updater) =>
     set((state) => ({
-      seconds:
-        typeof updater === "function" ? updater(state.seconds) : updater,
+      seconds: typeof updater === "function" ? updater(state.seconds) : updater,
     })),
+  
+  targetPace: "5'30\"",
+  setTargetPace: (value) => set({ targetPace: value }),
 
   runDistance: 0,
   setRunDistance: (updater) =>

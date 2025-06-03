@@ -15,10 +15,11 @@ export function InfoModal({
 }) {
   const [parentStyle, setParentStyle] = useState({ width: 0, height: 0 });
   const selectedCourseId = useCourseStore(state => state.selectedCourseId);
-  const { runningInfo, setRunningInfo } = useRunningStore(
+  const { runningInfo, setRunningInfo, setRunningStatus } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
       setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
     }))
   );
   const {
@@ -130,7 +131,8 @@ export function InfoModal({
             <Button
               style={{ flex: 1 }}
               onPress={() => {
-                setRunningInfo({mode:'solo'});
+                setRunningInfo({mode:'soloCourse', id: selectedCourseId});
+                setRunningStatus('prepare')
               }}
             >
               혼자 뛰기

@@ -13,6 +13,7 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
+import PrepareSoloCourse from "./PrepareSoloCourse";
 const PrepareRunModal = () => {
   const { selectedCourseId, currentCourses, setTotalDistance } = useCourseStore(
     useShallow((state) => ({
@@ -72,6 +73,7 @@ const PrepareRunModal = () => {
       <View style={styles.modalPosition}>
         <View style={styles.modalContainer}>
           {runningInfo.mode === "solo" && <PrepareSolo />}
+              {runningInfo.mode === "soloCourse" && <PrepareSoloCourse />}
           {runningInfo.mode === "competitor" && (
             <PrepareCompetitor  />
           )}
