@@ -8,13 +8,14 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const useSoloRunning = () => {
-
   const {
     runningStatus,
     setRunDistance,
     runningRecord,
     setRunningRecord,
     runDistance,
+    seconds,
+    setSeconds,
   } = useRunningStore(
     useShallow((state) => ({
       runningStatus: state.runningStatus,
@@ -22,26 +23,25 @@ export const useSoloRunning = () => {
       runningRecord: state.runningRecord,
       setRunningRecord: state.setRunningRecord,
       runDistance: state.runDistance,
+      seconds: state.seconds,
+      setSeconds: state.setSeconds,
     }))
   );
-  const myLocation = useLocationStore(state => state.myLocation);
-  const [seconds, setSeconds] = useState(0);
+  const myLocation = useLocationStore((state) => state.myLocation);
   const [progress, setProgress] = useState<location[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
   useEffect(() => {
-    if (runningStatus === 'go') {
-
+    if (runningStatus === "go") {
       const interval = setInterval(() => {
-        setSeconds(prev => prev+1);
-       
+        setSeconds((prev) => prev + 1);
       }, 1000);
       return () => {
         clearInterval(interval);
-      }
+      };
     }
-  }, [runningStatus])
+  }, [runningStatus]);
   useEffect(() => {
-    if (runningStatus === 'countdown' && myLocation) {
+    if (runningStatus === "countdown" && myLocation) {
       setRunningRecord({
         runningTime: 0,
         courseName: "",
@@ -50,7 +50,7 @@ export const useSoloRunning = () => {
       });
     }
 
-    if (runningStatus === 'go' && myLocation) {
+    if (runningStatus === "go" && myLocation) {
       setSpeed(convertSpeedToPace(myLocation?.speed));
       const interval = setInterval(() => {
         setProgress((prev) => [
@@ -60,7 +60,7 @@ export const useSoloRunning = () => {
       }, 500);
       return () => {
         clearInterval(interval);
-      }
+      };
     }
   }, [myLocation]); // ★ myLocation 추가
 
@@ -95,5 +95,5 @@ export const useSoloRunning = () => {
       }
     }
   }, [progress]);
-  return { speed, seconds, progress };
+  return { speed, progress };
 };

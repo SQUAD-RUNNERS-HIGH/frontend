@@ -5,17 +5,14 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 
 const SoloRunning = () => {
-  const { speed, seconds } = useSoloRunning();
-  const runDistance = useRunningStore(state => state.runDistance);
-  const myLocation = useLocationStore(state => state.myLocation);
+  const { speed } = useSoloRunning();
+  const runDistance = useRunningStore((state) => state.runDistance);
+  const seconds = useRunningStore((state) => state.seconds);
+  const myLocation = useLocationStore((state) => state.myLocation);
   return (
     <>
       {myLocation && (
-        <RunningInfo
-          seconds={seconds}
-          rest={runDistance}
-          speed={speed}
-        />
+        <RunningInfo seconds={seconds} rest={runDistance} speed={speed} />
       )}
     </>
   );
