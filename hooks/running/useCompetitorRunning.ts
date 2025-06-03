@@ -10,10 +10,12 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 export const useCompetitorRunning = () => {
-  const { selectedCourseId, currentCourses } = useCourseStore(
+  const { selectedCourseId, currentCourses, totalDistance, setTotalDistance } = useCourseStore(
     useShallow((state) => ({
       selectedCourseId: state.selectedCourseId,
       currentCourses: state.currentCourses,
+      totalDistance: state.totalDistance,
+      setTotalDistance: state.setTotalDistance,
     }))
   );
   const {
@@ -22,6 +24,8 @@ export const useCompetitorRunning = () => {
     runningStatus,
     setRunDistance,
     runDistance,
+    seconds,
+    setSeconds
   } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -29,6 +33,8 @@ export const useCompetitorRunning = () => {
       runningStatus: state.runningStatus,
       setRunDistance: state.setRunDistance,
       runDistance: state.runDistance,
+      seconds: state.seconds,
+      setSeconds: state.setSeconds,
     }))
   );
   const {myLocation, stompLocation} = useLocationStore(
@@ -44,8 +50,6 @@ export const useCompetitorRunning = () => {
     staleTime: 100000,
   });
   const [currentCourse, setCurrentCourse] = useState<location[] | null>(null);
-  const [totalDistance, setTotalDistance] = useState(0);
-  const [seconds, setSeconds] = useState(0);
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [progress, setProgress] = useState<number[]>([]);
   const [competitorProgress, setCompetitorProgress] = useState<number>(0);
@@ -157,7 +161,6 @@ export const useCompetitorRunning = () => {
   return {
     data,
     speed,
-    seconds,
     text,
     index,
     winning,

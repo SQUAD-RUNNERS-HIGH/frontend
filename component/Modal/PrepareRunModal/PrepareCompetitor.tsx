@@ -19,7 +19,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
-const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
+const PrepareCompetitor = () => {
   const selectedCourseId = useCourseStore(state => state.selectedCourseId);
   const client = useStompStore(state => state.client);
   const { runningInfo, setRunningStatus } = useRunningStore(
@@ -34,6 +34,7 @@ const PrepareCompetitor = ({ totalDistance }: { totalDistance: number }) => {
       stompLocation: state.stompLocation,
     }))
   );
+  const totalDistance = useCourseStore(state => state.totalDistance);
   const {
     data: detail,
     isLoading,

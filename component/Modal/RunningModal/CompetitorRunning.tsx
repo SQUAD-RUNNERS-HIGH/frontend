@@ -8,17 +8,17 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 const CompetitorRunning = () => {
-  const { runningRecord, runDistance } = useRunningStore(
+  const { runningRecord, runDistance, seconds } = useRunningStore(
     useShallow((state) => ({
       runningRecord: state.runningRecord,
       runDistance: state.runDistance,
+      seconds: state.seconds,
     }))
   );  
   const stompLocation = useLocationStore(state => state.stompLocation);
   const {
     data,
     speed,
-    seconds,
     index,
     winning,
     text,

@@ -73,7 +73,7 @@ const PrepareRunModal = () => {
         <View style={styles.modalContainer}>
           {runningInfo.mode === "solo" && <PrepareSolo />}
           {runningInfo.mode === "competitor" && (
-            <PrepareCompetitor totalDistance={totalDistance} />
+            <PrepareCompetitor  />
           )}
           {runningInfo.mode === "crew" && (
             <PrepareCrew />
