@@ -10,7 +10,7 @@ function SurroundCrews() {
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage?.page + 1,
     staleTime: 0,
-    gcTime:0,
+    gcTime: 0,
   });
   const flatContents =
     surroundCrews?.pages?.flatMap((page) => page.data.content) ?? [];
@@ -23,13 +23,10 @@ function SurroundCrews() {
           name={crew.name}
           description={crew.description}
           userCount={crew.userCount}
-          userRole = {crew.userRole}
         />
       ))}
       {flatContents?.length === 0 && (
-        <View
-          style={styles.noCrewContainer}
-        >
+        <View style={styles.noCrewContainer}>
           <Text>주변에 크루가 없습니다.</Text>
         </View>
       )}
