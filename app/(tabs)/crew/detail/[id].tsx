@@ -1,36 +1,52 @@
 import Button from "@/component/Button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
   BackHandler,
   Image,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { fetchCrewDetail } from "../../../../lib/crew/detail/fetchCrewDetail";
 
-import { useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
 import { CrewApplyModal } from "../../../../component/crew/detail/CrewApplyModal";
 import { CrewMember } from "../../../../component/crew/detail/CrewMember";
 import { fetchCrewApply } from "../../../../lib/crew/detail/fetchCrewApply";
+import { useAlertStore } from "@/store/useAlertStore";
 
 const CrewDetail = () => {
   const { id } = useLocalSearchParams();
   const [applyModal, setApplyModal] = useState<boolean>(false);
   const router = useRouter();
-
-  const {
-    data: detail,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["crewDetail", id],
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const { data: detail } = useQuery({
+    queryKey: ["crewDetail", Number(id)],
     queryFn: () => fetchCrewDetail(id),
     enabled: !!id,
     staleTime: 0,
   });
+  const onRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+
+      // 각각의 쿼리 refetch
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["crewDetail", Number(id)] }),
+        queryClient.refetchQueries({
+          queryKey: ["crewParticipants", Number(id)],
+        }),
+        queryClient.refetchQueries({ queryKey: ["crewApplicant", Number(id)] }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
   useEffect(() => {
     const onBackPress = () => {
       router.back();
@@ -45,7 +61,12 @@ const CrewDetail = () => {
     return () => subscription.remove(); // 컴포넌트 언마운트 시 해제
   }, [router]);
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.crewTitleContainer}>
         <Image
           style={styles.crewImage}
@@ -87,7 +108,14 @@ const CrewDetail = () => {
                 };
                 const permit = await confirmApply();
                 if (permit) {
-                  fetchCrewApply(id);
+                  const response = await fetchCrewApply(id);
+                  if (response?.data) {
+                    useAlertStore.getState().showAlert({
+                      title: `${detail?.name} 크루에 지원했습니다!`,
+                      description:
+                        "크루 리더가 지원을 승인할 때 까지 기다려주세요.",
+                    });
+                  }
                 }
               } else {
                 setApplyModal(true);
@@ -141,7 +169,7 @@ const CrewDetail = () => {
       {applyModal && (
         <CrewApplyModal id={id} applyModal setApplyModal={setApplyModal} />
       )}
-    </View>
+    </ScrollView>
   );
 };
 const styles = StyleSheet.create({
@@ -176,6 +204,8 @@ const styles = StyleSheet.create({
   crewDescriptionContainer: {
     gap: 15,
     width: "100%",
+    marginBottom: 15,
+    marginTop: 15,
   },
   crewDescriptionTitle: {
     flexDirection: "row",
