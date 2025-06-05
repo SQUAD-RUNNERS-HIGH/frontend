@@ -123,7 +123,7 @@ export function useStomp() {
     progress = 0
   ) => {
     // 러닝
-    if (client && client?.connected && runningInfo.mode === "competitor") {
+    if (client && client?.connected && (runningInfo.mode === "competitor" || runningInfo.mode === 'soloCourse')) {
       client.publish({
         destination: `/app/course/${selectedCourseId}`,
         body: JSON.stringify(location),
