@@ -57,7 +57,6 @@ export const useCompetitorRunning = () => {
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
   const [winning, setWinning] = useState<boolean>(true);
   const [index, setIndex] = useState<number>(0);
-  const [text, setText] = useState<string>('');
   useEffect(() => {
     if (selectedCourseId) {
       setRunningRecord({
@@ -161,11 +160,9 @@ export const useCompetitorRunning = () => {
   return {
     data,
     speed,
-    text,
     index,
     winning,
     distanceToCompetitor,
     competitorProgress,
-    totalDistance,
   };
 };

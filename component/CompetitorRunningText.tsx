@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import * as Speech from "expo-speech";
 import { useLocationStore } from "@/store/useLocationStore";
 
-export const RunningText = ({
+export const CompetitorRunningText = ({
   winning,
   distance,
   seconds,
