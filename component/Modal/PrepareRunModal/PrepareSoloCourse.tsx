@@ -9,19 +9,46 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import Button from "@/component/Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Input from "@/component/Input";
 const PrepareSoloCourse = () => {
   const { setRunningStatus, targetPace, setTargetPace } = useRunningStore(
     useShallow((state) => ({
       targetPace: state.targetPace,
       setRunningStatus: state.setRunningStatus,
-      setTargetPace: state.setTargetPace
+      setTargetPace: state.setTargetPace,
     }))
   );
   const [avaragePace, setAveragePace] = useState("5'30\"");
+  const [minute, setMinute] = useState("0");
+  const [second, setSecond] = useState("0");
+
   const handlePreset = (preset: string) => {
     setTargetPace(preset);
+    const [min, sec] = preset.split(/['"]/).map(String);
+    setMinute(min);
+    setSecond(sec);
   };
+
+  const handleSecondChange = (text: string) => {
+  // 숫자만 필터링
+  const onlyNumbers = text.replace(/[^0-9]/g, '');
+
+  if (onlyNumbers.length > 2) return;
+
+  setSecond(onlyNumbers);
+
+  if (onlyNumbers.length === 2) {
+    const num = parseInt(onlyNumbers, 10);
+    if (num > 59) {
+      setSecond('59'); // 자동으로 59로 고정
+    }
+  }
+};
+
+  useEffect(() => {
+    setTargetPace(`${minute}'${second}"`);
+  }, [minute, second]);
   return (
     <>
       <Text style={styles.title}>목표 페이스 설정</Text>
@@ -33,21 +60,40 @@ const PrepareSoloCourse = () => {
             style={[styles.presetButton]}
             theme={`${targetPace === preset ? "default" : "secondary"}`}
             onPress={() => handlePreset(preset)}
+            key={idx}
           >
             {preset}
           </Button>
         ))}
       </View>
 
-      <TextInput
-        style={styles.input}
-        value={targetPace}
-        onChangeText={setTargetPace}
-        keyboardType="default"
-        placeholder="페이스 입력"
-      />
+      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+        <TextInput
+          style={[styles.input, { width: 50, textAlign: "center" }]}
+          value={minute}
+          onChangeText={setMinute}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="분"
+        />
+        <Text style={{ marginHorizontal: 4 }}>'</Text>
+        <TextInput
+          style={[styles.input, { width: 50, textAlign: "center" }]}
+          value={second}
+          onChangeText={handleSecondChange}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="초"
+        />
+        <Text style={{ marginLeft: 4 }}>''</Text>
+      </View>
 
-      <Button style={styles.runButton} onPress={() => {setRunningStatus('countdown')}}>
+      <Button
+        style={styles.runButton}
+        onPress={() => {
+          setRunningStatus("countdown");
+        }}
+      >
         러닝 시작하기
       </Button>
     </>
@@ -107,7 +153,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 12,
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 24,
