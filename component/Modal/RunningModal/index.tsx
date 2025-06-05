@@ -7,6 +7,7 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useStompStore } from "@/store/useStompStore";
 import CrewRunning from "./CrewRunning";
+import SoloCourseRunning from "./SoloCourseRunning";
 export function RunningModal() {
   const { seconds, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
     useRunningStore(
@@ -49,6 +50,11 @@ export function RunningModal() {
       {runningInfo.mode === "solo" && (
         <>
           <SoloRunning />
+        </>
+      )}
+      {runningInfo.mode === "soloCourse" && (
+        <>
+          <SoloCourseRunning />
         </>
       )}
 
