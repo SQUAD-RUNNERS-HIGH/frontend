@@ -21,6 +21,7 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useAlertStore } from "@/store/useAlertStore";
+import { finishRunning } from "@/lib/finishRunning";
 
 const ResultModal = () => {
   const { selectedCourseId, currentCourses, setSelectedCourseId } =
@@ -118,7 +119,7 @@ const ResultModal = () => {
         }
         setRunningStatus("idle");
         setSelectedCourseId("");
-        setRunDistance(0);
+                finishRunning();
       } catch (error) {
         showError({ title: "기록 저장 실패", description: `${error}` });
       } finally {
@@ -195,6 +196,7 @@ const ResultModal = () => {
                   setRunningStatus('idle');
                   setSelectedCourseId("");
                   setRunDistance(0);
+                  finishRunning();
                 }}
               >
                 저장하지 않고 종료
