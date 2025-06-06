@@ -19,7 +19,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import CustomMarker from "@/assets/images/svg/CustomMarker";
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -82,9 +81,9 @@ export default function Index() {
             longitude: stompLocation?.longitude,
           }
       : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
-const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
-  .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
-  .map(([_, participant]) => participant);  
+  const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
+    .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
+    .map(([_, participant]) => participant);
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
@@ -129,10 +128,9 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
           latitude: myMarkerLocation?.latitude!,
           longitude: myMarkerLocation?.longitude!,
         },
-        pitch: 60, // 기울기 (0~90도)
         heading: myLocation?.heading, // 방향 (나아가는 방향)
         altitude: myLocation?.altitude, // 고도
-        zoom: 19, // 줌 레벨
+        zoom: 20, // 줌 레벨
       });
     }
     if (isRunning && runningInfo.mode === "solo" && myLocation) {
@@ -141,10 +139,9 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
           latitude: myLocation?.latitude,
           longitude: myLocation?.longitude,
         },
-        pitch: 60, // 기울기 (0~90도)
         heading: myLocation?.heading, // 방향 (나아가는 방향)
         altitude: myLocation?.altitude, // 고도
-        zoom: 18, // 줌 레벨
+        zoom: 19, // 줌 레벨
       });
     }
     if (runningStatus === "finished") {
@@ -239,24 +236,22 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
                 </Marker>
               )}
               {isCrewRunning &&
-                restCrewMarkerLocation?.map(
-                  (participant) => (
-                    <Marker
-                      key={participant?.userId}
-                      coordinate={{
-                        latitude: participant?.latitude,
-                        longitude: participant?.longitude,
-                      }}
-                      style={{ zIndex: 3 }}
-                    >
-                      <Image
-                        width={20}
-                        height={20}
-                        source={require("@/assets/images/crewMarker.png")}
-                      />
-                    </Marker>
-                  )
-                )}
+                restCrewMarkerLocation?.map((participant) => (
+                  <Marker
+                    key={participant?.userId}
+                    coordinate={{
+                      latitude: participant?.latitude,
+                      longitude: participant?.longitude,
+                    }}
+                    style={{ zIndex: 3 }}
+                  >
+                    <Image
+                      width={20}
+                      height={20}
+                      source={require("@/assets/images/crewMarker.png")}
+                    />
+                  </Marker>
+                ))}
 
               {currentCourses?.map((course, index) => {
                 if (!course) return;
