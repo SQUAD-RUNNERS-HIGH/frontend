@@ -1,5 +1,6 @@
+import { useLayoutStore } from "@/store/useLayoutStore";
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { ProgressBar } from "react-native-paper";
 
 const ProgressList = ({
@@ -7,21 +8,40 @@ const ProgressList = ({
 }: {
   records: { name: string; progress: number }[];
 }) => {
+  const isSmall = useLayoutStore(state => state.isSmall);
+  const smallProgress = isSmall || records.length>=3;
+  const progressBarStyle = [styles.progressBar, smallProgress && {height:8}];
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, smallProgress && {paddingVertical: 10,gap:2}]}>
       {records?.map((record, index) => {
         return (
           <View key={index} style={styles.row}>
-            <Text style={styles.name}>{record.name}</Text>
-            <View style={styles.progressBar}>
+            <Text style={[styles.name,smallProgress && {fontSize:12}]}>{record.name}</Text>
+            <View style={progressBarStyle}>
               <ProgressBar
                 progress={record.progress}
                 color="#6200ee"
-                style={styles.progressBar}
+                style={progressBarStyle}
               />
             </View>
           </View>
         );
+        
+      })}
+       {records?.map((record, index) => {
+        return (
+          <View key={index} style={styles.row}>
+            <Text style={[styles.name,isSmall && {fontSize:10}]}>{record.name}</Text>
+            <View style={progressBarStyle}>
+              <ProgressBar
+                progress={record.progress}
+                color="#6200ee"
+                style={progressBarStyle}
+              />
+            </View>
+          </View>
+        );
+        
       })}
     </View>
   );
@@ -29,8 +49,9 @@ const ProgressList = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
     width: "100%",
   },
   row: {
@@ -41,12 +62,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 16,
+    fontSize: 14,
     minWidth: 100, // 이름 최소 너비 지정
   },
   progressBar: {
-    flexGrow: 1, // 이게 핵심! 남은 공간 다 차지
-    height: 16,
+    flexGrow: 1,
+    height: 10,
     borderRadius: 12,
     marginTop:1,
   },

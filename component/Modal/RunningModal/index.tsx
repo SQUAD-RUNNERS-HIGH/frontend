@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, Alert } from "react-native";
+import { StyleSheet, View, Text, Alert, Dimensions } from "react-native";
 import Button from "../../Button";
 import React, { SetStateAction, useEffect } from "react";
 import CompetitorRunning from "./CompetitorRunning";
@@ -8,19 +8,26 @@ import { useShallow } from "zustand/react/shallow";
 import { useStompStore } from "@/store/useStompStore";
 import CrewRunning from "./CrewRunning";
 import SoloCourseRunning from "./SoloCourseRunning";
+import { useLayoutStore } from "@/store/useLayoutStore";
 export function RunningModal() {
-  const { seconds, setCrewRunningPrepareParticipant, runningInfo, setRunningInfo, setRunningStatus } =
-    useRunningStore(
-      useShallow((state) => ({
-        seconds: state.seconds,
-        runningInfo: state.runningInfo,
-        setRunningInfo: state.setRunningInfo,
-        setRunningStatus: state.setRunningStatus,
-        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant
-      }))
-    );
+  const {
+    seconds,
+    setCrewRunningPrepareParticipant,
+    runningInfo,
+    setRunningInfo,
+    setRunningStatus,
+  } = useRunningStore(
+    useShallow((state) => ({
+      seconds: state.seconds,
+      runningInfo: state.runningInfo,
+      setRunningInfo: state.setRunningInfo,
+      setRunningStatus: state.setRunningStatus,
+      setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant,
+    }))
+  );
   const client = useStompStore((state) => state.client);
   const setClient = useStompStore((state) => state.setClient);
+  const isSmall = useLayoutStore(state => state.isSmall);
 
   const confirmExit = () => {
     return new Promise((resolve) => {
@@ -58,7 +65,7 @@ export function RunningModal() {
         </>
       )}
 
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer,isSmall&&{marginTop:12, marginBottom:12}]}>
         <Button
           onPress={async () => {
             const exit = await confirmExit();
@@ -99,8 +106,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     width: "100%",
-    marginBottom: 24,
     marginTop: 16,
+    marginBottom:-4,
   },
   courseMessage: {
     width: "100%",
