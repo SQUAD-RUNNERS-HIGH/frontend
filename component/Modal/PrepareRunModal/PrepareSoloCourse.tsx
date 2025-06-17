@@ -11,17 +11,24 @@ import { useCourseStore } from "@/store/useCourseStore";
 import Button from "@/component/Button";
 import { useEffect, useState } from "react";
 import Input from "@/component/Input";
+import { useStomp } from "@/hooks/running/useStomp";
+import useInterval from "@/hooks/running/useInterval";
+import { useLocationStore } from "@/store/useLocationStore";
 const PrepareSoloCourse = () => {
   const { setRunningStatus, targetPace, setTargetPace } = useRunningStore(
     useShallow((state) => ({
       targetPace: state.targetPace,
       setRunningStatus: state.setRunningStatus,
       setTargetPace: state.setTargetPace,
+
     }))
   );
+  const myLocation = useLocationStore(state => state.myLocation);
+    const stompLocation = useLocationStore(state => state.stompLocation);
   const [avaragePace, setAveragePace] = useState("5'30\"");
   const [minute, setMinute] = useState("0");
   const [second, setSecond] = useState("0");
+  const { sendLocation } = useStomp();
 
   const handlePreset = (preset: string) => {
     setTargetPace(preset);
@@ -29,7 +36,12 @@ const PrepareSoloCourse = () => {
     setMinute(min);
     setSecond(sec);
   };
-
+ useInterval(
+    () => {
+      sendLocation(myLocation);
+    },
+    myLocation ? 1000 : null
+  );
   const handleSecondChange = (text: string) => {
   // 숫자만 필터링
   const onlyNumbers = text.replace(/[^0-9]/g, '');
@@ -87,15 +99,15 @@ const PrepareSoloCourse = () => {
         />
         <Text style={{ marginLeft: 4 }}>''</Text>
       </View>
-
-      <Button
+        {stompLocation?.runningStatus === 'ONGOING' ?
+      (<Button
         style={styles.runButton}
         onPress={() => {
           setRunningStatus("countdown");
         }}
       >
         러닝 시작하기
-      </Button>
+      </Button>): (<Text style = {{color:'red', marginBottom:4, fontSize: 18}}>코스에서 벗어났습니다</Text>)}
     </>
   );
 };

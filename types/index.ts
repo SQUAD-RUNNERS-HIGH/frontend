@@ -128,6 +128,7 @@ export type CrewRunningPrepareParticipant = {
   username: string;
   longitude: number;
   latitude: number;
+  runningStatus: string;
 };
 
 export interface CrewRunningParticipant {
@@ -136,4 +137,5 @@ export interface CrewRunningParticipant {
   userId: string;
   distance: number;
   username: string;
+  runningStatus?: string;
 } 

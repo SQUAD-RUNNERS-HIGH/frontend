@@ -34,7 +34,7 @@ export const SoloRunningText = () => {
   const currentSec = paceStringToSeconds(currentPace);
   const winning = targetSec - currentSec > 0 ? false : true;
   const paceDiff = Math.abs(targetSec - currentSec);
-  const feedbackInterval = 500; // 500m 단위로 안내  const stompLocation = useLocationStore((store) => store.stompLocation);
+  const feedbackInterval = 50;
   // const secondInterVal = 15;
   useEffect(() => {
     const last = lastFeedbackDistanceRef.current;

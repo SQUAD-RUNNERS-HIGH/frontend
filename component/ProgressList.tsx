@@ -6,11 +6,12 @@ import { ProgressBar } from "react-native-paper";
 const ProgressList = ({
   records,
 }: {
-  records: { name: string; progress: number }[];
+  records: { name: string; progress: number; runningStatus: string }[];
 }) => {
   const isSmall = useLayoutStore(state => state.isSmall);
   const smallProgress = isSmall || records.length>=3;
   const progressBarStyle = [styles.progressBar, smallProgress && {height:8}];
+  console.log(records);
   return (
     <View style={[styles.container, smallProgress && {paddingVertical: 10,gap:2}]}>
       {records?.map((record, index) => {
@@ -20,7 +21,7 @@ const ProgressList = ({
             <View style={progressBarStyle}>
               <ProgressBar
                 progress={record.progress}
-                color="#6200ee"
+                color={`${record.runningStatus === 'ONGOING'? "#6200ee": "red"}`}
                 style={progressBarStyle}
               />
             </View>

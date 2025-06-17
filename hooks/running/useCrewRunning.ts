@@ -82,12 +82,11 @@ export const useCrewRunning = () => {
   useEffect(() => {
     if (
       !stompLocation ||
-      stompLocation.runningStatus !== "ONGOING" ||
       !("userId" in stompLocation)
     )
       return;
 
-    const { latitude, longitude, userId, username } = stompLocation;
+    const { latitude, longitude, userId, username, runningStatus } = stompLocation;
 
     const prevParticipant = crewRunningParticipant.get(userId);
 
@@ -111,7 +110,8 @@ export const useCrewRunning = () => {
         longitude,
         distance:prevDistance+distance,
         userId,
-        username
+        username,
+        runningStatus,
       });
     } else {
       setCrewRunningParticipants(userId, {
@@ -119,7 +119,8 @@ export const useCrewRunning = () => {
         longitude,
         distance,
         userId,
-        username
+        username,
+        runningStatus,        
       });
     }
   }, [stompLocation]);

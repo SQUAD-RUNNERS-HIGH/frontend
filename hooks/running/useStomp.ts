@@ -36,13 +36,13 @@ export function useStomp() {
   const [connected, setConnected] = useState(false);
 
   const handleMessage = useCallback((data) => {
-    console.log(data);
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
       setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
+      console.log(data);
       setStompLocation((prev) => ({
         ...prev,
-        runningStatus: data?.runningStatus,
+        runningStatus:data?.runningStatus,
         latitude: data?.latitude,
         longitude: data?.longitude,
         userId: data?.userId,
@@ -50,13 +50,12 @@ export function useStomp() {
       }));
     }
   }, []);
-
   useEffect(() => {
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
         brokerURL: "wss://runners-high.shop/ws",
         connectHeaders: {
-          Authorization: `Bearer ${useAuthStore.getState().userId}`,
+          Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
@@ -81,23 +80,24 @@ export function useStomp() {
         console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
-        if (runningInfo.mode === "crew" && runningStatus === "countdown") {
-          subscription = client?.subscribe(
-            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
-            (message: IMessage) => {
-              const data = JSON.parse(message.body);
-              handleMessage(data);
-            }
-          );
-        } else {
-          subscription = client?.subscribe(
-            "/user/queue/reply",
-            (message: IMessage) => {
-              const data = JSON.parse(message.body);
-              handleMessage(data);
-            }
-          );
-        }
+       if (runningInfo.mode === "crew" && runningStatus === "countdown") {
+  subscription = client?.subscribe(
+    `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
+    (message: IMessage) => {
+      const data = JSON.parse(message.body);
+      handleMessage(data);
+    },
+  );
+} else {
+  subscription = client?.subscribe(
+    "/user/queue/reply",
+    (message: IMessage) => {
+      const data = JSON.parse(message.body);
+      handleMessage(data);
+    },
+
+  );
+}
         setConnected(true);
 
         return () => {
@@ -123,7 +123,11 @@ export function useStomp() {
     progress = 0
   ) => {
     // 러닝
-    if (client && client?.connected && (runningInfo.mode === "competitor" || runningInfo.mode === 'soloCourse')) {
+    if (
+      client &&
+      client?.connected &&
+      (runningInfo.mode === "competitor" || runningInfo.mode === "soloCourse")
+    ) {
       client.publish({
         destination: `/app/course/${selectedCourseId}`,
         body: JSON.stringify(location),
