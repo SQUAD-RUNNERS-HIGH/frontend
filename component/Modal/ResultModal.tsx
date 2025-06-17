@@ -43,6 +43,7 @@ const ResultModal = () => {
     seconds,
     setRunningStatus,
     crewRunningParticipants,
+    resetCrewRunningParticipants,
   } = useRunningStore(
     useShallow((state) => ({
       runningInfo: state.runningInfo,
@@ -54,7 +55,8 @@ const ResultModal = () => {
       runningStatus: state.runningStatus,
       setRunningStatus: state.setRunningStatus,
       seconds: state.seconds,
-      crewRunningParticipants:state.crewRunningParticipants
+      crewRunningParticipants: state.crewRunningParticipants,
+      resetCrewRunningParticipants: state.resetCrewRunningParticipants,
     }))
   );
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
@@ -80,7 +82,7 @@ const ResultModal = () => {
       try {
         if (
           runningStatus === "finished" &&
-          runningInfo.mode === 'competitor' && 
+          runningInfo.mode === "competitor" &&
           isCompetitorRunningRecord(runningRecord)
         ) {
           await fetchSaveRecord(runningRecord);
@@ -88,7 +90,7 @@ const ResultModal = () => {
         }
         if (
           runningStatus === "finished" &&
-          runningInfo.mode === 'solo' && 
+          runningInfo.mode === "solo" &&
           isSoloRunningRecord(runningRecord)
         ) {
           const totalDistance = runningRecord?.progress.reduce(
@@ -119,7 +121,8 @@ const ResultModal = () => {
         }
         setRunningStatus("idle");
         setSelectedCourseId("");
-                finishRunning();
+        finishRunning();
+        resetCrewRunningParticipants();
       } catch (error) {
         showError({ title: "기록 저장 실패", description: `${error}` });
       } finally {
@@ -140,7 +143,8 @@ const ResultModal = () => {
         <View style={styles.modalContainer}>
           {runningStatus === "finished" &&
             runningRecord &&
-            isSoloRunningRecord(runningRecord) && runningInfo.mode === 'solo' && (
+            isSoloRunningRecord(runningRecord) &&
+            runningInfo.mode === "solo" && (
               <Input
                 type="text"
                 onChange={(text) => {
@@ -155,14 +159,14 @@ const ResultModal = () => {
                 placeholder="코스 이름을 입력하세요."
               />
             )}
-            {runningInfo.mode === 'crew' && (
+          {runningInfo.mode === "crew" && (
             <Text style={styles.modalDepscription2}>
-            <Text style={{ fontWeight: "500" }}>
-              크루원 {crewRunningParticipants.size}명
-            </Text>{" "}
+              <Text style={{ fontWeight: "500" }}>
+                크루원 {crewRunningParticipants.size}명
+              </Text>{" "}
               끼리
-          </Text>
-            )}
+            </Text>
+          )}
           <Text style={styles.modalDepscription2}>
             <Text style={{ fontWeight: "500" }}>
               {Number(seconds).toFixed(0)}초
@@ -193,10 +197,11 @@ const ResultModal = () => {
               <Button
                 style={{ marginTop: 6, width: "100%", paddingHorizontal: 12 }}
                 onPress={() => {
-                  setRunningStatus('idle');
+                  setRunningStatus("idle");
                   setSelectedCourseId("");
                   setRunDistance(0);
                   finishRunning();
+                  resetCrewRunningParticipants();
                 }}
               >
                 저장하지 않고 종료
@@ -241,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 20,
     gap: 10,
-    width: '100%',
+    width: "100%",
   },
   modalTitle: {
     fontWeight: 700,

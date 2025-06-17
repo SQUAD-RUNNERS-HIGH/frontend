@@ -61,6 +61,7 @@ interface RunningState {
     key: string,
     value: CrewRunningParticipant
   ) => void;
+  
 }
 
 export const useRunningStore = create<RunningState>((set) => ({
@@ -108,5 +109,9 @@ export const useRunningStore = create<RunningState>((set) => ({
         key,
         value
       ),
+    })),
+  resetCrewRunningParticipants: () =>
+    set(() => ({
+      crewRunningParticipants: new Map(),
     })),
 }));
