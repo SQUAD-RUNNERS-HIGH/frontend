@@ -42,7 +42,6 @@ const CrewRunning = () => {
               )}
             />
           )}
-          <Text style={{ color: "black" }}>{text}</Text>
 
           {stompLocation?.runningStatus === "ESCAPED" && (
             <BlinkingText vibrate tts>

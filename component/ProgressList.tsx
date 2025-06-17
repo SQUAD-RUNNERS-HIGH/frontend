@@ -28,21 +28,6 @@ const ProgressList = ({
         );
         
       })}
-       {records?.map((record, index) => {
-        return (
-          <View key={index} style={styles.row}>
-            <Text style={[styles.name,isSmall && {fontSize:10}]}>{record.name}</Text>
-            <View style={progressBarStyle}>
-              <ProgressBar
-                progress={record.progress}
-                color="#6200ee"
-                style={progressBarStyle}
-              />
-            </View>
-          </View>
-        );
-        
-      })}
     </View>
   );
 };
