@@ -32,17 +32,14 @@ export const SoloRunningText = () => {
   const currentPace = convertSpeedToPace(myLocation?.speed!);
   const targetSec = paceStringToSeconds(targetPace);
   const currentSec = paceStringToSeconds(currentPace);
-  const winning = (targetSec - currentSec)>0 ? false : true;
+  const winning = targetSec - currentSec > 0 ? false : true;
   const paceDiff = Math.abs(targetSec - currentSec);
   const feedbackInterval = 500; // 500m 단위로 안내  const stompLocation = useLocationStore((store) => store.stompLocation);
   // const secondInterVal = 15;
   useEffect(() => {
     const last = lastFeedbackDistanceRef.current;
     const nextThreshold = last + feedbackInterval;
-    if (targetSec > currentSec)
-      setMessage(
-        `목표 속도보다 ${paceDiff}초 ${winning ? "빨라요" : "느려요"}`
-      );
+    setMessage(`목표 속도보다 ${paceDiff}초 ${winning ? "빨라요" : "느려요"}`);
 
     if (runDistance >= nextThreshold) {
       // 안내
@@ -56,7 +53,6 @@ export const SoloRunningText = () => {
         Math.floor(runDistance / feedbackInterval) * feedbackInterval;
     }
   }, [runDistance]);
-
   // useEffect(() => {
   //   const last = lastSecondRef.current;
   //   const nextThreshold = last + secondInterVal;
@@ -79,6 +75,7 @@ export const SoloRunningText = () => {
       <Text
         style={[
           styles.statusText,
+
           { color: `${winning ? "#228b22" : "#ff4500"}` },
         ]}
       >
@@ -92,7 +89,6 @@ const styles = StyleSheet.create({
   statusTextContainer: {
     width: "100%",
     alignItems: "center",
-    marginTop: -12,
     marginBottom: -12,
   },
   statusText: {
