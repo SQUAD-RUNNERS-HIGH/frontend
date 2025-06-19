@@ -135,7 +135,7 @@ export const useCompetitorRunning = () => {
         Number(newProgress.toFixed(4)),
       ]);
     }
-  }, [index, runDistance, totalDistance]);
+  }, [index]);
 
   useEffect(() => {
     if (data && index >= 0 && data?.progress.length >= 1) {
