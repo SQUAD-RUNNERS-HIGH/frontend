@@ -3,19 +3,22 @@
     "name": "rh-frontend",
     "slug": "rh-frontend",
     "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "updates": {
+      "enabled": true,
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
+    },
     "ios": {
       "bundleIdentifier": "com.company.runnershigh",
       "supportsTablet": true,
       "config": {
         "googleMapsApiKey": "AIzaSyAK7JyZb9Xf71WhAwUEiS9WGzxnGuLVW-o"
-      },
-      "runtimeVersion": {
-        "policy": "appVersion"
       }
     },
     "android": {
@@ -30,13 +33,7 @@
           "apiKey": "AIzaSyDaTqHF5kjpaYmlx55lNT7C7tGSiIvIWJA"
         }
       },
-      "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ],
-      "runtimeVersion": "1.0.0"
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
     },
     "web": {
       "bundler": "metro",
@@ -66,9 +63,6 @@
         "projectId": "6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
       }
     },
-    "owner": "juyung0903",
-    "updates": {
-      "url": "https://u.expo.dev/6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
-    }
+    "owner": "juyung0903"
   }
 }
