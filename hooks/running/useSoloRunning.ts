@@ -6,6 +6,8 @@ import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import useInterval from "./useInterval";
+import { Alert } from "react-native";
 
 export const useSoloRunning = () => {
   const {
@@ -40,6 +42,32 @@ export const useSoloRunning = () => {
       };
     }
   }, [runningStatus]);
+  // useInterval(() => {
+  //   if (runningStatus === "go" && myLocation) {
+  //       setProgress((prev) => [
+  //         ...prev,
+  //         { latitude: myLocation.latitude, longitude: myLocation.longitude },
+  //       ]);
+  //     }
+  // },500)
+  // 기존 progress 관련 useEffect 제거하고 useInterval만 사용
+  useInterval(() => {
+    if (
+      runningStatus === "go" &&
+      myLocation &&
+      runningRecord &&
+      isSoloRunningRecord(runningRecord)
+    ) {
+      const newLocation = {
+        latitude: myLocation.latitude,
+        longitude: myLocation.longitude,
+      };
+      setProgress((prev) => {
+        const newProgress = [...prev, newLocation];
+        return newProgress;
+      });
+    }
+  }, 500);
   useEffect(() => {
     if (runningStatus === "countdown" && myLocation) {
       setRunningRecord({
@@ -52,19 +80,9 @@ export const useSoloRunning = () => {
 
     if (runningStatus === "go" && myLocation) {
       setSpeed(convertSpeedToPace(myLocation?.speed));
-      const interval = setInterval(() => {
-        setProgress((prev) => [
-          ...prev,
-          { latitude: myLocation.latitude, longitude: myLocation.longitude },
-        ]);
-      }, 500);
-      return () => {
-        clearInterval(interval);
-      };
     }
   }, [myLocation]); // ★ myLocation 추가
-
-  useEffect(() => {
+   useEffect(() => {
     if (progress.length >= 2) {
       const distance = getDistance(
         progress[progress.length - 1],
@@ -95,5 +113,36 @@ export const useSoloRunning = () => {
       }
     }
   }, [progress]);
+  // useEffect(() => {
+  //   if (progress.length >= 2) {
+  //     const distance = getDistance(
+  //       progress[progress.length - 1],
+  //       progress[progress.length - 2]
+  //     );
+
+  //     // 전체 거리 업데이트
+  //     setRunDistance((prev) => prev + distance);
+
+  //     if (runningRecord && isSoloRunningRecord(runningRecord)) {
+  //       const newCoordinates = [...runningRecord.coordinates[0]];
+  //       newCoordinates.push([
+  //         progress[progress.length - 1].longitude,
+  //         progress[progress.length - 1].latitude,
+  //       ]);
+
+  //       // 진행률 비율 계산
+
+  //       const newProgress = [...runningRecord.progress];
+  //       newProgress.push(distance);
+
+  //       setRunningRecord({
+  //         runningTime: seconds,
+  //         courseName: runningRecord.courseName,
+  //         coordinates: [newCoordinates],
+  //         progress: newProgress,
+  //       });
+  //     }
+  //   }
+  // }, [progress]);
   return { speed, progress };
 };

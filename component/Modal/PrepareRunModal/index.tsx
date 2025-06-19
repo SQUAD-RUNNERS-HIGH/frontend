@@ -6,13 +6,13 @@ import { getPathLength } from "geolib";
 import { useEffect, useState } from "react";
 import { Modal, Pressable, View, StyleSheet } from "react-native";
 import PrepareCompetitor from "./PrepareCompetitor";
-import PrepareSolo from "./PrepareSolo";
 import { fetchCourseDetail } from "@/lib/map/fetchCourseDetail";
 import { PrepareCrew } from "./PrepareCrew";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStompStore } from "@/store/useStompStore";
+import PrepareSolo from "./PrepareSolo";
 import PrepareSoloCourse from "./PrepareSoloCourse";
 const PrepareRunModal = () => {
   const { selectedCourseId, currentCourses, setTotalDistance } = useCourseStore(
@@ -22,14 +22,13 @@ const PrepareRunModal = () => {
       setTotalDistance: state.setTotalDistance,
     }))
   );
-  const { runningInfo, runningStatus, setRunningStatus } =
-    useRunningStore(
-      useShallow((state) => ({
-        runningInfo: state.runningInfo,
-        runningStatus: state.runningStatus,
-        setRunningStatus: state.setRunningStatus,
-      }))
-    );
+  const { runningInfo, runningStatus, setRunningStatus } = useRunningStore(
+    useShallow((state) => ({
+      runningInfo: state.runningInfo,
+      runningStatus: state.runningStatus,
+      setRunningStatus: state.setRunningStatus,
+    }))
+  );
   const client = useStompStore((state) => state.client);
 
   const [courseCoordinates, setCourseCoordinates] = useState<location[]>();
@@ -63,23 +62,21 @@ const PrepareRunModal = () => {
         client?.deactivate();
       }} // 안드로이드 뒤로가기 대응
     >
-      <Pressable
-        style={styles.modalOverlay}
-        onPress={() => {
-          setRunningStatus("idle");
-          client?.deactivate();
-        }}
-      ></Pressable>
-      <View style={styles.modalPosition}>
-        <View style={styles.modalContainer}>
-          {runningInfo.mode === "solo" && <PrepareSolo />}
-              {runningInfo.mode === "soloCourse" && <PrepareSoloCourse />}
-          {runningInfo.mode === "competitor" && (
-            <PrepareCompetitor  />
-          )}
-          {runningInfo.mode === "crew" && (
-            <PrepareCrew />
-          )}
+      <View style={styles.modalBackrground}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => {
+            setRunningStatus("idle");
+            client?.deactivate();
+          }}
+        ></Pressable>
+        <View style={styles.modalPosition}>
+          <View style={styles.modalContainer}>
+            {runningInfo.mode === "solo" && <PrepareSolo />}
+            {runningInfo.mode === "soloCourse" && <PrepareSoloCourse />}
+            {runningInfo.mode === "competitor" && <PrepareCompetitor />}
+            {runningInfo.mode === "crew" && <PrepareCrew />}
+          </View>
         </View>
       </View>
     </Modal>
@@ -93,6 +90,16 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "rgba(0, 0, 0, 0.5)", // 반투명 배경
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  modalBackrground: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,

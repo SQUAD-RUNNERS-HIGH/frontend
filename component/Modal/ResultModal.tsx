@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import Button from "../Button";
 import { fetchSaveRecord } from "@/lib/map/fetchSaveRecord";
@@ -75,15 +76,16 @@ const ResultModal = () => {
       );
     }
   }, [selectedCourseId]);
-
+  console.log()
   const handleSaveRecord = async () => {
     if (runningRecord) {
       setIsLoading(true);
       try {
         if (
-          runningStatus === "finished" &&
-          runningInfo.mode === "competitor" &&
-          isCompetitorRunningRecord(runningRecord)
+          runningStatus === "finished" && isCompetitorRunningRecord(runningRecord) && (
+          runningInfo.mode === "competitor" 
+           ||
+          runningInfo.mode === 'soloCourse')
         ) {
           await fetchSaveRecord(runningRecord);
           queryClient.invalidateQueries({ queryKey: ["personalRanks"] });
@@ -130,7 +132,6 @@ const ResultModal = () => {
       }
     }
   };
-
   return (
     <Modal
       animationType="slide"
@@ -188,14 +189,16 @@ const ResultModal = () => {
             />
           ) : (
             <>
+              {runningInfo.mode !== "crew" && (
+                <Button
+                  style={{ marginTop: 6, width: "100%" }}
+                  onPress={handleSaveRecord}
+                >
+                  기록 저장
+                </Button>
+              )}
               <Button
-                style={{ marginTop: 6, width: "100%" }}
-                onPress={handleSaveRecord}
-              >
-                기록 저장
-              </Button>
-              <Button
-                style={{ marginTop: 6, width: "100%", paddingHorizontal: 12 }}
+                style={{ marginTop: 12, width: "100%", paddingHorizontal: 12 }}
                 onPress={() => {
                   setRunningStatus("idle");
                   setSelectedCourseId("");
@@ -204,7 +207,7 @@ const ResultModal = () => {
                   resetCrewRunningParticipants();
                 }}
               >
-                저장하지 않고 종료
+                {runningInfo.mode !== "crew" ? "저장하지 않고 종료" : "종료"}
               </Button>
             </>
           )}

@@ -1,70 +1,187 @@
-import { Text, StyleSheet, View } from "react-native";
-import Button from "../../Button";
+import {
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import { useCourseStore } from "@/store/useCourseStore";
+import Button from "@/component/Button";
+import { useEffect, useState } from "react";
+import Input from "@/component/Input";
+import { useStomp } from "@/hooks/running/useStomp";
+import useInterval from "@/hooks/running/useInterval";
+import { useLocationStore } from "@/store/useLocationStore";
 const PrepareSolo = () => {
-  const { selectedCourseId, setSelectedCourseId } = useCourseStore(
+  const { setRunningStatus, targetPace, setTargetPace } = useRunningStore(
     useShallow((state) => ({
-      selectedCourseId: state.selectedCourseId,
-      setSelectedCourseId: state.setSelectedCourseId,
-    }))
-  );  const { setRunningStatus , setRunningInfo } = useRunningStore(
-    useShallow((state) => ({
+      targetPace: state.targetPace,
       setRunningStatus: state.setRunningStatus,
-      setRunningInfo: state.setRunningInfo,
+      setTargetPace: state.setTargetPace,
     }))
-  );  return (
+  );
+  const myLocation = useLocationStore((state) => state.myLocation);
+  const [avaragePace, setAveragePace] = useState("5'30\"");
+  const [minute, setMinute] = useState("0");
+  const [second, setSecond] = useState("0");
+
+
+  const handlePreset = (preset: string) => {
+    setTargetPace(preset);
+    const [min, sec] = preset.split(/['"]/).map(String);
+    setMinute(min);
+    setSecond(sec);
+  };
+  const handleSecondChange = (text: string) => {
+    // 숫자만 필터링
+    const onlyNumbers = text.replace(/[^0-9]/g, "");
+
+    if (onlyNumbers.length > 2) return;
+
+    setSecond(onlyNumbers);
+
+    if (onlyNumbers.length === 2) {
+      const num = parseInt(onlyNumbers, 10);
+      if (num > 59) {
+        setSecond("59"); // 자동으로 59로 고정
+      }
+    }
+  };
+
+  useEffect(() => {
+    setTargetPace(`${minute}'${second}"`);
+  }, [minute, second]);
+  return (
     <>
-      <Text style={styles.modalDepscription2}>
-        현재 위치를 기준으로 러닝을 시작합니다.
-      </Text>
-      <Text style={styles.modalDepscription}>러닝을 시작하시겠어요?</Text>
-      <View style = {styles.buttonContainer}>
-      <Button
-        onPress={() => {
-          setRunningStatus('countdown');
-        }}
-        style = {styles.button}
-      >
-        러닝 시작!
-      </Button>
-      <Button
-        onPress={() => {
-          setRunningStatus('idle');
-          if(selectedCourseId === 'solo'){
-            setSelectedCourseId('');
-          }
-        }}
-        style = {styles.button}
-      >
-        취소
-      </Button>
+      <Text style={styles.title}>목표 페이스 설정</Text>
+      <Text style={styles.subtitle}>경쟁자 평균 페이스: {avaragePace}/km</Text>
+
+      <View style={styles.buttonRow}>
+        {["6'30\"", "6'00\"", "5'00\""].map((preset, idx) => (
+          <Button
+            style={[styles.presetButton]}
+            theme={`${targetPace === preset ? "default" : "secondary"}`}
+            onPress={() => handlePreset(preset)}
+            key={idx}
+          >
+            {preset}
+          </Button>
+        ))}
+      </View>
+
+      <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+        <TextInput
+          style={[styles.input, { width: 50, textAlign: "center" }]}
+          value={minute}
+          onChangeText={setMinute}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="분"
+        />
+        <Text style={{ marginHorizontal: 4 }}>'</Text>
+        <TextInput
+          style={[styles.input, { width: 50, textAlign: "center" }]}
+          value={second}
+          onChangeText={handleSecondChange}
+          keyboardType="numeric"
+          maxLength={2}
+          placeholder="초"
+        />
+        <Text style={{ marginLeft: 4 }}>''</Text>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button
+          onPress={() => {
+            setRunningStatus("countdown");
+          }}
+          style={styles.button}
+        >
+          러닝 시작!
+        </Button>
       </View>
     </>
   );
 };
 export default PrepareSolo;
 const styles = StyleSheet.create({
-  modalDepscription: {
-    fontWeight: 500,
-    fontSize: 20,
-    lineHeight: 28,
-    color: "#000000",
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  modalDepscription2: {
-    fontWeight: 300,
+  modal: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    width: "100%",
+  },
+  presetButton: {
+    flex: 1,
+    paddingVertical: 10,
+    marginHorizontal: 4,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  presetButtonActive: {
+    backgroundColor: "#6200EE",
+  },
+  presetButtonText: {
+    color: "#333",
+    fontWeight: "600",
+  },
+  presetButtonTextActive: {
+    color: "#fff",
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  runButton: {
+    width: "100%",
+    backgroundColor: "#6200EE",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  runButtonText: {
+    color: "#fff",
     fontSize: 16,
-    lineHeight: 28,
-    color: "#000000",
+    fontWeight: "bold",
   },
   buttonContainer: {
-    width:'100%',
-    gap:12,
-    paddingHorizontal:48,
-    marginTop:24
+    width: "100%",
+    gap: 12,
+    paddingHorizontal: 48,
   },
   button: {
-    flex:1,
-  }
+    flex: 1,
+  },
 });

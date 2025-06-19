@@ -5,15 +5,23 @@ import { useRunningStore } from "@/store/useRunningStore";
 import BlinkingText from "@/component/BlinkingText";
 import { useCourseStore } from "@/store/useCourseStore";
 import { SoloRunningText } from "@/component/SoloRunningText";
+import ProgressList from "@/component/ProgressList";
+import { useShallow } from "zustand/react/shallow";
 
 const SoloCourseRunning = () => {
   const { speed } = useSoloCourseRunning();
-  const runDistance = useRunningStore((state) => state.runDistance);
-  const seconds = useRunningStore((state) => state.seconds);
+  const {runningRecord, seconds, runDistance} = useRunningStore(
+      useShallow((state) => ({
+        runningRecord: state.runningRecord,
+        seconds: state.seconds,
+        runDistance: state.runDistance,
+      }))
+    );
   const stompLocation = useLocationStore((state) => state.stompLocation);
   const totalDistance = useCourseStore((state) => state.totalDistance);
+    console.log(stompLocation);
 
-  return (
+;  return (
     <>
       {stompLocation && (
         <RunningInfo seconds={seconds} rest={totalDistance - runDistance} speed={speed} />
@@ -24,9 +32,15 @@ const SoloCourseRunning = () => {
             </BlinkingText>
           )}
          {
-          stompLocation?.runningStatus === "ONGOING" && runDistance>0 && (
-            <SoloRunningText />
-          )
+          <ProgressList
+            records={[
+              {
+                progress:
+                  runningRecord?.progress[runningRecord?.progress.length - 1],
+                name: "나",
+              },
+            ]}
+          />   
          }
     </>
   );

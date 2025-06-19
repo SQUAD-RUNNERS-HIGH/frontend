@@ -42,6 +42,7 @@ export const useSoloCourseRunning = () => {
   const myLocation = useLocationStore((state) => state.myLocation);
   const [progress, setProgress] = useState<number[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
+  const [index, setIndex] = useState<number>(0);
   useInterval(() => {
     if (runningStatus === "go") {
       setSeconds((prev) => prev + 1);
@@ -62,6 +63,7 @@ export const useSoloCourseRunning = () => {
         setSpeed(convertSpeedToPace(myLocation?.speed!));
       }
       sendLocation(myLocation);
+      setIndex(prev => prev+1);
     }
   }, 500);
 
@@ -94,7 +96,7 @@ export const useSoloCourseRunning = () => {
         Number(newProgress.toFixed(4)),
       ]);
     }
-  }, [runDistance, totalDistance]);
+  }, [index]);
 
   useEffect(() => {
     if (progress) {

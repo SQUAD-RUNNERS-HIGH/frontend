@@ -20,62 +20,43 @@ function paceStringToSeconds(paceStr: string): number {
 export const SoloRunningText = () => {
   const [message, setMessage] = useState<string>();
   const lastFeedbackDistanceRef = useRef(0); // 마지막 안내한 거리 (m)
-  // const lastSecondRef = useRef(0);
-  const { targetPace, runDistance, seconds } = useRunningStore(
+  const { targetPace, runDistance } = useRunningStore(
     useShallow((state) => ({
       targetPace: state.targetPace,
       runDistance: state.runDistance,
-      seconds: state.seconds,
     }))
   );
   const myLocation = useLocationStore((state) => state.myLocation);
   const currentPace = convertSpeedToPace(myLocation?.speed!);
   const targetSec = paceStringToSeconds(targetPace);
   const currentSec = paceStringToSeconds(currentPace);
-  const winning = targetSec - currentSec > 0 ? false : true;
+  const winning = targetSec - currentSec > 0 ? true : false;
+  const feedbackInterval = 50; // ← 50m 간격으로 설정
   const paceDiff = Math.abs(targetSec - currentSec);
-  const feedbackInterval = 50;
-  // const secondInterVal = 15;
+  console.log(targetSec,currentSec);
+  useEffect(() => {
+    setMessage(`목표 속도보다 ${paceDiff}초 ${winning ? "빨라요" : "느려요"}`);
+  }, [myLocation]);
   useEffect(() => {
     const last = lastFeedbackDistanceRef.current;
     const nextThreshold = last + feedbackInterval;
-    setMessage(`목표 속도보다 ${paceDiff}초 ${winning ? "빨라요" : "느려요"}`);
 
     if (runDistance >= nextThreshold) {
-      // 안내
-      const rounded = Math.floor(runDistance / 100) * 100;
-      Speech.speak(`${rounded}미터 달렸어요!`, {
+      const rounded =
+        Math.floor(runDistance / feedbackInterval) * feedbackInterval;
+      Speech.speak(`${message}`, {
         language: "ko-KR",
       });
 
       // 기준 거리 갱신
-      lastFeedbackDistanceRef.current =
-        Math.floor(runDistance / feedbackInterval) * feedbackInterval;
+      lastFeedbackDistanceRef.current = rounded;
     }
   }, [runDistance]);
-  // useEffect(() => {
-  //   const last = lastSecondRef.current;
-  //   const nextThreshold = last + secondInterVal;
-  //   setMessage(`목표 속도보다 ${paceDiff}초 ${winning ? "빨라요" : "느려요"}`);
-
-  //   if (seconds >= nextThreshold) {
-  //     // 안내
-  //     const rounded = Math.floor(seconds / 100) * 100;
-  //     Speech.speak(`${rounded}미터 달렸어요!`, {
-  //       language: "ko-KR",
-  //     });
-
-  //     // 기준 거리 갱신
-  //     lastSecondRef.current =
-  //       Math.floor(runDistance / feedbackInterval) * feedbackInterval;
-  //   }
-  // }, [seconds]);
   return (
     <View style={styles.statusTextContainer}>
       <Text
         style={[
           styles.statusText,
-
           { color: `${winning ? "#228b22" : "#ff4500"}` },
         ]}
       >
