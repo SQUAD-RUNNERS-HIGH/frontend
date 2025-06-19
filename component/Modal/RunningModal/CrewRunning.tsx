@@ -23,7 +23,7 @@ const CrewRunning = () => {
   const totalDistance = useCourseStore((state) => state.totalDistance);
   const { speed, text } = useCrewRunning();
   useInterval(() => {
-    if (runDistance > 0 && totalDistance - runDistance >= 0) {
+    if (runDistance > 0 && totalDistance - runDistance >= 0 && crewRunningParticipants.get(userId!)?.runningStatus !== 'ESCAPED') {
       Speech.speak(`현재 평균 ${runDistance} 미터 뛰었습니다.`);
     }
   }, 5000);
@@ -51,7 +51,7 @@ const CrewRunning = () => {
         />
       )}
 
-      {stompLocation?.runningStatus === "ESCAPED" && (
+      {crewRunningParticipants.get(userId!)?.runningStatus === "ESCAPED" && (
         <BlinkingText vibrate tts>
           코스에서 벗어났습니다.
         </BlinkingText>
