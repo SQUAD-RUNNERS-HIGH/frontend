@@ -39,10 +39,9 @@ export function useStomp() {
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
       setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
-      console.log(data);
       setStompLocation((prev) => ({
         ...prev,
-        runningStatus:data?.runningStatus,
+        runningStatus: data?.runningStatus,
         latitude: data?.latitude,
         longitude: data?.longitude,
         userId: data?.userId,
@@ -51,11 +50,15 @@ export function useStomp() {
     }
   }, []);
   useEffect(() => {
+   
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
-        brokerURL: "wss://runners-high.shop/ws",
+        brokerURL: "wss://runners-high.shop/ws-running",
         connectHeaders: {
           Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+          CourseId: selectedCourseId,
+          CrewId:  `${runningInfo.mode === "crew" ? `${runningInfo?.id}` : ""}`,
+          CrewRun: `${runningInfo.mode === "crew" ? "True" : "False"}`,
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
@@ -80,24 +83,23 @@ export function useStomp() {
         console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
         // 개인 위치 응답 구독
         let subscription;
-       if (runningInfo.mode === "crew" && runningStatus === "countdown") {
-  subscription = client?.subscribe(
-    `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
-    (message: IMessage) => {
-      const data = JSON.parse(message.body);
-      handleMessage(data);
-    },
-  );
-} else {
-  subscription = client?.subscribe(
-    "/user/queue/reply",
-    (message: IMessage) => {
-      const data = JSON.parse(message.body);
-      handleMessage(data);
-    },
-
-  );
-}
+        if (runningInfo.mode === "crew" && runningStatus === "countdown") {
+          subscription = client?.subscribe(
+            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
+            (message: IMessage) => {
+              const data = JSON.parse(message.body);
+              handleMessage(data);
+            }
+          );
+        } else {
+          subscription = client?.subscribe(
+            "/user/queue/reply",
+            (message: IMessage) => {
+              const data = JSON.parse(message.body);
+              handleMessage(data);
+            }
+          );
+        }
         setConnected(true);
 
         return () => {
