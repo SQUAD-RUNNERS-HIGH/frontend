@@ -23,6 +23,7 @@ export function RunningModal() {
       setRunningInfo: state.setRunningInfo,
       setRunningStatus: state.setRunningStatus,
       setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant,
+
     }))
   );
   const client = useStompStore((state) => state.client);
@@ -69,9 +70,10 @@ export function RunningModal() {
         <Button
           onPress={async () => {
             const exit = await confirmExit();
-            if (exit && client) {
+            if (exit) {
               setRunningStatus("finished");
               setCrewRunningPrepareParticipant([]);
+              if(client)
               client.deactivate();
               setClient(null);
             }
