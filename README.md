@@ -8,7 +8,7 @@
 
 ---
 
-## 📱 기술 스택
+## 기술 스택
 
 - **Framework & Language**: React Native (Expo), TypeScript
 - **상태 관리**: Zustand, React Query
