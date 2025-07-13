@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Keyboard } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Keyboard,
+  Text,
+  Alert,
+} from "react-native";
 import MapView, {
+  Callout,
   LatLng,
   Marker,
   Polyline,
@@ -19,7 +27,8 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import CustomMarker from "@/assets/images/svg/CustomMarker";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 export default function Index() {
   const [region, setRegion] = useState<Region>();
   const { data, isLoading, error } = useQuery({
@@ -59,7 +68,6 @@ export default function Index() {
       setRunningStatus: state.setRunningStatus,
     }))
   );
-
   const { myLocation, stompLocation, mapLocation } = useLocationStore(
     useShallow((state) => ({
       myLocation: state.myLocation,
@@ -82,9 +90,9 @@ export default function Index() {
             longitude: stompLocation?.longitude,
           }
       : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
-const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
-  .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
-  .map(([_, participant]) => participant);  
+  const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
+    .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
+    .map(([_, participant]) => participant);
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
@@ -129,10 +137,9 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
           latitude: myMarkerLocation?.latitude!,
           longitude: myMarkerLocation?.longitude!,
         },
-        pitch: 60, // 기울기 (0~90도)
         heading: myLocation?.heading, // 방향 (나아가는 방향)
         altitude: myLocation?.altitude, // 고도
-        zoom: 19, // 줌 레벨
+        zoom: 20, // 줌 레벨
       });
     }
     if (isRunning && runningInfo.mode === "solo" && myLocation) {
@@ -141,10 +148,9 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
           latitude: myLocation?.latitude,
           longitude: myLocation?.longitude,
         },
-        pitch: 60, // 기울기 (0~90도)
         heading: myLocation?.heading, // 방향 (나아가는 방향)
         altitude: myLocation?.altitude, // 고도
-        zoom: 18, // 줌 레벨
+        zoom: 19, // 줌 레벨
       });
     }
     if (runningStatus === "finished") {
@@ -174,6 +180,11 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
       latitude,
       longitude,
     })) ?? []; // fallback to empty array if not found
+
+  const PARTICIPANT_IMAGE = [
+    require("@/assets/images/crewMarker0.png"),
+    require("@/assets/images/crewMarker1.png"),
+  ];
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
@@ -222,87 +233,100 @@ const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
               }
             }}
           >
-            <View style={{ flex: 1 }}>
-              {myLocation && (
+            {myLocation && (
+              <Marker
+                coordinate={{
+                  latitude: myMarkerLocation.latitude!,
+                  longitude: myMarkerLocation.longitude!,
+                }}
+                key="myMarker"
+                anchor={{ x: 0.5, y: 1 }}
+              >
+                {/* ✅ 마커 이미지 */}
+                <Image
+                  style={{ width: 26, height: 26 }}
+                  resizeMode="contain"
+                  source={require("@/assets/images/marker.png")}
+                />
+
+                {/* ✅ Callout 추가 */}
+                <Callout
+                  tooltip={false} // true일 경우 말풍선 꼬리 제거되고 스타일을 완전 커스터마이즈해야 함
+                  onPress={() => {
+                    console.log("Callout pressed!");
+                  }}
+                >
+                  <View style={{ padding: 8 }}>
+                    <Text style={{ fontWeight: "bold" }}>내 위치입니다</Text>
+                    <Text>위도: {myMarkerLocation.latitude?.toFixed(5)}</Text>
+                    <Text>경도: {myMarkerLocation.longitude?.toFixed(5)}</Text>
+                  </View>
+                </Callout>
+              </Marker>
+            )}
+
+            {isCrewRunning &&
+              restCrewMarkerLocation?.map((participant, index) => (
                 <Marker
+                  key={participant?.userId}
                   coordinate={{
-                    latitude: myMarkerLocation.latitude!,
-                    longitude: myMarkerLocation.longitude!,
+                    latitude: participant?.latitude,
+                    longitude: participant?.longitude,
                   }}
                   style={{ zIndex: 3 }}
                 >
                   <Image
                     width={20}
                     height={20}
-                    source={require("@/assets/images/marker.png")}
+                    source={PARTICIPANT_IMAGE[index]}
                   />
                 </Marker>
-              )}
-              {isCrewRunning &&
-                restCrewMarkerLocation?.map(
-                  (participant) => (
-                    <Marker
-                      key={participant?.userId}
-                      coordinate={{
-                        latitude: participant?.latitude,
-                        longitude: participant?.longitude,
-                      }}
-                      style={{ zIndex: 3 }}
-                    >
-                      <Image
-                        width={20}
-                        height={20}
-                        source={require("@/assets/images/crewMarker.png")}
-                      />
-                    </Marker>
-                  )
-                )}
+              ))}
 
-              {currentCourses?.map((course, index) => {
-                if (!course) return;
-                const courseStart: LatLng = {
-                  longitude: course?.coordinates[0][0][0],
-                  latitude: course?.coordinates[0][0][1],
-                };
-                return (
-                  <Marker
-                    key={index}
-                    coordinate={courseStart}
-                    style={{ zIndex: 3 }}
-                    onPress={async () => {
-                      setSelectedCourseId(course.courseId);
-                      setIsDropdownVisible(false);
-                      if (mapRef.current) {
-                        const formattedCoordinates = currentCourses[
-                          index
-                        ].coordinates[0].map(([lng, lat]) => ({
-                          latitude: lat,
-                          longitude: lng,
-                        }));
-                        mapRef.current.fitToCoordinates(formattedCoordinates, {
-                          edgePadding: {
-                            top: 100,
-                            right: 50,
-                            bottom: 250,
-                            left: 50,
-                          },
-                          animated: true,
-                        });
-                      }
-                    }}
-                    pinColor="#8A2BE2"
-                  />
-                );
-              })}
-              {/* 선택된 코스의 Polyline 그리기 */}
-              {selectedCourseId !== "" && selectedCourseId !== "solo" && (
-                <Polyline
-                  coordinates={polylineCoordinates}
-                  strokeColor="#4169E1"
-                  strokeWidth={4}
+            {currentCourses?.map((course, index) => {
+              if (!course) return;
+              const courseStart: LatLng = {
+                longitude: course?.coordinates[0][0][0],
+                latitude: course?.coordinates[0][0][1],
+              };
+              return (
+                <Marker
+                  key={index}
+                  coordinate={courseStart}
+                  style={{ zIndex: 3 }}
+                  onPress={async () => {
+                    setSelectedCourseId(course.courseId);
+                    setIsDropdownVisible(false);
+                    if (mapRef.current) {
+                      const formattedCoordinates = currentCourses[
+                        index
+                      ].coordinates[0].map(([lng, lat]) => ({
+                        latitude: lat,
+                        longitude: lng,
+                      }));
+                      mapRef.current.fitToCoordinates(formattedCoordinates, {
+                        edgePadding: {
+                          top: 100,
+                          right: 50,
+                          bottom: 250,
+                          left: 50,
+                        },
+                        animated: true,
+                      });
+                    }
+                  }}
+                  pinColor="#8A2BE2"
                 />
-              )}
-            </View>
+              );
+            })}
+            {/* 선택된 코스의 Polyline 그리기 */}
+            {selectedCourseId !== "" && selectedCourseId !== "solo" && (
+              <Polyline
+                coordinates={polylineCoordinates}
+                strokeColor="#4169E1"
+                strokeWidth={4}
+              />
+            )}
           </MapView>
         )}
         {myLocation && (

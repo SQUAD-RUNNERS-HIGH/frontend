@@ -36,7 +36,6 @@ export function useStomp() {
   const [connected, setConnected] = useState(false);
 
   const handleMessage = useCallback((data) => {
-    console.log(data);
     if (runningInfo.mode === "crew" && runningStatus === "prepare") {
       setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
@@ -50,13 +49,16 @@ export function useStomp() {
       }));
     }
   }, []);
-
   useEffect(() => {
+   
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
-        brokerURL: "wss://runners-high.shop/ws",
+        brokerURL: "wss://runners-high.shop/ws-running",
         connectHeaders: {
-          Authorization: `Bearer ${useAuthStore.getState().userId}`,
+          Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+          CourseId: selectedCourseId,
+          CrewId:  `${runningInfo.mode === "crew" ? `${runningInfo?.id}` : ""}`,
+          CrewRun: `${runningInfo.mode === "crew" ? "True" : "False"}`,
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
@@ -123,7 +125,11 @@ export function useStomp() {
     progress = 0
   ) => {
     // 러닝
-    if (client && client?.connected && runningInfo.mode === "competitor") {
+    if (
+      client &&
+      client?.connected &&
+      (runningInfo.mode === "competitor" || runningInfo.mode === "soloCourse")
+    ) {
       client.publish({
         destination: `/app/course/${selectedCourseId}`,
         body: JSON.stringify(location),

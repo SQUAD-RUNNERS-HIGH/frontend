@@ -1,3 +1,4 @@
+import { useLayoutStore } from "@/store/useLayoutStore";
 import { ReactNode } from "react";
 import {
   Pressable,
@@ -31,9 +32,7 @@ function Button({
           <Text
             style={[
               styles.text,
-              { color: `${theme === "default" ? "#ffffff" : "#6500A8"}`, fontSize },
-              
-            ]}
+              { color: `${theme === "default" ? "#ffffff" : "#6500A8"}` },            ]}
           >
             {children}
           </Text>
@@ -67,7 +66,7 @@ export default Button;
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 6,
   },
   default: {

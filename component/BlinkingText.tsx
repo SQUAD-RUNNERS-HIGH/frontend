@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Text, View, StyleSheet, Vibration } from "react-native";
 import * as Speech from 'expo-speech';
+import { useLayoutStore } from "@/store/useLayoutStore";
 
 interface BlinkingTextProps {
   children: string;
@@ -9,6 +10,7 @@ interface BlinkingTextProps {
 }
 const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
   const opacity = useRef(new Animated.Value(1)).current;
+  const isSmall = useLayoutStore((state) => state.isSmall);
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (vibrate) {
@@ -51,7 +53,7 @@ const BlinkingText = ({ children, vibrate, tts }: BlinkingTextProps) => {
   }, [opacity]);
 
   return (
-    <Animated.Text style={[styles.blinkingText, { opacity }]}>
+    <Animated.Text style={[styles.blinkingText, { opacity }, isSmall && {fontSize: 14}]}>
       {children}
     </Animated.Text>
   );

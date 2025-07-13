@@ -44,7 +44,7 @@ const icon = theme === 'Alert'
           />
           <Text style={styles.title}>{title || "크루 생성 완료"}</Text>
           <Text style={styles.description}>
-            {description || "크루가 생성되었습니다."}
+            {description || "원인 모를 에러가 발생했습니다."}
           </Text>
           <Button
             style={{ marginTop: 8, width: "100%" }}

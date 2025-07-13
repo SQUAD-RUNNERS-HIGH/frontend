@@ -33,7 +33,7 @@ export const useAlertStore = create<AlertState & AlertActions>((set, get) => ({
   showError: ({ title, description, onClose }) =>
     set({
       visible: true,
-      theme: "Alert",
+      theme: "Error",
       title,
       description,
       onClose,

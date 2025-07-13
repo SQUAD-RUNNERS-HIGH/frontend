@@ -3,10 +3,11 @@ import { useCompetitorRunning } from "@/hooks/running/useCompetitorRunning";
 import BlinkingText from "../../BlinkingText";
 import RunningInfo from "./RunningInfo";
 import ProgressList from "../../ProgressList";
-import { RunningText } from "../../RunningText";
+import { CompetitorRunningText } from "../../CompetitorRunningText";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
+import { useCourseStore } from "@/store/useCourseStore";
 const CompetitorRunning = () => {
   const { runningRecord, runDistance, seconds } = useRunningStore(
     useShallow((state) => ({
@@ -21,11 +22,10 @@ const CompetitorRunning = () => {
     speed,
     index,
     winning,
-    text,
     distanceToCompetitor,
     competitorProgress,
-    totalDistance,
   } = useCompetitorRunning();
+  const totalDistance = useCourseStore(state => state.totalDistance);
   return (
     <>
       {
@@ -46,10 +46,7 @@ const CompetitorRunning = () => {
                 name: "나",
               },
             ]}
-          />
-          <Text style = {{color: 'black'}}>{text}</Text>
-                    
-
+          />                    
           {stompLocation?.runningStatus === "ESCAPED" && (
             <BlinkingText vibrate tts>
               코스에서 벗어났습니다.
@@ -57,7 +54,7 @@ const CompetitorRunning = () => {
           )}
          {
           stompLocation?.runningStatus === "ONGOING" && (
-            <RunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {index>=data?.progress.length}/>
+            <CompetitorRunningText seconds={seconds} distance={distanceToCompetitor} winning={winning} endRunCompetitor = {index>=data?.progress.length}/>
           )
          }
         </>

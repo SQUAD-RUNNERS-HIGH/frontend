@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import * as Speech from "expo-speech";
 import { useLocationStore } from "@/store/useLocationStore";
+import { useLayoutStore } from "@/store/useLayoutStore";
 
-export const RunningText = ({
+export const CompetitorRunningText = ({
   winning,
   distance,
   seconds,
@@ -16,6 +17,7 @@ export const RunningText = ({
 }) => {
   const [message, setMessage] = useState<string>();
   const stompLocation = useLocationStore(store => store.stompLocation);
+  const isSmall = useLayoutStore(state => state.isSmall);
   useEffect(() => {
     if (!endRunCompetitor)
       setMessage(
@@ -40,6 +42,7 @@ export const RunningText = ({
         style={[
           styles.statusText,
           { color: `${winning ? "#228b22" : "#ff4500"}` },
+          isSmall && {fontSize:12}
         ]}
       >
         {message}

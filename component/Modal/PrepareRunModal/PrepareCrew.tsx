@@ -51,18 +51,18 @@ export const PrepareCrew = () => {
     ) {
       setAllReady(true);
     }
-    crewRunningPrepareParticipant.forEach((participant) => {
-      const { isReady, ...rest } = participant;
-      const newParticipant = {
-        ...rest,
-        distance: 0,
-      };
-      // userId 또는 원하는 key로 삽입
-      setCrewRunningParticipants(participant.userId, newParticipant);
-    });
   }, [crewRunningPrepareParticipant]);
   useEffect(() => {
     if (allReady) {
+      crewRunningPrepareParticipant.forEach((participant) => {
+        const { isReady, ...rest } = participant;
+        const newParticipant = {
+          ...rest,
+          distance: 0,
+        };
+        // userId 또는 원하는 key로 삽입
+        setCrewRunningParticipants(participant.userId, newParticipant);
+      });
       client?.deactivate();
       setRunningStatus("countdown");
     }
