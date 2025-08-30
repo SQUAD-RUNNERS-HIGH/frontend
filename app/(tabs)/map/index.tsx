@@ -1,24 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Keyboard,
-  Text,
-  Alert,
-} from "react-native";
-import MapView, {
-  Callout,
-  LatLng,
-  Marker,
-  Polyline,
-  PROVIDER_GOOGLE,
-  Region,
-} from "react-native-maps";
-import { Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Keyboard } from "react-native";
+import MapView, { Polyline, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { Modal } from "../../../component/Modal";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
-import MyLocation from "@/assets/images/svg/Mylocation";
 import { fetchCourses } from "@/lib/map/fetchCourses";
 import { useQuery } from "@tanstack/react-query";
 import { useLocationTracking } from "@/hooks/useLocationTracking";
@@ -26,18 +10,29 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
-import { useAuthStore } from "@/store/useAuthStore";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useMapCamera } from "@/hooks/useMapCamera";
+import { MapMarkers } from "@/component/MapMarkers";
+import { CourseMarkers } from "@/component/CourseMarkers";
+import { MapControls } from "@/component/MapControls";
 
-export default function Index() {
+export default function MapViewScreen() {
   const [region, setRegion] = useState<Region>();
+  const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["courses", region],
-    queryFn: () => fetchCourses(region),
+    queryFn: () => fetchCourses(region!),
     enabled: !!region,
   });
+
   useLocationTracking();
-  const userId = useAuthStore((state) => state.userId);
+  const { mapRef, animateToLocation, fitToCoordinates } = useMapCamera();
+
+  const { myLocation } = useLocationStore(
+    useShallow((state) => ({
+      myLocation: state.myLocation,
+    }))
+  );
   const {
     selectedCourseId,
     currentCourses,
@@ -53,46 +48,22 @@ export default function Index() {
       setIsDropdownVisible: state.setIsDropdownVisible,
     }))
   );
+
   const {
-    runningInfo,
     runningStatus,
-    crewRunningParticipants,
     setRunningInfo,
     setRunningStatus,
   } = useRunningStore(
     useShallow((state) => ({
-      runningInfo: state.runningInfo,
       runningStatus: state.runningStatus,
-      crewRunningParticipants: state.crewRunningParticipants,
       setRunningInfo: state.setRunningInfo,
       setRunningStatus: state.setRunningStatus,
     }))
   );
-  const { myLocation, stompLocation, mapLocation } = useLocationStore(
-    useShallow((state) => ({
-      myLocation: state.myLocation,
-      stompLocation: state.stompLocation,
-      mapLocation: state.mapLocation,
-    }))
-  );
-  const mapRef = useRef<MapView>(null);
-  const [isKeyBoardShow, setIsKeyBoardShow] = useState(false);
+  console.log(process.env.EXPO_PUBLIC_API_URL);
   const isRunning = runningStatus === "go" || runningStatus === "countdown";
-  const myMarkerLocation =
-    userId && isRunning && stompLocation
-      ? runningInfo.mode === "crew"
-        ? {
-            latitude: crewRunningParticipants.get(userId)?.latitude,
-            longitude: crewRunningParticipants.get(userId)?.longitude,
-          }
-        : {
-            latitude: stompLocation?.latitude,
-            longitude: stompLocation?.longitude,
-          }
-      : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
-  const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
-    .filter(([id, participant]) => id !== userId) // userId는 숫자일 수 있어서 문자열로 변환
-    .map(([_, participant]) => participant);
+
+  // 키보드 이벤트 처리
   useEffect(() => {
     const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setIsKeyBoardShow(true);
@@ -106,70 +77,20 @@ export default function Index() {
       hideSubscription.remove();
     };
   }, []);
+
+  // 선택된 코스가 없을 때 러닝 상태 초기화
   useEffect(() => {
     if (selectedCourseId === "") {
       setRunningStatus("idle");
     }
-  }, [selectedCourseId]);
-  useEffect(() => {
-    if (mapLocation) {
-      mapRef.current?.animateToRegion(mapLocation);
-    }
-  }, [mapLocation]);
+  }, [selectedCourseId, setRunningStatus]);
 
+  // 코스 데이터 업데이트
   useEffect(() => {
     if (data) {
       setCurrentCourses(data.courseResponses);
     }
-  }, [data]);
-  // 러닝 시
-  useEffect(() => {
-    // 지도 중심을 새로운 위치로 이동
-
-    if (
-      isRunning &&
-      stompLocation &&
-      myLocation &&
-      runningInfo.mode !== "solo"
-    ) {
-      mapRef.current?.animateCamera({
-        center: {
-          latitude: myMarkerLocation?.latitude!,
-          longitude: myMarkerLocation?.longitude!,
-        },
-        heading: myLocation?.heading, // 방향 (나아가는 방향)
-        altitude: myLocation?.altitude, // 고도
-        zoom: 20, // 줌 레벨
-      });
-    }
-    if (isRunning && runningInfo.mode === "solo" && myLocation) {
-      mapRef.current?.animateCamera({
-        center: {
-          latitude: myLocation?.latitude,
-          longitude: myLocation?.longitude,
-        },
-        heading: myLocation?.heading, // 방향 (나아가는 방향)
-        altitude: myLocation?.altitude, // 고도
-        zoom: 19, // 줌 레벨
-      });
-    }
-    if (runningStatus === "finished") {
-      mapRef.current?.animateCamera(
-        {
-          center: {
-            longitude: myLocation?.longitude,
-            latitude: myLocation?.latitude,
-          },
-          zoom: 16,
-          pitch: 0,
-          altitude: myLocation?.altitude,
-        },
-        { duration: 1000 }
-      );
-    }
-  }, [runningStatus, myLocation, stompLocation]);
-
-  const isCrewRunning = isRunning && runningInfo.mode === "crew";
+  }, [data, setCurrentCourses]);
 
   const selectedCourse = currentCourses?.find(
     (course) => course.courseId === selectedCourseId
@@ -179,225 +100,101 @@ export default function Index() {
     selectedCourse?.coordinates?.[0]?.map(([longitude, latitude]) => ({
       latitude,
       longitude,
-    })) ?? []; // fallback to empty array if not found
+    })) ?? [];
 
-  const PARTICIPANT_IMAGE = [
-    require("@/assets/images/crewMarker0.png"),
-    require("@/assets/images/crewMarker1.png"),
-  ];
+  const handleMapPress = () => {
+    if (selectedCourseId !== "" && region && !isRunning) {
+      setSelectedCourseId("");
+      mapRef.current?.animateToRegion(region);
+    }
+    if (!isKeyBoardShow) {
+      setIsDropdownVisible(false);
+    }
+  };
+
+  const handleCoursePress = (courseId: string, coordinates: number[][]) => {
+    const formattedCoordinates = coordinates.map(([lng, lat]) => ({
+      latitude: lat,
+      longitude: lng,
+    }));
+    fitToCoordinates(formattedCoordinates);
+  };
+
+  const handleSoloRunPress = async () => {
+    if (myLocation) {
+      await animateToLocation(myLocation);
+      setRunningInfo({ mode: "solo" });
+      setRunningStatus("prepare");
+      setSelectedCourseId("solo");
+    }
+  };
+
+  const handleLocationPress = async () => {
+    if (myLocation) {
+      await animateToLocation(myLocation);
+    }
+  };
+
+  if (!myLocation) return null;
+
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.rootContainer}>
-        {myLocation && (
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={{
-              latitude: myLocation?.latitude,
-              longitude: myLocation?.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-            onMapReady={() => {
-              if (mapRef.current) {
-                mapRef.current.animateToRegion(
-                  {
-                    latitude: myLocation?.latitude,
-                    longitude: myLocation?.longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  },
-                  0
-                );
-                setRegion({
-                  latitude: myLocation?.latitude,
-                  longitude: myLocation?.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                });
-              }
-            }}
-            onPress={() => {
-              if (selectedCourseId !== "" && region && !isRunning) {
-                setSelectedCourseId("");
-                mapRef.current?.animateToRegion(region);
-              }
-              if (!isKeyBoardShow) {
-                setIsDropdownVisible(false);
-              }
-            }}
-            onRegionChangeComplete={(region) => {
-              if (selectedCourseId === "") {
-                setRegion(region);
-              }
-            }}
-          >
-            {myLocation && (
-              <Marker
-                coordinate={{
-                  latitude: myMarkerLocation.latitude!,
-                  longitude: myMarkerLocation.longitude!,
-                }}
-                key="myMarker"
-                anchor={{ x: 0.5, y: 1 }}
-              >
-                {/* ✅ 마커 이미지 */}
-                <Image
-                  style={{ width: 26, height: 26 }}
-                  resizeMode="contain"
-                  source={require("@/assets/images/marker.png")}
-                />
-
-                {/* ✅ Callout 추가 */}
-                <Callout
-                  tooltip={false} // true일 경우 말풍선 꼬리 제거되고 스타일을 완전 커스터마이즈해야 함
-                  onPress={() => {
-                    console.log("Callout pressed!");
-                  }}
-                >
-                  <View style={{ padding: 8 }}>
-                    <Text style={{ fontWeight: "bold" }}>내 위치입니다</Text>
-                    <Text>위도: {myMarkerLocation.latitude?.toFixed(5)}</Text>
-                    <Text>경도: {myMarkerLocation.longitude?.toFixed(5)}</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            )}
-
-            {isCrewRunning &&
-              restCrewMarkerLocation?.map((participant, index) => (
-                <Marker
-                  key={participant?.userId}
-                  coordinate={{
-                    latitude: participant?.latitude,
-                    longitude: participant?.longitude,
-                  }}
-                  style={{ zIndex: 3 }}
-                >
-                  <Image
-                    width={20}
-                    height={20}
-                    source={PARTICIPANT_IMAGE[index]}
-                  />
-                </Marker>
-              ))}
-
-            {currentCourses?.map((course, index) => {
-              if (!course) return;
-              const courseStart: LatLng = {
-                longitude: course?.coordinates[0][0][0],
-                latitude: course?.coordinates[0][0][1],
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: myLocation.latitude,
+            longitude: myLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+          onMapReady={() => {
+            if (mapRef.current && myLocation) {
+              const initialRegion = {
+                latitude: myLocation.latitude,
+                longitude: myLocation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
               };
-              return (
-                <Marker
-                  key={index}
-                  coordinate={courseStart}
-                  style={{ zIndex: 3 }}
-                  onPress={async () => {
-                    setSelectedCourseId(course.courseId);
-                    setIsDropdownVisible(false);
-                    if (mapRef.current) {
-                      const formattedCoordinates = currentCourses[
-                        index
-                      ].coordinates[0].map(([lng, lat]) => ({
-                        latitude: lat,
-                        longitude: lng,
-                      }));
-                      mapRef.current.fitToCoordinates(formattedCoordinates, {
-                        edgePadding: {
-                          top: 100,
-                          right: 50,
-                          bottom: 250,
-                          left: 50,
-                        },
-                        animated: true,
-                      });
-                    }
-                  }}
-                  pinColor="#8A2BE2"
-                />
-              );
-            })}
-            {/* 선택된 코스의 Polyline 그리기 */}
-            {selectedCourseId !== "" && selectedCourseId !== "solo" && (
-              <Polyline
-                coordinates={polylineCoordinates}
-                strokeColor="#4169E1"
-                strokeWidth={4}
-              />
-            )}
-          </MapView>
-        )}
-        {myLocation && (
-          <Pressable
-            onPress={async () => {
-              const currentCamera = await mapRef.current?.getCamera();
-              if (currentCamera) {
-                const { center, zoom, pitch, ...rest } = currentCamera;
-                mapRef.current?.animateCamera(
-                  {
-                    center: {
-                      longitude: myLocation?.longitude,
-                      latitude: myLocation?.latitude,
-                    },
-                    zoom: 16,
-                    pitch: 0,
-                    ...rest,
-                  },
-                  { duration: 1000 }
-                );
-              }
-              setRunningInfo({ mode: "solo" });
-              setRunningStatus("prepare");
-              setSelectedCourseId("solo");
-            }}
-            style={[
-              styles.runningContainer,
-              selectedCourseId !== "" &&
-                selectedCourseId !== "solo" && { display: "none" },
-            ]}
-          >
-            <Image
-              source={require("@/assets/images/solo_running.png")}
-              style={{ width: 14, height: 14 }}
+              mapRef.current.animateToRegion(initialRegion, 0);
+              setRegion(initialRegion);
+            }
+          }}
+          onPress={handleMapPress}
+          onRegionChangeComplete={(region) => {
+            if (selectedCourseId === "") {
+              setRegion(region);
+            }
+          }}
+        >
+          <MapMarkers isRunning={isRunning} />
+          <CourseMarkers onCoursePress={handleCoursePress} />
+          
+          {/* 선택된 코스의 Polyline */}
+          {selectedCourseId !== "" && selectedCourseId !== "solo" && (
+            <Polyline
+              coordinates={polylineCoordinates}
+              strokeColor="#4169E1"
+              strokeWidth={4}
             />
-          </Pressable>
-        )}
-        {myLocation && (
-          <Pressable
-            onPress={async () => {
-              const currentCamera = await mapRef.current?.getCamera();
-              if (currentCamera) {
-                const { center, zoom, pitch, ...rest } = currentCamera;
-                mapRef.current?.animateCamera(
-                  {
-                    center: {
-                      longitude: myLocation?.longitude,
-                      latitude: myLocation?.latitude,
-                    },
-                    zoom: 16,
-                    pitch: 0,
-                    ...rest,
-                  },
-                  { duration: 1000 }
-                );
-              }
-            }}
-            style={[
-              styles.locationContainer,
-              selectedCourseId !== "" && styles.whenModal,
-            ]}
-          >
-            <MyLocation />
-          </Pressable>
-        )}
+          )}
+        </MapView>
+
+        <MapControls
+          selectedCourseId={selectedCourseId}
+          myLocation={myLocation}
+          onSoloRunPress={handleSoloRunPress}
+          onLocationPress={handleLocationPress}
+        />
 
         <Modal />
       </View>
     </ProtectedRoute>
   );
 }
+
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
@@ -410,24 +207,5 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     zIndex: 1,
-  },
-  locationContainer: {
-    backgroundColor: "white",
-    zIndex: 2,
-    padding: 17,
-    position: "absolute",
-    bottom: 38,
-    right: 17,
-  },
-  runningContainer: {
-    backgroundColor: "white",
-    zIndex: 2,
-    padding: 17,
-    position: "absolute",
-    bottom: 38,
-    left: 17,
-  },
-  whenModal: {
-    bottom: 268,
   },
 });
