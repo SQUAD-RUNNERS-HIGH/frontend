@@ -1,41 +1,55 @@
 import Button from "@/component/Button";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
+import calculateBMI from "@/lib/profile";
+import { fetchProfile } from "@/lib/profile/fetchProfile";
 import { useAuthStore } from "@/store/useAuthStore";
+import { UserProfile } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { StyleSheet, View, Text } from "react-native";
 
 export default function Index() {
   const logout = useAuthStore(state => state.logout);
-  return (<ProtectedRoute isAuthPage={false}>
-    <View style={styles.container}>
-      <View style={styles.box}>
-        <Text style={styles.title}>프로필 정보</Text>
-        <View style={[styles.row, { marginTop: 8 }]}>
-          <Text style={styles.leftText}>나이</Text>
-          <Text style={styles.rightText}>28세</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.leftText}>성별</Text>
-          <Text style={styles.rightText}>남성</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.leftText}>몸무게</Text>
-          <Text style={styles.rightText}>75kg</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.leftText}>BMI</Text>
-          <Text style={styles.rightText}>23.5</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.leftText}>키</Text>
-          <Text style={styles.rightText}>180cm</Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <Button onPress={() => {}} style={styles.button}>프로필 수정</Button>
-          <Button onPress={async () => { await logout() }} style={styles.button}>로그아웃</Button>
+  const router = useRouter();
+  const { data } = useQuery<UserProfile>({
+    queryKey: ['profile'],
+    queryFn: () =>
+      fetchProfile()
+  })
+  return (
+    <ProtectedRoute isAuthPage={false}>
+      <View style={styles.container}>
+        <View style={styles.box}>
+          <Text style={styles.title}>프로필 정보</Text>
+          <View style={[styles.row, { marginTop: 8 }]}>
+            <Text style={styles.leftText}>나이</Text>
+            <Text style={styles.rightText}>{data?.physical.age}세</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.leftText}>성별</Text>
+            <Text style={styles.rightText}>{data?.physical.gender === 'MALE' ? '남자' : '여자'}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.leftText}>몸무게</Text>
+            <Text style={styles.rightText}>{data?.physical.weight}kg</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.leftText}>키</Text>
+            <Text style={styles.rightText}>{data?.physical.height}cm</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.leftText}>BMI</Text>
+            <Text style={styles.rightText}>{calculateBMI(data?.physical.height, data?.physical.weight)}</Text>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <Button onPress={() => { router.push('/profile/edit') }} style={styles.button}>프로필 수정</Button>
+            <Button onPress={async () => { await logout() }} style={styles.button}>로그아웃</Button>
+          </View>
         </View>
       </View>
-    </View>
-  </ProtectedRoute>)
+    </ProtectedRoute>
+  )
 }
 const styles = StyleSheet.create({
   container: {

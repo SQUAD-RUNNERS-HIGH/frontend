@@ -10,7 +10,7 @@ export interface userSignupType {
     height: number;
     weight: number;
   };
-  userLocation :{
+  userLocation: {
     latitude: number;
     longitude: number;
     specificLocation: string;
@@ -108,7 +108,7 @@ export interface competitorRunningRecord {
 export interface soloRunningRecord {
   runningTime: number;
   progress: number[]
-  coordinates: [number,number][][];
+  coordinates: [number, number][][];
   courseName: string;
 }
 
@@ -138,4 +138,24 @@ export interface CrewRunningParticipant {
   distance: number;
   username: string;
   runningStatus?: string;
-} 
+}
+
+export interface ProfileUserLocation {
+  city: string;
+  country: string;
+  dong: string;
+  province: string;
+  specificLocation: string;
+}
+
+export interface UserProfile {
+  physical: {
+    gender: "MALE" | "FEMALE";
+    age: number;
+    height: number;
+    weight: number;
+  },
+  userLocation: ProfileUserLocation
+  username: string;
+  loginId: string;
+}
