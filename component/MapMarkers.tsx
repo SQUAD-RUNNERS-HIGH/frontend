@@ -7,6 +7,8 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import CircleMarker from "@/assets/images/svg/CircleMarker";
+import { hexToRgba } from "@/lib/hexToRgba";
+import { myMarkerColor } from "@/constants";
 
 interface MapMarkersProps {
   isRunning: boolean;
@@ -67,6 +69,7 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
 
   const isCrewRunning = isRunning && runningInfo.mode === "crew";
 
+  const myNickNameBackground = hexToRgba(myMarkerColor, 0.6);
   if (!myLocation) return null;
 
   return (
@@ -79,6 +82,9 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
         }}
         style={{ zIndex: 10, alignItems: 'center', justifyContent: 'center' }}
       >
+        <View style={[styles.bubble, { backgroundColor: myNickNameBackground }]}>
+          <Text style={styles.nicknameText}>{username}</Text>
+        </View>
         <CircleMarker />
       </Marker>
 
@@ -88,6 +94,7 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
           // 참가자의 userId로 색상 결정
           const colorIndex = getColorIndexByUserId(participant.userId);
           const crewColor = CREW_COLORS[colorIndex];
+          const crewNickNameBackground = hexToRgba(crewColor, 0.6);
           return (
             <Marker
               key={participant.userId}
@@ -97,6 +104,9 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
               }}
               style={{ zIndex: 10 }}
             >
+              <View style={[styles.bubble, { backgroundColor: crewNickNameBackground }]}>
+                <Text style={styles.nicknameText}>{participant.username}</Text>
+              </View>
               <CircleMarker color={crewColor} />
             </Marker>
           );
