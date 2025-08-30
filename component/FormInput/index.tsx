@@ -54,9 +54,9 @@ const FormInput = ({
   const [dropdownHeight, setDropdownHeight] = useState<number>(0);
   const [inputHeight, setInputHeight] = useState<number>(0);
   useEffect(() => {
-    if(!isDropdownVisible)
-    setDropdownHeight(0)
-  },[isDropdownVisible])
+    if (!isDropdownVisible)
+      setDropdownHeight(0)
+  }, [isDropdownVisible])
   return (
     <View style={styles.form}>
       <Text style={styles.formTitle}>
@@ -99,23 +99,23 @@ const FormInput = ({
           }
           if (isLocationInput) {
             return (
-              <View style = { [inputHeight!==0 && {minHeight: (inputHeight + dropdownHeight)}, {position:'relative'}]}>
+              <View style={[inputHeight !== 0 && { minHeight: (inputHeight + dropdownHeight) }, { position: 'relative' }]}>
                 <View>
-                <SearchInput
-                  type="location"
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  setInputHeight={setInputHeight}
-                  nonHeader
-                />
+                  <SearchInput
+                    type="location"
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    setInputHeight={setInputHeight}
+                    nonHeader
+                  />
                 </View>
                 {isDropdownVisible && (
                   <SearchDropdown
                     results={results}
                     setSelectedQuery={setSelectedQuery}
                     setSearchedLocation={field.onChange}
-                    inputHeight = {inputHeight}
-                    setDropdownHeight = {setDropdownHeight}
+                    inputHeight={inputHeight}
+                    setDropdownHeight={setDropdownHeight}
                     form
                   />
                 )}
@@ -141,12 +141,11 @@ const styles = StyleSheet.create({
   form: {
     gap: 6,
     width: "100%",
-    minWidth: 320,
   },
   formTitle: {
     color: "#6B7280",
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: 500,
     lineHeight: 20,
   },
   TitleRed: {
@@ -174,8 +173,8 @@ const styles = StyleSheet.create({
     color: "#EF4444",
   },
   dropdownContainer: {
-    position:'absolute',
-    bottom:0,
+    position: 'absolute',
+    bottom: 0,
   }
 });
 
