@@ -10,6 +10,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { UserProfile } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
@@ -21,6 +22,7 @@ export default function ProfileEditScreen() {
       fetchProfile()
   })
   const queryClient = useQueryClient();
+  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -38,10 +40,12 @@ export default function ProfileEditScreen() {
   });
   const showAlert = useAlertStore(state => state.showAlert);
   async function onSubmit(data: z.infer<typeof profileSchema>) {
-    const response = await fetchProfileEdit(data);
+    const apiData = {physical: {age: data.age, gender: data.gender, weight: data.weight, height: data.height}, userLocation: data.userLocation }
+    const response = await fetchProfileEdit(apiData);
     if (response?.status === 200) {
       showAlert({ title: '프로필 수정 완료', description: '프로필을 수정 했습니다!' });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      router.push('/profile');
     }
   }
   return (
