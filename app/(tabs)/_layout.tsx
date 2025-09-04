@@ -33,6 +33,7 @@ export default function TabLayout() {
           />
           <Tabs.Screen name="map" options={{ title: "map" }} />
           <Tabs.Screen name="crew" options={{ title: "crew" }} />
+          <Tabs.Screen name="profile" options={{ title: "profile" }} />
         </Tabs>
       </SafeAreaView>
     </QueryClientProvider>

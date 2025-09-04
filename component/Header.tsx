@@ -11,8 +11,8 @@ import SearchDropdown from "./SearchDropdown";
 import { location, Place } from "@/types";
 import { usePlacesSearch } from "@/hooks/usePlacesSearch";
 import { useLocationStore } from "@/store/useLocationStore";
-import { Region } from "react-native-maps/lib/sharedTypes";
 import { useSegments } from "expo-router";
+import { Region } from "react-native-maps/src/sharedTypes";
 
 function Header() {
   const {

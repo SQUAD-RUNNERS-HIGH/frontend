@@ -37,3 +37,5 @@ export const  tabBarFill = {
   inactivate: '#9CA3AF',
 }
 export const API_URL = 'http://192.168.173.58:8080/api'
+
+export const myMarkerColor = '#6500A8';

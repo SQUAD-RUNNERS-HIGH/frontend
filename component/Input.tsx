@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 13,
     width: '100%',
   },
   input: {
@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 400,
     lineHeight:24,
+    paddingVertical: 0,
   },
   icon: {
     width: 20,

@@ -1,6 +1,6 @@
-import { StyleSheet, View, Text, Alert, Dimensions } from "react-native";
+import { StyleSheet, View, Alert } from "react-native";
 import Button from "../../Button";
-import React, { SetStateAction, useEffect } from "react";
+import React from "react";
 import CompetitorRunning from "./CompetitorRunning";
 import SoloRunning from "./SoloRunning";
 import { useRunningStore } from "@/store/useRunningStore";
@@ -10,22 +10,16 @@ import CrewRunning from "./CrewRunning";
 import SoloCourseRunning from "./SoloCourseRunning";
 import { useLayoutStore } from "@/store/useLayoutStore";
 export function RunningModal() {
-  const {
-    seconds,
-    setCrewRunningPrepareParticipant,
-    runningInfo,
-    setRunningInfo,
-    setRunningStatus,
-  } = useRunningStore(
-    useShallow((state) => ({
-      seconds: state.seconds,
-      runningInfo: state.runningInfo,
-      setRunningInfo: state.setRunningInfo,
-      setRunningStatus: state.setRunningStatus,
-      setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant,
-
-    }))
-  );
+  const { setCrewRunningPrepareParticipant, runningInfo, setRunningStatus } =
+    useRunningStore(
+      useShallow((state) => ({
+        seconds: state.seconds,
+        runningInfo: state.runningInfo,
+        setRunningInfo: state.setRunningInfo,
+        setRunningStatus: state.setRunningStatus,
+        setCrewRunningPrepareParticipant: state.setCrewRunningPrepareParticipant
+      }))
+    );
   const client = useStompStore((state) => state.client);
   const setClient = useStompStore((state) => state.setClient);
   const isSmall = useLayoutStore(state => state.isSmall);
@@ -72,10 +66,11 @@ export function RunningModal() {
             const exit = await confirmExit();
             if (exit) {
               setRunningStatus("finished");
-              setCrewRunningPrepareParticipant([]);
-              if(client)
-              client.deactivate();
-              setClient(null);
+              if (client) {
+                setCrewRunningPrepareParticipant([]);
+                client.deactivate();
+                setClient(null);
+              }
             }
           }}
         >
