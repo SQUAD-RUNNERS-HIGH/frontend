@@ -1,6 +1,6 @@
 import Button from "@/component/Button";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
-import calculateBMI from "@/lib/profile";
+import {calculateBMI} from "@/lib/profile";
 import { fetchProfile } from "@/lib/profile/fetchProfile";
 import { useAuthStore } from "@/store/useAuthStore";
 import { UserProfile } from "@/types";
@@ -16,6 +16,7 @@ export default function Index() {
     queryFn: () =>
       fetchProfile()
   })
+  console.log(data);
   return (
     <ProtectedRoute isAuthPage={false}>
       <View style={styles.container}>
@@ -39,7 +40,7 @@ export default function Index() {
           </View>
           <View style={styles.row}>
             <Text style={styles.leftText}>BMI</Text>
-            <Text style={styles.rightText}>{calculateBMI(data?.physical.height, data?.physical.weight)}</Text>
+            <Text style={styles.rightText}>{calculateBMI(data?.physical.weight, data?.physical.height)}</Text>
           </View>
 
           <View style={styles.buttonContainer}>

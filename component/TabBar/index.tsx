@@ -22,38 +22,36 @@ function TabBar() {
       setShow(false);
     }
   }, [segments]);
-  const logout  = useAuthStore(state => state.logout);
+  const logout = useAuthStore(state => state.logout);
   return (
     <View style={[styles.rootContainer, !show && styles.hide]}>
       <View style={styles.container}>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          onPress = {() => {router.push('/map')}}
+          onPress={() => { router.push('/map') }}
         >
-          <CourseIcon fill={`${segments.includes('map')?tabBarFill.activate:tabBarFill.inactivate}`} />
-          <Text style={[styles.buttonText, segments.includes('map') &&  styles.currentPage]}>코스</Text>
+          <CourseIcon fill={`${segments.includes('map') ? tabBarFill.activate : tabBarFill.inactivate}`} />
+          <Text style={[styles.buttonText, segments.includes('map') && styles.currentPage]}>코스</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
         >
-          <ChatIcon fill={`${segments.includes('chat')?tabBarFill.activate:tabBarFill.inactivate}`}  />
-          <Text style={[styles.buttonText, segments.includes('chat') &&  styles.currentPage]}>채팅</Text>
+          <ChatIcon fill={`${segments.includes('chat') ? tabBarFill.activate : tabBarFill.inactivate}`} />
+          <Text style={[styles.buttonText, segments.includes('chat') && styles.currentPage]}>채팅</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          onPress={() => {router.push('/crew/home')}}
+          onPress={() => { router.push('/crew/home') }}
         >
-          <CrewIcon fill={`${segments.includes('crew')?tabBarFill.activate:tabBarFill.inactivate}`}  />
-          <Text style={[styles.buttonText, segments.includes('crew') &&  styles.currentPage]}>크루</Text>
+          <CrewIcon fill={`${segments.includes('crew') ? tabBarFill.activate : tabBarFill.inactivate}`} />
+          <Text style={[styles.buttonText, segments.includes('crew') && styles.currentPage]}>크루</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          onPress={async() => {
-            await logout();
-          }}
+          onPress={() => { router.push('/profile') }}
         >
-          <ProfileIcon fill={`${segments.includes('profile')?tabBarFill.activate:tabBarFill.inactivate}`}  />
-          <Text style={[styles.buttonText, segments.includes('profile') &&  styles.currentPage]}>프로필</Text>
+          <ProfileIcon fill={`${segments.includes('profile') ? tabBarFill.activate : tabBarFill.inactivate}`} />
+          <Text style={[styles.buttonText, segments.includes('profile') && styles.currentPage]}>프로필</Text>
         </Pressable>
       </View>
     </View>

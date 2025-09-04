@@ -141,10 +141,8 @@ export interface CrewRunningParticipant {
 }
 
 export interface ProfileUserLocation {
-  city: string;
-  country: string;
-  dong: string;
-  province: string;
+  latitude: number;
+  longitude: number;
   specificLocation: string;
 }
 

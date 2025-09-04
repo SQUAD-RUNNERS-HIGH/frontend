@@ -1,14 +1,26 @@
 import Button from "@/component/Button";
 import FormInput from "@/component/FormInput";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
+import { calculateBMI } from "@/lib/profile";
+import { fetchProfile } from "@/lib/profile/fetchProfile";
+import { fetchProfileEdit } from "@/lib/profile/fetchProfileEdit";
 import { profileSchema } from "@/lib/profile/profileSchema";
+import { useAlertStore } from "@/store/useAlertStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { UserProfile } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { StyleSheet, View, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import z from "zod";
 export default function ProfileEditScreen() {
+  const { data } = useQuery<UserProfile>({
+    queryKey: ['profile'],
+    queryFn: () =>
+      fetchProfile()
+  })
+  const queryClient = useQueryClient();
   const {
     control,
     handleSubmit,
@@ -16,7 +28,22 @@ export default function ProfileEditScreen() {
   } = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     mode: "onChange",
+    defaultValues: {
+      age: data?.physical.age,
+      gender: data?.physical.gender,
+      weight: data?.physical.weight,
+      height: data?.physical.height,
+      userLocation: data?.userLocation,
+    }
   });
+  const showAlert = useAlertStore(state => state.showAlert);
+  async function onSubmit(data: z.infer<typeof profileSchema>) {
+    const response = await fetchProfileEdit(data);
+    if (response?.status === 200) {
+      showAlert({ title: '프로필 수정 완료', description: '프로필을 수정 했습니다!' });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    }
+  }
   return (
     <ProtectedRoute isAuthPage={false}>
       <KeyboardAvoidingView
@@ -66,8 +93,7 @@ export default function ProfileEditScreen() {
               placeholder="위치를 입력해주세요"
             />
             <View style={styles.buttonContainer}>
-              <Button onPress={() => { }} style={styles.button}>프로필 수정</Button>
-
+              <Button onPress={handleSubmit(onSubmit)} style={styles.button}>프로필 수정</Button>
             </View>
           </View>
         </ScrollView>
@@ -100,6 +126,29 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingBottom: 40,
+  },
+  row: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingTop: 13,
+    paddingBottom: 13,
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
+    paddingHorizontal: 2,
+    borderStyle: 'solid',
+    borderColor: '#E5E7EB',
+  },
+  leftText: {
+    fontFamily: 'Roboto',
+    fontSize: 14,
+    color: '#4B5563',
+  },
+  rightText: {
+    fontFamily: 'Roboto',
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#000000',
   },
   header: {
     alignItems: 'center',
