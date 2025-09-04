@@ -9,13 +9,15 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
+      },
+      "node": "20.19.4"
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
+      "node": "20.19.4",
       "channel": "preview-channel"
     },
     "production": {
