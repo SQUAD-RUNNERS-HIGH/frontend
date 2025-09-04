@@ -1,19 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { RadioButton } from "react-native-paper";
-import { Control, useController } from "react-hook-form";
+import { Controller, Control, useController } from "react-hook-form";
 import { StringInput } from "./StringInput";
 import ImageUpload from "./ImageUpload";
 import SearchInput from "../SearchInput";
 import { usePlacesSearch } from "@/hooks/usePlacesSearch";
 import SearchDropdown from "../SearchDropdown";
 
-// 타입 개선
-interface FormInputProps<T = any> {
-  control: Control<T>;
+interface FormInputProps {
+  control: Control<any>; // React Hook Form의 Control 객체 타입
   errorMessage?: string;
-  name: string;
-  label: string;
+  name: string; // 컨트롤러에서 사용할 필드 이름
+  label: string; // 폼 제목
   type?: string;
   isRadio?: boolean;
   isLocationInput?: boolean;
@@ -22,19 +21,19 @@ interface FormInputProps<T = any> {
   hideError?: boolean;
 }
 
-const FormInput = <T,>({
+const FormInput = ({
   control,
   errorMessage,
   name,
   label,
   type = "text",
   placeholder,
-  isRadio = false,
-  hideError = false,
-  isImage = false,
-  isLocationInput = false,
-}: FormInputProps<T>) => {
-  const { field } = useController({
+  isRadio,
+  hideError,
+  isImage,
+  isLocationInput,
+}: FormInputProps) => {
+const { field } = useController({
     name,
     control,
   });
@@ -184,6 +183,7 @@ const FormInput = <T,>({
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   form: {
     gap: 6,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   formTitle: {
     color: "#6B7280",
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "500", // fontWeight는 문자열이어야 합니다.
     lineHeight: 20,
   },
   TitleRed: {
