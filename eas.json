@@ -9,8 +9,7 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "node": "20.19.4"
+      }    
     },
     "preview": {
       "distribution": "internal",

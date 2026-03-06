@@ -48,7 +48,7 @@ export function useStomp() {
         username: data?.username,
       }));
     }
-  }, []);
+  }, [runningInfo.mode, runningStatus]);
   useEffect(() => {
    
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
@@ -71,52 +71,56 @@ export function useStomp() {
     }
   }, [selectedCourseId, handleMessage, runningStatus]);
   useEffect(() => {
-    if (client) {
-      client.activate();
-      client.onStompError = (frame) => {
-        console.error(
-          "[STOMP] Broker reported error:",
-          frame.headers["message"]
-        );
-      };
-      client.onConnect = () => {
-        console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
-        // 개인 위치 응답 구독
-        let subscription;
-        if (runningInfo.mode === "crew" && runningStatus === "countdown") {
-          subscription = client?.subscribe(
-            `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
-            (message: IMessage) => {
-              const data = JSON.parse(message.body);
-              handleMessage(data);
-            }
-          );
-        } else {
-          subscription = client?.subscribe(
-            "/user/queue/reply",
-            (message: IMessage) => {
-              const data = JSON.parse(message.body);
-              handleMessage(data);
-            }
-          );
-        }
-        setConnected(true);
+    if (!client) return;
 
-        return () => {
-          subscription?.unsubscribe(); // 이전 구독 정리
-        };
-      };
-      (client.onDisconnect = () => {}),
-        (client.onWebSocketClose = (event: CloseEvent) => {
-          console.warn("[STOMP] WebSocket closed:", event);
-          console.warn("[STOMP] Code:", event.code);
-          console.warn("[STOMP] Reason:", event.reason);
-          console.warn("[STOMP] WasClean:", event.wasClean);
-        });
-      client.onWebSocketError = (event) => {
-        console.error("[STOMP] WebSsocket error:", event);
-      };
-    }
+    let subscription;
+
+    client.onStompError = (frame) => {
+      console.error(
+        "[STOMP] Broker reported error:",
+        frame.headers["message"]
+      );
+    };
+    client.onConnect = () => {
+      console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
+      // 개인 위치 응답 구독
+      if (runningInfo.mode === "crew" && runningStatus === "countdown") {
+        subscription = client?.subscribe(
+          `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
+          (message: IMessage) => {
+            const data = JSON.parse(message.body);
+            handleMessage(data);
+          }
+        );
+      } else {
+        subscription = client?.subscribe(
+          "/user/queue/reply",
+          (message: IMessage) => {
+            const data = JSON.parse(message.body);
+            handleMessage(data);
+          }
+        );
+      }
+      setConnected(true);
+    };
+    client.onDisconnect = () => {};
+    client.onWebSocketClose = (event: CloseEvent) => {
+      console.warn("[STOMP] WebSocket closed:", event);
+      console.warn("[STOMP] Code:", event.code);
+      console.warn("[STOMP] Reason:", event.reason);
+      console.warn("[STOMP] WasClean:", event.wasClean);
+    };
+    client.onWebSocketError = (event) => {
+      console.error("[STOMP] WebSsocket error:", event);
+    };
+
+    client.activate();
+
+    return () => {
+      subscription?.unsubscribe();
+      client.deactivate();
+      setConnected(false);
+    };
   }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
 
   const sendLocation = async (
