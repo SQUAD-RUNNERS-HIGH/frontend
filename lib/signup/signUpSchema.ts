@@ -36,5 +36,4 @@ export const signUpSchema = z.object({
     .positive("양수만 입력 가능합니다.")
     .int("정수만 입력 가능합니다."), // 문자열을 숫자로 변환,
   gender: z.enum(["MALE", "FEMALE"]),
-  userLocation: userLocationSchema
 });

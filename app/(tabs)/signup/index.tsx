@@ -19,6 +19,8 @@ import { fetchSignup } from "../../../lib/signup/fetchSignup";
 import { userSignupType } from "@/types";
 import { ProtectedRoute } from "@/component/ProtectedRoute";
 import { useAlertStore } from "@/store/useAlertStore";
+import { useLocationStore } from "@/store/useLocationStore";
+import { useLocationTracking } from "@/hooks/useLocationTracking";
 
 export default function Signup() {
   const {
@@ -31,6 +33,9 @@ export default function Signup() {
   });
   const showAlert = useAlertStore(s => s.showAlert);
   const router = useRouter();
+  const myLocation = useLocationStore(s => s.myLocation);
+  useLocationTracking();
+
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     const { gender, age, height, weight, ...rest } = data;
     const newData: userSignupType = {
@@ -40,6 +45,11 @@ export default function Signup() {
         age,
         height,
         weight,
+      },
+      userLocation: {
+        latitude: myLocation?.latitude ?? 0,
+        longitude: myLocation?.longitude ?? 0,
+        specificLocation: '현재위치',
       },
     };
     const response = await fetchSignup(newData);
@@ -120,14 +130,6 @@ contentContainerStyle는 키보드로 인해 화면이 다차지 하지않을 �
                 name="gender"
                 label="성별"
                 placeholder="성별을 입력해주세요"
-              />
-              <FormInput
-                control={control}
-                errorMessage={errors.userLocation?.message}
-                isLocationInput
-                name="userLocation"
-                label="주소"
-                placeholder="주소를 입력해주세요"
               />
               <View style={styles.buttonview}>
                 <Button onPress={handleSubmit(onSubmit)} disabled={!isValid}>회원가입</Button>
