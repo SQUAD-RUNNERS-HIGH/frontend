@@ -34,7 +34,7 @@ const getColorIndexByUserId = (userId: string | number): number => {
   return hash % CREW_COLORS.length;
 };
 
-export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
+const MapMarkers = ({ isRunning }: MapMarkersProps) => {
   const { userId, username } = useAuthStore(useShallow((state) => ({ userId: state.userId, username: state.username })));
 
   const { runningInfo, crewRunningParticipants } = useRunningStore(
@@ -72,10 +72,13 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
   const myNickNameBackground = hexToRgba(myMarkerColor, 0.6);
   if (!myLocation) return null;
 
+  const hasValidMyLocation =
+    myMarkerLocation.latitude != null && myMarkerLocation.longitude != null;
+
   return (
     <>
       {/* 내 위치 마커 */}
-      <Marker
+      {hasValidMyLocation && <Marker
         coordinate={{
           latitude: myMarkerLocation.latitude!,
           longitude: myMarkerLocation.longitude!,
@@ -86,7 +89,7 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
           <Text style={styles.nicknameText}>{username}</Text>
         </View>
         <CircleMarker />
-      </Marker>
+      </Marker>}
 
       {/* 크루 러닝 시 다른 참가자들 마커 */}
       {isCrewRunning &&
@@ -114,6 +117,8 @@ export const MapMarkers = ({ isRunning }: MapMarkersProps) => {
     </>
   );
 };
+
+export default React.memo(MapMarkers);
 
 const styles = StyleSheet.create({
   bubble: {

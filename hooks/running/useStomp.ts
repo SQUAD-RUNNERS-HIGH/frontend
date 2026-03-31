@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
-import { location } from "@/types";
+import { location, CrewRunningPrepareParticipant } from "@/types";
+
+type StompMessage = {
+  nearByParticipants?: CrewRunningPrepareParticipant[];
+  runningStatus?: string;
+  latitude?: number;
+  longitude?: number;
+  userId?: string;
+  username?: string;
+};
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
@@ -35,8 +44,11 @@ export function useStomp() {
   const setStompLocation = useLocationStore((state) => state.setStompLocation);
   const [connected, setConnected] = useState(false);
 
-  const handleMessage = useCallback((data) => {
-    if (runningInfo.mode === "crew" && runningStatus === "prepare") {
+  const runningMode = runningInfo.mode;
+  const runningCrewId = runningInfo.mode === "crew" ? runningInfo.id : undefined;
+
+  const handleMessage = useCallback((data: StompMessage) => {
+    if (runningMode === "crew" && runningStatus === "prepare") {
       setCrewRunningPrepareParticipant(data?.nearByParticipants);
     } else {
       setStompLocation((prev) => ({
@@ -48,17 +60,17 @@ export function useStomp() {
         username: data?.username,
       }));
     }
-  }, [runningInfo.mode, runningStatus]);
+  }, [runningMode, runningStatus]);
   useEffect(() => {
-   
+
     if (!client && runningStatus !== "idle" && runningStatus !== "finished") {
       const newClient = new Client({
-        brokerURL: "wss://runners-high.shop/ws-running",
+        brokerURL: process.env.EXPO_PUBLIC_WS_URL ?? "wss://runners-high.shop/ws-running",
         connectHeaders: {
           Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
           CourseId: selectedCourseId,
-          CrewId:  `${runningInfo.mode === "crew" ? `${runningInfo?.id}` : ""}`,
-          CrewRun: `${runningInfo.mode === "crew" ? "True" : "False"}`,
+          CrewId:  `${runningMode === "crew" ? `${runningCrewId}` : ""}`,
+          CrewRun: `${runningMode === "crew" ? "True" : "False"}`,
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
@@ -84,9 +96,9 @@ export function useStomp() {
     client.onConnect = () => {
       console.log("client.current Connected?", client?.connected); // 여기서 true여야 정상
       // 개인 위치 응답 구독
-      if (runningInfo.mode === "crew" && runningStatus === "countdown") {
+      if (runningMode === "crew" && runningStatus === "countdown") {
         subscription = client?.subscribe(
-          `/topic/crew-run/course/${selectedCourseId}/crew/${runningInfo.id}`,
+          `/topic/crew-run/course/${selectedCourseId}/crew/${runningCrewId}`,
           (message: IMessage) => {
             const data = JSON.parse(message.body);
             handleMessage(data);
@@ -121,7 +133,7 @@ export function useStomp() {
       client.deactivate();
       setConnected(false);
     };
-  }, [client, runningInfo, runningStatus, selectedCourseId, handleMessage]);
+  }, [client, runningMode, runningCrewId, runningStatus, selectedCourseId, handleMessage]);
 
   const sendLocation = async (
     location: location,

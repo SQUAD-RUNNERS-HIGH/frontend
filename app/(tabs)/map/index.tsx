@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Keyboard } from "react-native";
 import MapView, { Polyline, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { Modal } from "../../../component/Modal";
@@ -11,8 +11,8 @@ import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useMapCamera } from "@/hooks/useMapCamera";
-import { MapMarkers } from "@/component/MapMarkers";
-import { CourseMarkers } from "@/component/CourseMarkers";
+import MapMarkers from "@/component/MapMarkers";
+import CourseMarkers from "@/component/CourseMarkers";
 import { MapControls } from "@/component/MapControls";
 
 export default function MapViewScreen() {
@@ -112,13 +112,13 @@ export default function MapViewScreen() {
     }
   };
 
-  const handleCoursePress = (courseId: string, coordinates: number[][]) => {
+  const handleCoursePress = useCallback((courseId: string, coordinates: number[][]) => {
     const formattedCoordinates = coordinates.map(([lng, lat]) => ({
       latitude: lat,
       longitude: lng,
     }));
     fitToCoordinates(formattedCoordinates);
-  };
+  }, [fitToCoordinates]);
 
   const handleSoloRunPress = async () => {
     if (myLocation) {
