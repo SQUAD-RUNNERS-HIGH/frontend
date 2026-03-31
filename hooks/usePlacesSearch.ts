@@ -18,6 +18,7 @@ export const usePlacesSearch = () => {
     try {
       const response = await fetch(url);
       const data = await response.json();
+      console.log(data);
       if (data.status === "OK") {
         setResults(data.results);
         setIsDropdownVisible(true);

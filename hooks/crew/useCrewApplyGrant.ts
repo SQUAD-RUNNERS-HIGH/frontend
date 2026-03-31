@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCrewApplyGrant } from "../../lib/crew/detail/fetchCrewApplyGrant "; // fetchCrewApplyGrant 경로 맞춰줘!
+import { fetchCrewApplyGrant } from "../../lib/crew/detail/fetchCrewApplyGrant";
 import { Alert } from "react-native";
 import { useAlertStore } from "@/store/useAlertStore";
 

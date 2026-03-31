@@ -35,6 +35,7 @@ export function InfoModal({
     ),
     staleTime: 100000,
   });
+  console.log(detail);
   return (
     <>
       {isLoading ? (
@@ -53,7 +54,7 @@ export function InfoModal({
                   setParentStyle({ width, height }); // 부모 View 크기 저장
                 }}
               >
-                {detail?.courseElevations && (
+                {detail?.courseElevations && detail.courseElevations.length > 0 ? (
                   <LineChart
                     data={{
                       labels: ["1", "2", "3", "4", "5", "6"],
@@ -86,6 +87,10 @@ export function InfoModal({
                       minHeight: "100%",
                     }}
                   />
+                ) : (
+                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                    <Text style={{ color: "#6B7280" }}>고도 데이터 없음</Text>
+                  </View>
                 )}
               </View>
             </View>
@@ -99,14 +104,14 @@ export function InfoModal({
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>예상 소모 칼로리</Text>
                 <Text style={styles.value}>
-                  {detail?.minCalorie.toFixed(2)} ~{" "}
-                  {detail?.maxCalorie.toFixed(2)} Kcal
+                  {detail?.minCalorie ? detail?.minCalorie.toFixed(2) : "0.00"} ~{" "}
+                  {detail?.maxCalorie ? detail?.maxCalorie.toFixed(2) : "0.00"} Kcal
                 </Text>
               </View>
               <View style={styles.infoContainer}>
                 <Text style={styles.info}>거리</Text>
                 <Text style={styles.value}>
-                  {detail?.perimeter.toFixed(2)} km
+                  {detail?.perimeter ? detail?.perimeter.toFixed(2) : "0.00"} km
                 </Text>
               </View>
             </View>
