@@ -12,7 +12,7 @@ interface AuthState {
   username: string | null;
   setAuth: (data:UserLoginResponse) => Promise<void>;
   logout: () => Promise<void>;
-  refreshAccessToken: () => Promise<void>;
+  refreshAccessToken: () => Promise<string>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -36,19 +36,19 @@ export const useAuthStore = create<AuthState>()(
 
       refreshAccessToken: async () => {
         const refreshToken = await SecureStore.getItemAsync('refreshToken');
-        if (!refreshToken) return;
-
-        try {
-          // 🔁 새 토큰 요청
-          const response = await apiClient.post('/auth/refresh');
-          const newAccessToken = response?.data?.data?.accessToken;
-          if (newAccessToken) {
-            set({ accessToken: newAccessToken });
-          }
-        } catch (e) {
-          console.error('토큰 갱신 실패', e);
+        if (!refreshToken) {
           await get().logout();
+          throw new Error('No refresh token');
         }
+
+        const response = await apiClient.post('/auth/refresh');
+        const newAccessToken = response?.data?.data?.accessToken;
+        if (!newAccessToken) {
+          await get().logout();
+          throw new Error('No access token in response');
+        }
+        set({ accessToken: newAccessToken });
+        return newAccessToken;
       },
     }),
     {
