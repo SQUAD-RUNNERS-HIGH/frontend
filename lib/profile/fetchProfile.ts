@@ -1,20 +1,11 @@
 import { apiClient } from "@/api/apiClient";
-import { useAlertStore } from "@/store/useAlertStore";
-import { location } from "@/types";
-import { Alert } from "react-native";
+import { handleApiError } from "@/lib/utils/handleApiError";
 
 export async function fetchProfile() {
   try {
-    const response = await apiClient.get(
-      `${process.env.EXPO_PUBLIC_API_URL}/user`
-    );
+    const response = await apiClient.get(`/user`);
     return response?.data.data;
   } catch (error) {
-    useAlertStore
-      .getState()
-      .showError({
-        title: "문제가 발생했어요",
-        description: error.response.data.serverErrorMessage,
-      });
+    handleApiError(error);
   }
 }

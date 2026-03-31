@@ -7,7 +7,7 @@ interface CourseMarkersProps {
   onCoursePress: (courseId: string, coordinates: number[][]) => void;
 }
 
-export const CourseMarkers = ({ onCoursePress }: CourseMarkersProps) => {
+const CourseMarkers = ({ onCoursePress }: CourseMarkersProps) => {
   const { currentCourses, setSelectedCourseId, setIsDropdownVisible } = useCourseStore(
     useShallow((state) => ({
       currentCourses: state.currentCourses,
@@ -20,10 +20,13 @@ export const CourseMarkers = ({ onCoursePress }: CourseMarkersProps) => {
     <>
       {currentCourses?.map((course, index) => {
         if (!course) return null;
-        
+
+        const firstPoint = course?.coordinates?.[0]?.[0];
+        if (!firstPoint || firstPoint[0] == null || firstPoint[1] == null) return null;
+
         const courseStart: LatLng = {
-          longitude: course?.coordinates[0][0][0],
-          latitude: course?.coordinates[0][0][1],
+          longitude: firstPoint[0],
+          latitude: firstPoint[1],
         };
 
         return (
@@ -43,3 +46,5 @@ export const CourseMarkers = ({ onCoursePress }: CourseMarkersProps) => {
     </>
   );
 };
+
+export default React.memo(CourseMarkers);

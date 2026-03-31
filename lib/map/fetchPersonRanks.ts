@@ -1,11 +1,12 @@
 import { apiClient } from "@/api/apiClient";
+import { handleApiError } from "@/lib/utils/handleApiError";
 
 export async function fetchPersonRanks({pageParam = 0, queryKey}) {
   try {
     const [_key, courseId] = queryKey;
 
     const response = await apiClient.get(
-      `${process.env.EXPO_PUBLIC_API_URL}/personal-ranks/courses/${courseId}`,
+      `/personal-ranks/courses/${courseId}`,
       {
         params: {
           page: pageParam,
@@ -13,8 +14,8 @@ export async function fetchPersonRanks({pageParam = 0, queryKey}) {
         }
       }
     );
-    return  {items: response?.data.data, nextPage: response?.data.data.hasNext? pageParam + 1: undefined};
+    return { items: response?.data.data, nextPage: response?.data.data.hasNext ? pageParam + 1 : undefined };
   } catch (error) {
-    console.error(error);
+    handleApiError(error);
   }
 }
