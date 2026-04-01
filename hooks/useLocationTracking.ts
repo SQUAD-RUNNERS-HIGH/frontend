@@ -38,7 +38,7 @@ export const useLocationTracking = () => {
     }
 
     const accuracy = isRunning ? Location.Accuracy.BestForNavigation : Location.Accuracy.High;
-    const timeInterval = isRunning ? 500 : 3000;
+    const timeInterval = isRunning ? 2000 : 3000;
     const distanceInterval = isRunning ? 1 : 5;
 
     // 백그라운드 추적을 위한 설정 추가

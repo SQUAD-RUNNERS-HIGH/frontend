@@ -16,3 +16,18 @@ export const convertSpeedToPace = (speed: number) => {
 
     return `${paddedMinutes}'${paddedSeconds}"`;
   };
+
+export const calculatePaceFromDistance = (distance: number, seconds: number): string => {
+  if (!distance || !seconds || distance <= 0 || seconds <= 0) {
+    return "00'00\"";
+  }
+
+  const speedMs = distance / seconds; // m/s
+  const kmPerHour = speedMs * 3.6;
+  const minutesPerKm = 60 / kmPerHour;
+
+  const minutes = Math.floor(minutesPerKm);
+  const secs = Math.round((minutesPerKm - minutes) * 60);
+
+  return `${String(minutes).padStart(2, "0")}'${String(secs).padStart(2, "0")}"`;
+};

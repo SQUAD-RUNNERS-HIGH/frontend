@@ -1,6 +1,6 @@
 // components/MapMarkers.tsx
-import React from "react";
-import { Marker } from "react-native-maps";
+import React, { useRef, useEffect, useState } from "react";
+import { Marker, AnimatedRegion } from "react-native-maps";
 import { StyleSheet, View, Text } from "react-native";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRunningStore } from "@/store/useRunningStore";
@@ -9,6 +9,7 @@ import { useShallow } from "zustand/react/shallow";
 import CircleMarker from "@/assets/images/svg/CircleMarker";
 import { hexToRgba } from "@/lib/hexToRgba";
 import { myMarkerColor } from "@/constants";
+import { crewRunningLocation } from "@/types";
 
 interface MapMarkersProps {
   isRunning: boolean;
@@ -34,8 +35,126 @@ const getColorIndexByUserId = (userId: string | number): number => {
   return hash % CREW_COLORS.length;
 };
 
+const ANIMATION_DURATION = 2000;
+
+const MyMarker = ({
+  location,
+  username,
+  color,
+}: {
+  location: { latitude: number; longitude: number };
+  username: string;
+  color: string;
+}) => {
+  const animatedCoord = useRef(
+    new AnimatedRegion({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      latitudeDelta: 0,
+      longitudeDelta: 0,
+    })
+  ).current;
+
+  useEffect(() => {
+    animatedCoord
+      .timing({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0,
+        longitudeDelta: 0,
+        duration: ANIMATION_DURATION,
+        useNativeDriver: false,
+      })
+      .start();
+  }, [location.latitude, location.longitude]);
+
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Marker.Animated
+      coordinate={animatedCoord}
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={!ready}
+      style={{ zIndex: 10 }}
+    >
+      <View style={styles.markerContainer} collapsable={false}>
+        <View style={[styles.bubble, { backgroundColor: hexToRgba(color, 0.6) }]}>
+          <Text style={styles.nicknameText}>{username}</Text>
+        </View>
+        <CircleMarker />
+      </View>
+    </Marker.Animated>
+  );
+};
+
+const CrewMemberMarker = ({
+  participant,
+}: {
+  participant: crewRunningLocation;
+}) => {
+  const colorIndex = getColorIndexByUserId(participant.userId);
+  const crewColor = CREW_COLORS[colorIndex];
+
+  const animatedCoord = useRef(
+    new AnimatedRegion({
+      latitude: participant.latitude,
+      longitude: participant.longitude,
+      latitudeDelta: 0,
+      longitudeDelta: 0,
+    })
+  ).current;
+
+  useEffect(() => {
+    animatedCoord
+      .timing({
+        latitude: participant.latitude,
+        longitude: participant.longitude,
+        latitudeDelta: 0,
+        longitudeDelta: 0,
+        duration: ANIMATION_DURATION,
+        useNativeDriver: false,
+      })
+      .start();
+  }, [participant.latitude, participant.longitude]);
+
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Marker.Animated
+      coordinate={animatedCoord}
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={!ready}
+      style={{ zIndex: 10 }}
+    >
+      <View style={styles.markerContainer} collapsable={false}>
+        <View
+          style={[
+            styles.bubble,
+            { backgroundColor: hexToRgba(crewColor, 0.6) },
+          ]}
+        >
+          <Text style={styles.nicknameText}>{participant.username}</Text>
+        </View>
+        <CircleMarker color={crewColor} />
+      </View>
+    </Marker.Animated>
+  );
+};
+
 const MapMarkers = ({ isRunning }: MapMarkersProps) => {
-  const { userId, username } = useAuthStore(useShallow((state) => ({ userId: state.userId, username: state.username })));
+  const { userId, username } = useAuthStore(
+    useShallow((state) => ({ userId: state.userId, username: state.username }))
+  );
 
   const { runningInfo, crewRunningParticipants } = useRunningStore(
     useShallow((state) => ({
@@ -51,25 +170,27 @@ const MapMarkers = ({ isRunning }: MapMarkersProps) => {
     }))
   );
 
-  const myMarkerLocation = userId && isRunning && stompLocation
-    ? runningInfo.mode === "crew"
-      ? {
-        latitude: crewRunningParticipants.get(userId)?.latitude,
-        longitude: crewRunningParticipants.get(userId)?.longitude,
-      }
-      : {
-        latitude: stompLocation?.latitude,
-        longitude: stompLocation?.longitude,
-      }
-    : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
+  const myMarkerLocation =
+    userId && isRunning && stompLocation
+      ? runningInfo.mode === "crew"
+        ? {
+            latitude: crewRunningParticipants.get(userId)?.latitude,
+            longitude: crewRunningParticipants.get(userId)?.longitude,
+          }
+        : {
+            latitude: stompLocation?.latitude,
+            longitude: stompLocation?.longitude,
+          }
+      : { latitude: myLocation?.latitude, longitude: myLocation?.longitude };
 
-  const restCrewMarkerLocation = Array.from(crewRunningParticipants.entries())
-    .filter(([id, participant]) => id !== userId)
-    .map(([_, participant]) => participant);
+  const restCrewMarkerLocation = Array.from(
+    crewRunningParticipants.entries()
+  )
+    .filter(([id]) => id !== userId)
+    .map(([, participant]) => participant);
 
   const isCrewRunning = isRunning && runningInfo.mode === "crew";
 
-  const myNickNameBackground = hexToRgba(myMarkerColor, 0.6);
   if (!myLocation) return null;
 
   const hasValidMyLocation =
@@ -78,42 +199,25 @@ const MapMarkers = ({ isRunning }: MapMarkersProps) => {
   return (
     <>
       {/* 내 위치 마커 */}
-      {hasValidMyLocation && <Marker
-        coordinate={{
-          latitude: myMarkerLocation.latitude!,
-          longitude: myMarkerLocation.longitude!,
-        }}
-        style={{ zIndex: 10, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <View style={[styles.bubble, { backgroundColor: myNickNameBackground }]}>
-          <Text style={styles.nicknameText}>{username}</Text>
-        </View>
-        <CircleMarker />
-      </Marker>}
+      {hasValidMyLocation && (
+        <MyMarker
+          location={{
+            latitude: myMarkerLocation.latitude!,
+            longitude: myMarkerLocation.longitude!,
+          }}
+          username={username ?? ""}
+          color={myMarkerColor}
+        />
+      )}
 
       {/* 크루 러닝 시 다른 참가자들 마커 */}
       {isCrewRunning &&
-        restCrewMarkerLocation?.map((participant) => {
-          // 참가자의 userId로 색상 결정
-          const colorIndex = getColorIndexByUserId(participant.userId);
-          const crewColor = CREW_COLORS[colorIndex];
-          const crewNickNameBackground = hexToRgba(crewColor, 0.6);
-          return (
-            <Marker
-              key={participant.userId}
-              coordinate={{
-                latitude: participant.latitude,
-                longitude: participant.longitude,
-              }}
-              style={{ zIndex: 10 }}
-            >
-              <View style={[styles.bubble, { backgroundColor: crewNickNameBackground }]}>
-                <Text style={styles.nicknameText}>{participant.username}</Text>
-              </View>
-              <CircleMarker color={crewColor} />
-            </Marker>
-          );
-        })}
+        restCrewMarkerLocation?.map((participant) => (
+          <CrewMemberMarker
+            key={participant.userId}
+            participant={participant}
+          />
+        ))}
     </>
   );
 };
@@ -121,16 +225,19 @@ const MapMarkers = ({ isRunning }: MapMarkersProps) => {
 export default React.memo(MapMarkers);
 
 const styles = StyleSheet.create({
+  markerContainer: {
+    alignItems: "center",
+  },
   bubble: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // 반투명 검정 배경
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    marginBottom: 4, // 마커 아이콘과의 간격
+    marginBottom: 4,
   },
   nicknameText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 12,
   },
-})
+});

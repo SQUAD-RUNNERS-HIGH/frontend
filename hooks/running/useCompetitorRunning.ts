@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchCompetitor } from "../../lib/map/fetchCompetitor";
 import { useEffect, useRef, useState } from "react";
+import useInterval from "./useInterval";
 import { getDistance, getPathLength } from "geolib";
 import { location } from "../../types";
 import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
@@ -76,27 +77,24 @@ export const useCompetitorRunning = () => {
       );
     }
   }, []);
-  useEffect(() => {
-    if (data && runningStatus ==='go') {
-      const interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [data, runningStatus]);
-  useEffect(() => {
-    if (myLocation && runningStatus === 'go' && data) {
-      const interval = setInterval(() => {
-        if (index < data?.progress.length-1) {
+  useInterval(
+    () => {
+      setSeconds((prev) => prev + 1);
+    },
+    data && runningStatus === 'go' ? 1000 : null
+  );
+  useInterval(
+    () => {
+      if (myLocation) {
+        if (index < (data?.progress.length ?? 1) - 1) {
           setIndex((prev) => prev + 1);
         }
         sendLocation(myLocation);
-
         setSpeed(convertSpeedToPace(myLocation?.speed));
-      }, 500);
-      return () => clearInterval(interval);
-    }
-  }, [myLocation, runningStatus, data]);
+      }
+    },
+    data && runningStatus === 'go' ? 500 : null
+  );
   useEffect(() => {
     if (currentCourse && currentCourse.length > 1) {
       const total = getPathLength(currentCourse);

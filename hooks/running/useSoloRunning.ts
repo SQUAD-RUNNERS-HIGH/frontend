@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { location } from "@/types";
 import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../../lib/discriminateRecordType";
-import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
+import { calculatePaceFromDistance } from "../../lib/convertSpeedToPace";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
@@ -32,6 +32,10 @@ export const useSoloRunning = () => {
   const myLocation = useLocationStore((state) => state.myLocation);
   const [progress, setProgress] = useState<location[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
+  const [recentDistanceBuffer, setRecentDistanceBuffer] = useState<
+    { timestamp: number; distance: number }[]
+  >([]);
+  const PACE_WINDOW_SECONDS = 10;
   useEffect(() => {
     if (runningStatus === "go") {
       const interval = setInterval(() => {
@@ -67,7 +71,7 @@ export const useSoloRunning = () => {
         return newProgress;
       });
     }
-  }, 500);
+  }, 2000);
   useEffect(() => {
     if (runningStatus === "countdown" && myLocation) {
       setRunningRecord({
@@ -77,12 +81,45 @@ export const useSoloRunning = () => {
         progress: [],
       });
     }
+  }, [myLocation]);
+  // 거리 기반 페이스 계산
+  useEffect(() => {
+    if (progress.length >= 2 && runningStatus === "go") {
+      const now = Date.now();
+      const distance = getDistance(
+        progress[progress.length - 1],
+        progress[progress.length - 2]
+      );
 
-    if (runningStatus === "go" && myLocation) {
-      setSpeed(convertSpeedToPace(myLocation?.speed));
+      // 최근 거리 버퍼 업데이트 (10초 윈도우 유지)
+      const newBuffer = [
+        ...recentDistanceBuffer,
+        { timestamp: now, distance },
+      ].filter((item) => now - item.timestamp <= PACE_WINDOW_SECONDS * 1000);
+
+      setRecentDistanceBuffer(newBuffer);
+
+      // 최근 10초 총 거리와 경과 시간 계산
+      if (newBuffer.length >= 2) {
+        const totalRecentDistance = newBuffer.reduce(
+          (sum, item) => sum + item.distance,
+          0
+        );
+        const elapsedSeconds =
+          (now - newBuffer[0].timestamp) / 1000;
+
+        if (elapsedSeconds > 0) {
+          const pace = calculatePaceFromDistance(
+            totalRecentDistance,
+            elapsedSeconds
+          );
+          setSpeed(pace);
+        }
+      }
     }
-  }, [myLocation]); // ★ myLocation 추가
-   useEffect(() => {
+  }, [progress, runningStatus]);
+
+  useEffect(() => {
     if (progress.length >= 2) {
       const distance = getDistance(
         progress[progress.length - 1],
