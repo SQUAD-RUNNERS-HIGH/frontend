@@ -1,5 +1,5 @@
 // components/MapMarkers.tsx
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Marker, AnimatedRegion } from "react-native-maps";
 import { StyleSheet, View, Text } from "react-native";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -68,15 +68,26 @@ const MyMarker = ({
       .start();
   }, [location.latitude, location.longitude]);
 
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Marker.Animated
       coordinate={animatedCoord}
-      style={{ zIndex: 10, alignItems: "center", justifyContent: "center" }}
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={!ready}
+      style={{ zIndex: 10 }}
     >
-      <View style={[styles.bubble, { backgroundColor: hexToRgba(color, 0.6) }]}>
-        <Text style={styles.nicknameText}>{username}</Text>
+      <View style={styles.markerContainer} collapsable={false}>
+        <View style={[styles.bubble, { backgroundColor: hexToRgba(color, 0.6) }]}>
+          <Text style={styles.nicknameText}>{username}</Text>
+        </View>
+        <CircleMarker />
       </View>
-      <CircleMarker />
     </Marker.Animated>
   );
 };
@@ -111,17 +122,31 @@ const CrewMemberMarker = ({
       .start();
   }, [participant.latitude, participant.longitude]);
 
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <Marker.Animated coordinate={animatedCoord} style={{ zIndex: 10 }}>
-      <View
-        style={[
-          styles.bubble,
-          { backgroundColor: hexToRgba(crewColor, 0.6) },
-        ]}
-      >
-        <Text style={styles.nicknameText}>{participant.username}</Text>
+    <Marker.Animated
+      coordinate={animatedCoord}
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={!ready}
+      style={{ zIndex: 10 }}
+    >
+      <View style={styles.markerContainer} collapsable={false}>
+        <View
+          style={[
+            styles.bubble,
+            { backgroundColor: hexToRgba(crewColor, 0.6) },
+          ]}
+        >
+          <Text style={styles.nicknameText}>{participant.username}</Text>
+        </View>
+        <CircleMarker color={crewColor} />
       </View>
-      <CircleMarker color={crewColor} />
     </Marker.Animated>
   );
 };
@@ -200,6 +225,9 @@ const MapMarkers = ({ isRunning }: MapMarkersProps) => {
 export default React.memo(MapMarkers);
 
 const styles = StyleSheet.create({
+  markerContainer: {
+    alignItems: "center",
+  },
   bubble: {
     backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 8,
