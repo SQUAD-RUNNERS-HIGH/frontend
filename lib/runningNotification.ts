@@ -3,10 +3,33 @@ import { calculatePaceFromDistance } from "@/lib/convertSpeedToPace";
 import { formatTime } from "@/lib/formatTime";
 
 export const RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS = 15000;
+export const BG_NOTIFICATION_METRICS_KEY = "@bg_notification_metrics";
+export const BG_NOTIFICATION_UPDATED_AT_KEY = "@bg_notification_updated_at";
 
-type RunningNotificationMetrics = {
+export type RunningNotificationMetrics = {
   distance: number;
   seconds: number;
+};
+
+export const parseRunningNotificationMetrics = (raw: string | null) => {
+  if (!raw) return { distance: 0, seconds: 0 };
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed?.distance === "number" &&
+      typeof parsed?.seconds === "number"
+    ) {
+      return {
+        distance: Math.max(0, parsed.distance),
+        seconds: Math.max(0, parsed.seconds),
+      };
+    }
+  } catch {
+    return { distance: 0, seconds: 0 };
+  }
+
+  return { distance: 0, seconds: 0 };
 };
 
 export const formatRunningDistance = (distance: number) => {

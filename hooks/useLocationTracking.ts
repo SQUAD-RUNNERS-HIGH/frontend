@@ -26,9 +26,24 @@ import {
 } from "@/lib/discriminateRecordType";
 import { useCourseStore } from "@/store/useCourseStore";
 import {
+  BG_NOTIFICATION_METRICS_KEY,
+  BG_NOTIFICATION_UPDATED_AT_KEY,
   buildBackgroundLocationOptions,
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
+
+const setNotificationMetrics = async ({
+  distance,
+  seconds,
+}: {
+  distance: number;
+  seconds: number;
+}) => {
+  await AsyncStorage.setItem(
+    BG_NOTIFICATION_METRICS_KEY,
+    JSON.stringify({ distance, seconds })
+  );
+};
 
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
@@ -111,13 +126,17 @@ export const useLocationTracking = () => {
     if (!hasBackgroundPermission) return;
 
     await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
+    const runningState = useRunningStore.getState();
+    await setNotificationMetrics({
+      distance: runningState.runDistance,
+      seconds: runningState.seconds,
+    });
 
     const hasStarted = await Location.hasStartedLocationUpdatesAsync(
       BACKGROUND_LOCATION_TASK
     ).catch(() => false);
 
     if (!hasStarted) {
-      const runningState = useRunningStore.getState();
       await Location.startLocationUpdatesAsync(
         BACKGROUND_LOCATION_TASK,
         buildBackgroundLocationOptions({
@@ -140,7 +159,12 @@ export const useLocationTracking = () => {
       );
     }
 
-    const keys = [BG_RUNNING_FLAG_KEY, BG_SECONDS_OFFSET_KEY];
+    const keys = [
+      BG_RUNNING_FLAG_KEY,
+      BG_SECONDS_OFFSET_KEY,
+      BG_NOTIFICATION_METRICS_KEY,
+      BG_NOTIFICATION_UPDATED_AT_KEY,
+    ];
     if (clearLocations) keys.push(BG_LOCATION_KEY);
     await AsyncStorage.multiRemove(keys);
   }, []);
@@ -257,6 +281,9 @@ export const useLocationTracking = () => {
       .then((hasStarted) => {
         if (!hasStarted || AppState.currentState !== "active") return;
         lastNotificationUpdateAt.current = now;
+        setNotificationMetrics({ distance: runDistance, seconds }).catch(
+          () => undefined
+        );
         return Location.startLocationUpdatesAsync(
           BACKGROUND_LOCATION_TASK,
           buildBackgroundLocationOptions({ distance: runDistance, seconds })
@@ -273,9 +300,17 @@ export const useLocationTracking = () => {
       if (nextAppState !== "active" && isRunning) {
         if (!wasActive) return;
 
+        const runningState = useRunningStore.getState();
         await AsyncStorage.multiSet([
           [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
           [BG_RUNNING_FLAG_KEY, "true"],
+          [
+            BG_NOTIFICATION_METRICS_KEY,
+            JSON.stringify({
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            }),
+          ],
         ]);
 
         const currentLocation = useLocationStore.getState().myLocation;
