@@ -1,94 +1,288 @@
-import { useEffect, useRef, AppStateStatus } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
-import { AppState } from "react-native";
+import { AppState, AppStateStatus, DeviceEventEmitter } from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useAlertStore } from "@/store/useAlertStore";
+import {
+  BACKGROUND_LOCATION_TASK,
+  BG_LOCATION_KEY,
+  BG_RUNNING_FLAG_KEY,
+  BG_SECONDS_OFFSET_KEY,
+} from "@/tasks/locationTask";
+import {
+  BACKGROUND_LOCATION_SYNC_EVENT,
+  syncBackgroundLocations,
+} from "@/lib/syncBackgroundLocations";
+import {
+  isCompetitorRunningRecord,
+  isSoloRunningRecord,
+} from "@/lib/discriminateRecordType";
+import { useCourseStore } from "@/store/useCourseStore";
 
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
+  const appState = useRef(AppState.currentState);
+  const syncingRef = useRef(false);
   const showError = useAlertStore((s) => s.showError);
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
   const runningStatus = useRunningStore((state) => state.runningStatus);
   const isRunning = runningStatus === "go" || runningStatus === "countdown";
-  // 권한 요청 로직을 별도의 useEffect로 분리 (컴포넌트 마운트 시 한 번만 실행)
-  useEffect(() => {
-    const requestPermissions = async () => {
-      const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
-      if (foregroundStatus !== 'granted') {
-        showError({ title: "위치 권한 필요", description: "앱을 사용하려면 위치 권한을 허용해주세요." });
-        return;
-      }
 
-      // 러닝 앱이라면 백그라운드 권한도 필수적으로 요청해야 합니다.
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      if (backgroundStatus !== 'granted') {
-        showError({ title: "백그라운드 위치 권한 필요", description: "러닝 기록을 위해 백그라운드 위치 권한을 '항상 허용'으로 설정해주세요." });
-      }
-    };
-
-    requestPermissions();
+  const stopForegroundTracking = useCallback(() => {
+    if (subscription.current) {
+      subscription.current.remove();
+      subscription.current = null;
+    }
   }, []);
 
-  // 위치 추적 시작/중지 로직
-  const startLocationTracking = async () => {
-    // 기존 구독이 있다면 중복 실행 방지
-    if (subscription.current) {
-      stopLocationTracking();
+  const ensureForegroundPermission = useCallback(async () => {
+    const permission = await Location.getForegroundPermissionsAsync();
+    if (permission.granted) return true;
+
+    const requested = await Location.requestForegroundPermissionsAsync();
+    if (!requested.granted) {
+      showError({
+        title: "위치 권한 필요",
+        description: "앱을 사용하려면 위치 권한을 허용해주세요.",
+      });
+      return false;
     }
 
-    const accuracy = isRunning ? Location.Accuracy.BestForNavigation : Location.Accuracy.High;
-    const timeInterval = isRunning ? 2000 : 3000;
-    const distanceInterval = isRunning ? 1 : 5;
+    return true;
+  }, [showError]);
 
-    // 백그라운드 추적을 위한 설정 추가
+  const ensureBackgroundPermission = useCallback(async () => {
+    const permission = await Location.getBackgroundPermissionsAsync();
+    if (permission.granted) return true;
+
+    const requested = await Location.requestBackgroundPermissionsAsync();
+    if (!requested.granted) {
+      showError({
+        title: "백그라운드 위치 권한 필요",
+        description:
+          "러닝 기록을 위해 백그라운드 위치 권한을 '항상 허용'으로 설정해주세요.",
+      });
+      return false;
+    }
+
+    return true;
+  }, [showError]);
+
+  const startForegroundTracking = useCallback(async () => {
+    const hasPermission = await ensureForegroundPermission();
+    if (!hasPermission) return;
+
+    stopForegroundTracking();
+
     const sub = await Location.watchPositionAsync(
-      { accuracy, timeInterval, distanceInterval },
+      {
+        accuracy: isRunning
+          ? Location.Accuracy.BestForNavigation
+          : Location.Accuracy.High,
+        timeInterval: isRunning ? 2000 : 3000,
+        distanceInterval: isRunning ? 1 : 5,
+      },
       (newLocation) => {
         setMyLocation(newLocation.coords);
       }
     );
     subscription.current = sub;
-  };
+  }, [ensureForegroundPermission, isRunning, setMyLocation, stopForegroundTracking]);
 
-  const stopLocationTracking = () => {
-    if (subscription.current) {
-      subscription.current.remove();
-      subscription.current = null;
+  const startBackgroundTracking = useCallback(async () => {
+    const hasForegroundPermission = await ensureForegroundPermission();
+    if (!hasForegroundPermission) return;
+
+    const hasBackgroundPermission = await ensureBackgroundPermission();
+    if (!hasBackgroundPermission) return;
+
+    await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
+
+    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      BACKGROUND_LOCATION_TASK
+    ).catch(() => false);
+
+    if (!hasStarted) {
+      await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 2000,
+        distanceInterval: 1,
+        pausesUpdatesAutomatically: false,
+        showsBackgroundLocationIndicator: true,
+        foregroundService: {
+          notificationTitle: "러닝 중",
+          notificationBody: "백그라운드에서 위치를 추적하고 있습니다.",
+          notificationColor: "#4169E1",
+          killServiceOnDestroy: false,
+        },
+      });
     }
-  };
-  
-  // isRunning 상태가 변경될 때마다 추적을 재시작
-  useEffect(() => {
-    // 권한이 있는지 먼저 확인
-    Location.getForegroundPermissionsAsync().then(permission => {
-      if (permission.granted) {
-        startLocationTracking();
+  }, [ensureBackgroundPermission, ensureForegroundPermission]);
+
+  const stopBackgroundTracking = useCallback(async (clearLocations = false) => {
+    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      BACKGROUND_LOCATION_TASK
+    ).catch(() => false);
+
+    if (hasStarted) {
+      await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK).catch(
+        () => undefined
+      );
+    }
+
+    const keys = [BG_RUNNING_FLAG_KEY, BG_SECONDS_OFFSET_KEY];
+    if (clearLocations) keys.push(BG_LOCATION_KEY);
+    await AsyncStorage.multiRemove(keys);
+  }, []);
+
+  const applyBackgroundSync = useCallback(async () => {
+    if (syncingRef.current) return;
+    syncingRef.current = true;
+
+    try {
+      const result = await syncBackgroundLocations();
+      if (
+        result.newDistance <= 0 &&
+        result.secondsElapsed <= 0 &&
+        result.locations.length === 0
+      ) {
+        return;
       }
-    });
+
+      const runningState = useRunningStore.getState();
+      if (runningState.runningStatus !== "go") return;
+
+      const nextSeconds = runningState.seconds + result.secondsElapsed;
+      if (result.secondsElapsed > 0) {
+        runningState.setSeconds(nextSeconds);
+      }
+
+      if (result.locations.length > 0) {
+        const lastLocation = result.locations[result.locations.length - 1];
+        setMyLocation({
+          latitude: lastLocation.latitude,
+          longitude: lastLocation.longitude,
+        } as Location.LocationObjectCoords);
+      }
+
+      if (result.newDistance > 0) {
+        const previousDistance = runningState.runDistance;
+        runningState.setRunDistance((prev) => prev + result.newDistance);
+
+        const record = runningState.runningRecord;
+        if (record && isSoloRunningRecord(record)) {
+          runningState.setRunningRecord({
+            ...record,
+            runningTime: nextSeconds,
+            coordinates: [[...record.coordinates[0], ...result.newCoords]],
+            progress: [...record.progress, ...result.segmentDistances],
+          });
+          DeviceEventEmitter.emit(BACKGROUND_LOCATION_SYNC_EVENT, {
+            locations: result.locations.slice(1),
+          });
+        } else if (record && isCompetitorRunningRecord(record)) {
+          const totalDistance = useCourseStore.getState().totalDistance;
+          if (totalDistance > 0) {
+            let distance = previousDistance;
+            const syncedProgress = result.segmentDistances.map((segment) => {
+              distance += segment;
+              return Number((distance / totalDistance).toFixed(4));
+            });
+
+            runningState.setRunningRecord({
+              ...record,
+              runningTime: nextSeconds,
+              progress: [...record.progress, ...syncedProgress],
+            });
+          } else {
+            runningState.setRunningRecord({
+              ...record,
+              runningTime: nextSeconds,
+            });
+          }
+        }
+      }
+    } finally {
+      syncingRef.current = false;
+    }
+  }, [setMyLocation]);
+
+  useEffect(() => {
+    ensureForegroundPermission();
+  }, [ensureForegroundPermission]);
+
+  useEffect(() => {
+    startForegroundTracking();
+
+    if (isRunning) {
+      startBackgroundTracking();
+    } else {
+      stopBackgroundTracking(runningStatus === "finished");
+    }
 
     return () => {
-      stopLocationTracking();
+      stopForegroundTracking();
     };
-  }, [isRunning]); // isRunning이 바뀔 때만 추적 옵션을 바꿔서 재시작
+  }, [
+    isRunning,
+    runningStatus,
+    startBackgroundTracking,
+    startForegroundTracking,
+    stopBackgroundTracking,
+    stopForegroundTracking,
+  ]);
 
-  // AppState 리스너 로직 (백그라운드 추적 고려)
   useEffect(() => {
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      // 앱이 비활성화 되어도, '러닝 중'이라면 추적을 멈추지 않음
-      if (nextAppState !== 'active' && !isRunning) {
-        stopLocationTracking();
-      } 
-      // 앱이 활성화 되었을 때, '러닝 중이 아니라면' 다시 추적 시작
-      else if (nextAppState === 'active' && !isRunning) {
-        startLocationTracking();
+    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      const wasActive = appState.current === "active";
+      appState.current = nextAppState;
+
+      if (nextAppState !== "active" && isRunning) {
+        if (!wasActive) return;
+
+        await AsyncStorage.multiSet([
+          [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
+          [BG_RUNNING_FLAG_KEY, "true"],
+        ]);
+
+        const currentLocation = useLocationStore.getState().myLocation;
+        if (currentLocation) {
+          await AsyncStorage.setItem(
+            BG_LOCATION_KEY,
+            JSON.stringify([
+              {
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+                timestamp: Date.now(),
+              },
+            ])
+          );
+        } else {
+          await AsyncStorage.removeItem(BG_LOCATION_KEY);
+        }
+        return;
+      }
+
+      if (nextAppState === "active") {
+        if (isRunning && !wasActive) {
+          await applyBackgroundSync();
+        }
+
+        if (!isRunning) {
+          startForegroundTracking();
+        }
       }
     };
 
-    const appStateSubscription = AppState.addEventListener("change", handleAppStateChange);
+    const appStateSubscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
 
     return () => {
       appStateSubscription.remove();
     };
-  }, [isRunning]);
+  }, [applyBackgroundSync, isRunning, startForegroundTracking]);
 };
