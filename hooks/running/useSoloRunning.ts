@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { DeviceEventEmitter } from "react-native";
 import { location } from "@/types";
 import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../../lib/discriminateRecordType";
@@ -7,7 +8,10 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useShallow } from "zustand/react/shallow";
 import useInterval from "./useInterval";
-import { Alert } from "react-native";
+import {
+  BACKGROUND_LOCATION_SYNC_EVENT,
+} from "@/lib/syncBackgroundLocations";
+import { BackgroundLocationPoint } from "@/tasks/locationTask";
 
 export const useSoloRunning = () => {
   const {
@@ -35,6 +39,7 @@ export const useSoloRunning = () => {
   const [recentDistanceBuffer, setRecentDistanceBuffer] = useState<
     { timestamp: number; distance: number }[]
   >([]);
+  const skipSyncedProgressEffect = useRef(false);
   const PACE_WINDOW_SECONDS = 10;
   useEffect(() => {
     if (runningStatus === "go") {
@@ -82,8 +87,32 @@ export const useSoloRunning = () => {
       });
     }
   }, [myLocation]);
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      BACKGROUND_LOCATION_SYNC_EVENT,
+      ({ locations }: { locations?: BackgroundLocationPoint[] }) => {
+        if (!Array.isArray(locations) || locations.length === 0) return;
+
+        skipSyncedProgressEffect.current = true;
+        setProgress((prev) => [
+          ...prev,
+          ...locations.map(({ latitude, longitude }) => ({
+            latitude,
+            longitude,
+          })),
+        ]);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   // 거리 기반 페이스 계산
   useEffect(() => {
+    if (skipSyncedProgressEffect.current) return;
+
     if (progress.length >= 2 && runningStatus === "go") {
       const now = Date.now();
       const distance = getDistance(
@@ -120,6 +149,11 @@ export const useSoloRunning = () => {
   }, [progress, runningStatus]);
 
   useEffect(() => {
+    if (skipSyncedProgressEffect.current) {
+      skipSyncedProgressEffect.current = false;
+      return;
+    }
+
     if (progress.length >= 2) {
       const distance = getDistance(
         progress[progress.length - 1],

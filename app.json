@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "rh-frontend",
-    "slug": "rh-frontend",
+    "slug": "runners-high",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
     "orientation": "portrait",
@@ -19,6 +19,12 @@
       "supportsTablet": true,
       "config": {
         "googleMapsApiKey": "AIzaSyAK7JyZb9Xf71WhAwUEiS9WGzxnGuLVW-o"
+      },
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "러닝 기록을 위해 백그라운드에서도 위치 접근이 필요합니다.",
+        "NSLocationAlwaysUsageDescription": "러닝 중 백그라운드 위치 추적을 위해 필요합니다.",
+        "NSLocationWhenInUseUsageDescription": "현재 위치를 표시하고 러닝을 기록합니다.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -33,7 +39,20 @@
           "apiKey": "AIzaSyDaTqHF5kjpaYmlx55lNT7C7tGSiIvIWJA"
         }
       },
-      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -50,6 +69,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "러닝 기록을 위해 백그라운드에서도 위치 접근이 필요합니다.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
       ]
     ],
     "experiments": {
@@ -60,9 +88,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "6b39e4e1-7f6a-4fbc-842b-6ef2cffd8f00"
+        "projectId": "a79dad8f-0adb-4020-a715-34a8cdab408f"
       }
     },
-    "owner": "juyung0903"
+    "owner": "jy090303s-organization"
   }
 }
