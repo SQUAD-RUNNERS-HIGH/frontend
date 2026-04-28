@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
-import { AppState, AppStateStatus, DeviceEventEmitter } from "react-native";
+import {
+  AppState,
+  AppStateStatus,
+  DeviceEventEmitter,
+  Platform,
+} from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useAlertStore } from "@/store/useAlertStore";
@@ -20,14 +25,21 @@ import {
   isSoloRunningRecord,
 } from "@/lib/discriminateRecordType";
 import { useCourseStore } from "@/store/useCourseStore";
+import {
+  buildBackgroundLocationOptions,
+  RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
+} from "@/lib/runningNotification";
 
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
   const appState = useRef(AppState.currentState);
   const syncingRef = useRef(false);
+  const lastNotificationUpdateAt = useRef(0);
   const showError = useAlertStore((s) => s.showError);
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
   const runningStatus = useRunningStore((state) => state.runningStatus);
+  const runDistance = useRunningStore((state) => state.runDistance);
+  const seconds = useRunningStore((state) => state.seconds);
   const isRunning = runningStatus === "go" || runningStatus === "countdown";
 
   const stopForegroundTracking = useCallback(() => {
@@ -105,19 +117,15 @@ export const useLocationTracking = () => {
     ).catch(() => false);
 
     if (!hasStarted) {
-      await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
-        accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 2000,
-        distanceInterval: 1,
-        pausesUpdatesAutomatically: false,
-        showsBackgroundLocationIndicator: true,
-        foregroundService: {
-          notificationTitle: "러닝 중",
-          notificationBody: "백그라운드에서 위치를 추적하고 있습니다.",
-          notificationColor: "#4169E1",
-          killServiceOnDestroy: false,
-        },
-      });
+      const runningState = useRunningStore.getState();
+      await Location.startLocationUpdatesAsync(
+        BACKGROUND_LOCATION_TASK,
+        buildBackgroundLocationOptions({
+          distance: runningState.runDistance,
+          seconds: runningState.seconds,
+        })
+      );
+      lastNotificationUpdateAt.current = Date.now();
     }
   }, [ensureBackgroundPermission, ensureForegroundPermission]);
 
@@ -233,6 +241,29 @@ export const useLocationTracking = () => {
     stopBackgroundTracking,
     stopForegroundTracking,
   ]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android" || !isRunning) return;
+
+    const now = Date.now();
+    if (
+      now - lastNotificationUpdateAt.current <
+      RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS
+    ) {
+      return;
+    }
+
+    Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+      .then((hasStarted) => {
+        if (!hasStarted || AppState.currentState !== "active") return;
+        lastNotificationUpdateAt.current = now;
+        return Location.startLocationUpdatesAsync(
+          BACKGROUND_LOCATION_TASK,
+          buildBackgroundLocationOptions({ distance: runDistance, seconds })
+        );
+      })
+      .catch(() => undefined);
+  }, [isRunning, runDistance, seconds]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
