@@ -5,6 +5,7 @@ import {
   AppState,
   AppStateStatus,
   DeviceEventEmitter,
+  PermissionsAndroid,
   Platform,
 } from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
@@ -97,6 +98,32 @@ export const useLocationTracking = () => {
     return true;
   }, [showError]);
 
+  const ensureAndroidNotificationPermission = useCallback(async () => {
+    if (Platform.OS !== "android" || Platform.Version < 33) {
+      return true;
+    }
+
+    const hasPermission = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+    if (hasPermission) return true;
+
+    const status = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+
+    if (status === PermissionsAndroid.RESULTS.GRANTED) {
+      return true;
+    }
+
+    showError({
+      title: "알림 권한 필요",
+      description:
+        "러닝 중 Android 상태 알림을 보려면 알림 권한을 허용해주세요.",
+    });
+    return false;
+  }, [showError]);
+
   const startForegroundTracking = useCallback(async () => {
     const hasPermission = await ensureForegroundPermission();
     if (!hasPermission) return;
@@ -125,6 +152,8 @@ export const useLocationTracking = () => {
     const hasBackgroundPermission = await ensureBackgroundPermission();
     if (!hasBackgroundPermission) return;
 
+    await ensureAndroidNotificationPermission();
+
     await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
     const runningState = useRunningStore.getState();
     await setNotificationMetrics({
@@ -146,7 +175,11 @@ export const useLocationTracking = () => {
       );
       lastNotificationUpdateAt.current = Date.now();
     }
-  }, [ensureBackgroundPermission, ensureForegroundPermission]);
+  }, [
+    ensureAndroidNotificationPermission,
+    ensureBackgroundPermission,
+    ensureForegroundPermission,
+  ]);
 
   const stopBackgroundTracking = useCallback(async (clearLocations = false) => {
     const hasStarted = await Location.hasStartedLocationUpdatesAsync(
