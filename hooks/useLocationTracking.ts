@@ -374,17 +374,11 @@ export const useLocationTracking = () => {
         const runningState = useRunningStore.getState();
 
         if (Platform.OS === "android") {
-          const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-            BACKGROUND_LOCATION_TASK
-          ).catch(() => false);
-
-          if (hasStarted) {
-            await updateRunningNotification({
-              distance: runningState.runDistance,
-              seconds: runningState.seconds,
-            }).catch(() => undefined);
-            lastNotificationUpdateAt.current = Date.now();
-          }
+          await updateRunningNotification({
+            distance: runningState.runDistance,
+            seconds: runningState.seconds,
+          }).catch(() => undefined);
+          lastNotificationUpdateAt.current = Date.now();
         }
 
         const currentLocation = useLocationStore.getState().myLocation;
