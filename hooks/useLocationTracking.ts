@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
-import { AppState, AppStateStatus, DeviceEventEmitter } from "react-native";
+import {
+  AppState,
+  AppStateStatus,
+  DeviceEventEmitter,
+  PermissionsAndroid,
+  Platform,
+} from "react-native";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useAlertStore } from "@/store/useAlertStore";
@@ -20,14 +26,52 @@ import {
   isSoloRunningRecord,
 } from "@/lib/discriminateRecordType";
 import { useCourseStore } from "@/store/useCourseStore";
+import {
+  BG_NOTIFICATION_METRICS_KEY,
+  BG_NOTIFICATION_UPDATED_AT_KEY,
+  buildBackgroundLocationOptions,
+  RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
+} from "@/lib/runningNotification";
+
+const setNotificationMetrics = async ({
+  distance,
+  seconds,
+}: {
+  distance: number;
+  seconds: number;
+}) => {
+  await AsyncStorage.setItem(
+    BG_NOTIFICATION_METRICS_KEY,
+    JSON.stringify({ distance, seconds })
+  );
+};
+
+const updateRunningNotification = async ({
+  distance,
+  seconds,
+}: {
+  distance: number;
+  seconds: number;
+}) => {
+  await setNotificationMetrics({ distance, seconds });
+  await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(Date.now()));
+
+  await Location.startLocationUpdatesAsync(
+    BACKGROUND_LOCATION_TASK,
+    buildBackgroundLocationOptions({ distance, seconds })
+  );
+};
 
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
   const appState = useRef(AppState.currentState);
   const syncingRef = useRef(false);
+  const lastNotificationUpdateAt = useRef(0);
   const showError = useAlertStore((s) => s.showError);
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
   const runningStatus = useRunningStore((state) => state.runningStatus);
+  const runDistance = useRunningStore((state) => state.runDistance);
+  const seconds = useRunningStore((state) => state.seconds);
   const isRunning = runningStatus === "go" || runningStatus === "countdown";
 
   const stopForegroundTracking = useCallback(() => {
@@ -70,6 +114,32 @@ export const useLocationTracking = () => {
     return true;
   }, [showError]);
 
+  const ensureAndroidNotificationPermission = useCallback(async () => {
+    if (Platform.OS !== "android" || Platform.Version < 33) {
+      return true;
+    }
+
+    const hasPermission = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+    if (hasPermission) return true;
+
+    const status = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+    );
+
+    if (status === PermissionsAndroid.RESULTS.GRANTED) {
+      return true;
+    }
+
+    showError({
+      title: "알림 권한 필요",
+      description:
+        "러닝 중 Android 상태 알림을 보려면 알림 권한을 허용해주세요.",
+    });
+    return false;
+  }, [showError]);
+
   const startForegroundTracking = useCallback(async () => {
     const hasPermission = await ensureForegroundPermission();
     if (!hasPermission) return;
@@ -98,28 +168,33 @@ export const useLocationTracking = () => {
     const hasBackgroundPermission = await ensureBackgroundPermission();
     if (!hasBackgroundPermission) return;
 
+    const hasNotificationPermission =
+      await ensureAndroidNotificationPermission();
+    if (!hasNotificationPermission) return;
+
     await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
+    const runningState = useRunningStore.getState();
+    await setNotificationMetrics({
+      distance: runningState.runDistance,
+      seconds: runningState.seconds,
+    });
 
     const hasStarted = await Location.hasStartedLocationUpdatesAsync(
       BACKGROUND_LOCATION_TASK
     ).catch(() => false);
 
     if (!hasStarted) {
-      await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
-        accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: 2000,
-        distanceInterval: 1,
-        pausesUpdatesAutomatically: false,
-        showsBackgroundLocationIndicator: true,
-        foregroundService: {
-          notificationTitle: "러닝 중",
-          notificationBody: "백그라운드에서 위치를 추적하고 있습니다.",
-          notificationColor: "#4169E1",
-          killServiceOnDestroy: false,
-        },
+      await updateRunningNotification({
+        distance: runningState.runDistance,
+        seconds: runningState.seconds,
       });
+      lastNotificationUpdateAt.current = Date.now();
     }
-  }, [ensureBackgroundPermission, ensureForegroundPermission]);
+  }, [
+    ensureAndroidNotificationPermission,
+    ensureBackgroundPermission,
+    ensureForegroundPermission,
+  ]);
 
   const stopBackgroundTracking = useCallback(async (clearLocations = false) => {
     const hasStarted = await Location.hasStartedLocationUpdatesAsync(
@@ -132,7 +207,12 @@ export const useLocationTracking = () => {
       );
     }
 
-    const keys = [BG_RUNNING_FLAG_KEY, BG_SECONDS_OFFSET_KEY];
+    const keys = [
+      BG_RUNNING_FLAG_KEY,
+      BG_SECONDS_OFFSET_KEY,
+      BG_NOTIFICATION_METRICS_KEY,
+      BG_NOTIFICATION_UPDATED_AT_KEY,
+    ];
     if (clearLocations) keys.push(BG_LOCATION_KEY);
     await AsyncStorage.multiRemove(keys);
   }, []);
@@ -235,6 +315,26 @@ export const useLocationTracking = () => {
   ]);
 
   useEffect(() => {
+    if (Platform.OS !== "android" || !isRunning) return;
+
+    const now = Date.now();
+    if (
+      now - lastNotificationUpdateAt.current <
+      RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS
+    ) {
+      return;
+    }
+
+    Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+      .then((hasStarted) => {
+        if (!hasStarted || AppState.currentState !== "active") return;
+        lastNotificationUpdateAt.current = now;
+        return updateRunningNotification({ distance: runDistance, seconds });
+      })
+      .catch(() => undefined);
+  }, [isRunning, runDistance, seconds]);
+
+  useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       const wasActive = appState.current === "active";
       appState.current = nextAppState;
@@ -242,9 +342,32 @@ export const useLocationTracking = () => {
       if (nextAppState !== "active" && isRunning) {
         if (!wasActive) return;
 
+        const runningState = useRunningStore.getState();
+
+        if (Platform.OS === "android") {
+          const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+            BACKGROUND_LOCATION_TASK
+          ).catch(() => false);
+
+          if (hasStarted) {
+            await updateRunningNotification({
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            }).catch(() => undefined);
+            lastNotificationUpdateAt.current = Date.now();
+          }
+        }
+
         await AsyncStorage.multiSet([
           [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
           [BG_RUNNING_FLAG_KEY, "true"],
+          [
+            BG_NOTIFICATION_METRICS_KEY,
+            JSON.stringify({
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            }),
+          ],
         ]);
 
         const currentLocation = useLocationStore.getState().myLocation;

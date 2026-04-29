@@ -1,6 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import { getDistance } from "geolib";
+import {
+  BG_NOTIFICATION_METRICS_KEY,
+  BG_NOTIFICATION_UPDATED_AT_KEY,
+  buildBackgroundLocationOptions,
+  parseRunningNotificationMetrics,
+  RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
+} from "@/lib/runningNotification";
 
 export const BACKGROUND_LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 export const BG_LOCATION_KEY = "@bg_locations";
@@ -31,6 +39,53 @@ const parseStoredLocations = (raw: string | null): BackgroundLocationPoint[] => 
   } catch {
     return [];
   }
+};
+
+const calculateDistance = (locations: BackgroundLocationPoint[]) => {
+  let distance = 0;
+
+  for (let index = 1; index < locations.length; index += 1) {
+    distance += getDistance(locations[index - 1], locations[index]);
+  }
+
+  return distance;
+};
+
+const updateAndroidForegroundNotification = async ({
+  locations,
+  backgroundStartedAt,
+}: {
+  locations: BackgroundLocationPoint[];
+  backgroundStartedAt: string;
+}) => {
+  const now = Date.now();
+  const lastUpdated = Number(
+    await AsyncStorage.getItem(BG_NOTIFICATION_UPDATED_AT_KEY)
+  );
+
+  if (
+    Number.isFinite(lastUpdated) &&
+    now - lastUpdated < RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS
+  ) {
+    return;
+  }
+
+  const baseMetrics = parseRunningNotificationMetrics(
+    await AsyncStorage.getItem(BG_NOTIFICATION_METRICS_KEY)
+  );
+  const offset = Number(backgroundStartedAt);
+  const backgroundSeconds = Number.isFinite(offset)
+    ? Math.max(0, Math.floor((now - offset) / 1000))
+    : 0;
+
+  await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(now));
+  await Location.startLocationUpdatesAsync(
+    BACKGROUND_LOCATION_TASK,
+    buildBackgroundLocationOptions({
+      distance: baseMetrics.distance + calculateDistance(locations),
+      seconds: baseMetrics.seconds + backgroundSeconds,
+    })
+  );
 };
 
 TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
@@ -64,6 +119,10 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     const stored = parseStoredLocations(raw);
     const updated = [...stored, ...points].slice(-MAX_BACKGROUND_LOCATIONS);
     await AsyncStorage.setItem(BG_LOCATION_KEY, JSON.stringify(updated));
+    await updateAndroidForegroundNotification({
+      locations: updated,
+      backgroundStartedAt,
+    });
   } catch {
     // Background tasks must fail quietly; foreground sync can continue later.
   }
