@@ -45,6 +45,10 @@ export interface location {
   longitude: number;
 }
 
+export interface TrackedLocation extends LocationObjectCoords {
+  timestamp: number;
+}
+
 export interface Place {
   name: string;
   formatted_address: string;

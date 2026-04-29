@@ -1,4 +1,9 @@
-import { CourseResponse, crewRunningLocation, runningLocation } from "@/types";
+import {
+  CourseResponse,
+  crewRunningLocation,
+  runningLocation,
+  TrackedLocation,
+} from "@/types";
 import {
   LocationObjectCoords,
   LocationPermissionResponse,
@@ -9,8 +14,8 @@ import { Alert } from "react-native";
 import { Region } from "react-native-maps/lib/sharedTypes";
 import { create } from "zustand";
 interface LocationState {
-  myLocation: LocationObjectCoords | null;
-  setMyLocation: (loc: LocationObjectCoords | null) => void;
+  myLocation: TrackedLocation | null;
+  setMyLocation: (loc: TrackedLocation | null) => void;
 
   permissionStatus: LocationPermissionResponse | null;
   setPermissionStatus: (perm: LocationPermissionResponse | null) => void;

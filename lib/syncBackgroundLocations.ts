@@ -1,10 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getDistance } from "geolib";
 import {
   BG_LOCATION_KEY,
   BG_SECONDS_OFFSET_KEY,
   BackgroundLocationPoint,
 } from "@/tasks/locationTask";
+import { getFilteredRunningDistance } from "@/lib/runningLocationFilter";
 
 export const BACKGROUND_LOCATION_SYNC_EVENT = "background-location-sync";
 
@@ -60,20 +60,31 @@ export async function syncBackgroundLocations(): Promise<BackgroundLocationSyncR
   }
 
   const segmentDistances: number[] = [];
+  const acceptedLocations: BackgroundLocationPoint[] = [locations[0]];
+  let previousAcceptedLocation = locations[0];
   let newDistance = 0;
 
   for (let index = 1; index < locations.length; index += 1) {
-    const distance = getDistance(locations[index - 1], locations[index]);
+    const nextLocation = locations[index];
+    const distance = getFilteredRunningDistance(
+      previousAcceptedLocation,
+      nextLocation
+    );
+
+    if (distance <= 0) continue;
+
     segmentDistances.push(distance);
+    acceptedLocations.push(nextLocation);
     newDistance += distance;
+    previousAcceptedLocation = nextLocation;
   }
 
   return {
     newDistance,
-    newCoords: locations
+    newCoords: acceptedLocations
       .slice(1)
       .map(({ longitude, latitude }) => [longitude, latitude]),
-    locations,
+    locations: acceptedLocations,
     segmentDistances,
     secondsElapsed,
   };

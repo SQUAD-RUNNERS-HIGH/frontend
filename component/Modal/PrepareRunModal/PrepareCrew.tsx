@@ -36,14 +36,16 @@ export const PrepareCrew = () => {
 
   useInterval(
     () => {
+      if (!myLocation) return;
       sendLocation(myLocation, isReady);
     },
     myLocation ? 1000 : null
   );
 
   useEffect(() => {
+    if (!myLocation) return;
     sendLocation(myLocation, isReady);
-  }, [isReady]);
+  }, [isReady, myLocation]);
   useEffect(() => {
     if (
       crewRunningPrepareParticipant.length > 0 &&

@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { location } from "@/types";
-import { getDistance } from "geolib";
-import { isSoloRunningRecord } from "../../lib/discriminateRecordType";
 import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
@@ -9,6 +7,11 @@ import { useShallow } from "zustand/react/shallow";
 import useInterval from "./useInterval";
 import { useCourseStore } from "@/store/useCourseStore";
 import { useStomp } from "./useStomp";
+import {
+  getFilteredRunningDistance,
+  getFilteredRunningSpeed,
+  hasNewerLocationTimestamp,
+} from "@/lib/runningLocationFilter";
 
 export const useSoloCourseRunning = () => {
   const {
@@ -43,6 +46,7 @@ export const useSoloCourseRunning = () => {
   const [progress, setProgress] = useState<number[]>([]);
   const [speed, setSpeed] = useState<string>(`0'00''`);
   const [index, setIndex] = useState<number>(0);
+  const lastSentTimestamp = useRef(0);
   useInterval(() => {
     if (runningStatus === "go") {
       setSeconds((prev) => prev + 1);
@@ -60,9 +64,12 @@ export const useSoloCourseRunning = () => {
   useInterval(() => {
     if (runningStatus === "go" && myLocation) {
       if (runDistance > 0) {
-        setSpeed(convertSpeedToPace(myLocation?.speed!));
+        setSpeed(convertSpeedToPace(getFilteredRunningSpeed(myLocation)));
       }
-      sendLocation(myLocation);
+      if (hasNewerLocationTimestamp(lastSentTimestamp.current, myLocation)) {
+        lastSentTimestamp.current = myLocation.timestamp;
+        sendLocation(myLocation);
+      }
       setIndex(prev => prev+1);
     }
   }, 500);
@@ -71,7 +78,7 @@ export const useSoloCourseRunning = () => {
     if (stompLocation) {
       if (prevLocation.current) {
         if (stompLocation?.runningStatus === "ONGOING") {
-          const distance = getDistance(
+          const distance = getFilteredRunningDistance(
             {
               latitude: prevLocation.current.latitude,
               longitude: prevLocation.current.longitude,
@@ -79,8 +86,14 @@ export const useSoloCourseRunning = () => {
             {
               latitude: stompLocation?.latitude,
               longitude: stompLocation?.longitude,
+              accuracy: stompLocation?.accuracy,
+              speed: stompLocation?.speed,
             }
           );
+
+          if (distance <= 0) {
+            return;
+          }
           setRunDistance((prev) => prev + distance);
         }
       }
