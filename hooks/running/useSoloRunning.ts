@@ -44,6 +44,7 @@ export const useSoloRunning = () => {
   >([]);
   const skipSyncedProgressEffect = useRef(false);
   const lastProgressTimestamp = useRef(0);
+  const lastAcceptedLocation = useRef<location | null>(null);
   const PACE_WINDOW_SECONDS = 10;
   useEffect(() => {
     if (runningStatus === "go") {
@@ -84,6 +85,23 @@ export const useSoloRunning = () => {
       }
 
       lastProgressTimestamp.current = newLocation.timestamp;
+
+      if (!lastAcceptedLocation.current) {
+        lastAcceptedLocation.current = newLocation;
+        setProgress((prev) => [...prev, newLocation]);
+        return;
+      }
+
+      const filteredDistance = getFilteredRunningDistance(
+        lastAcceptedLocation.current,
+        newLocation
+      );
+
+      if (filteredDistance <= 0) {
+        return;
+      }
+
+      lastAcceptedLocation.current = newLocation;
       setProgress((prev) => {
         const newProgress = [...prev, newLocation];
         return newProgress;
@@ -92,6 +110,10 @@ export const useSoloRunning = () => {
   }, 2000);
   useEffect(() => {
     if (runningStatus === "countdown" && myLocation) {
+      lastAcceptedLocation.current = {
+        latitude: myLocation.latitude,
+        longitude: myLocation.longitude,
+      };
       setRunningRecord({
         runningTime: 0,
         courseName: "",
@@ -107,6 +129,13 @@ export const useSoloRunning = () => {
         if (!Array.isArray(locations) || locations.length === 0) return;
 
         skipSyncedProgressEffect.current = true;
+        const lastLocation = locations[locations.length - 1];
+        if (lastLocation) {
+          lastAcceptedLocation.current = {
+            latitude: lastLocation.latitude,
+            longitude: lastLocation.longitude,
+          };
+        }
         setProgress((prev) => [
           ...prev,
           ...locations.map(({ latitude, longitude }) => ({

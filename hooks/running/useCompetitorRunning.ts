@@ -12,6 +12,7 @@ import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
 import {
   getFilteredRunningDistance,
+  getFilteredRunningSpeed,
   hasNewerLocationTimestamp,
 } from "@/lib/runningLocationFilter";
 export const useCompetitorRunning = () => {
@@ -98,7 +99,7 @@ export const useCompetitorRunning = () => {
           lastSentTimestamp.current = myLocation.timestamp;
           sendLocation(myLocation);
         }
-        setSpeed(convertSpeedToPace(myLocation?.speed ?? 0));
+        setSpeed(convertSpeedToPace(getFilteredRunningSpeed(myLocation)));
       }
     },
     data && runningStatus === 'go' ? 500 : null
@@ -127,7 +128,6 @@ export const useCompetitorRunning = () => {
             }
           );
           if (distance <= 0) {
-            prevLocation.current = stompLocation;
             return;
           }
           setRunDistance((prev) => prev + distance);

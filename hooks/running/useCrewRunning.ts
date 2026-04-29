@@ -12,6 +12,7 @@ import { useStompStore } from "@/store/useStompStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   getFilteredRunningDistance,
+  getFilteredRunningSpeed,
   hasNewerLocationTimestamp,
 } from "@/lib/runningLocationFilter";
 export const useCrewRunning = () => {
@@ -80,7 +81,7 @@ export const useCrewRunning = () => {
           lastSentTimestamp.current = myLocation.timestamp;
           sendLocation(myLocation);
         }
-        setSpeed(convertSpeedToPace(myLocation?.speed ?? 0));
+        setSpeed(convertSpeedToPace(getFilteredRunningSpeed(myLocation)));
       }
     },
     runningStatus === "go" && myLocation ? 500 : null
@@ -114,6 +115,14 @@ export const useCrewRunning = () => {
           speed: stompLocation?.speed,
         }
       );
+
+      if (distance <= 0) {
+        setCrewRunningParticipants(userId, {
+          ...prevParticipant,
+          runningStatus,
+        });
+        return;
+      }
       setCrewRunningParticipants(userId, {
         latitude,
         longitude,

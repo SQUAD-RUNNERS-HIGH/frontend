@@ -5,6 +5,7 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useRunningStore } from "@/store/useRunningStore";
 import { convertSpeedToPace } from "@/lib/convertSpeedToPace";
 import { useShallow } from "zustand/react/shallow";
+import { getFilteredRunningSpeed } from "@/lib/runningLocationFilter";
 
 function paceStringToSeconds(paceStr: string): number {
   const [min, sec] = paceStr.split(/['"]/).map(Number);
@@ -27,7 +28,7 @@ export const SoloRunningText = () => {
     }))
   );
   const myLocation = useLocationStore((state) => state.myLocation);
-  const currentPace = convertSpeedToPace(myLocation?.speed!);
+  const currentPace = convertSpeedToPace(getFilteredRunningSpeed(myLocation));
   const targetSec = paceStringToSeconds(targetPace);
   const currentSec = paceStringToSeconds(currentPace);
   const winning = targetSec - currentSec > 0 ? true : false;

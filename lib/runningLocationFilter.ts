@@ -8,10 +8,11 @@ type LocationSample = {
   timestamp?: number;
 };
 
-export const MIN_RUNNING_MOVEMENT_METERS = 2;
-export const MAX_RUNNING_ACCURACY_METERS = 35;
-export const STATIONARY_SPEED_THRESHOLD = 0.8;
-export const STATIONARY_DISTANCE_THRESHOLD = 5;
+export const MIN_RUNNING_MOVEMENT_METERS = 3;
+export const MAX_RUNNING_ACCURACY_METERS = 25;
+export const STATIONARY_SPEED_THRESHOLD = 1.2;
+export const STATIONARY_DISTANCE_THRESHOLD = 8;
+export const UNKNOWN_SPEED_DISTANCE_THRESHOLD = 6;
 
 export const hasNewerLocationTimestamp = (
   previousTimestamp: number,
@@ -40,6 +41,13 @@ export const getFilteredRunningDistance = (
   }
 
   if (
+    typeof nextLocation.speed !== "number" &&
+    distance < UNKNOWN_SPEED_DISTANCE_THRESHOLD
+  ) {
+    return 0;
+  }
+
+  if (
     typeof nextLocation.speed === "number" &&
     nextLocation.speed >= 0 &&
     nextLocation.speed < STATIONARY_SPEED_THRESHOLD &&
@@ -49,4 +57,27 @@ export const getFilteredRunningDistance = (
   }
 
   return distance;
+};
+
+export const getFilteredRunningSpeed = (
+  location: LocationSample | null | undefined
+) => {
+  if (!location) return 0;
+
+  if (
+    typeof location.accuracy === "number" &&
+    location.accuracy > MAX_RUNNING_ACCURACY_METERS
+  ) {
+    return 0;
+  }
+
+  if (typeof location.speed !== "number" || location.speed <= 0) {
+    return 0;
+  }
+
+  if (location.speed < STATIONARY_SPEED_THRESHOLD) {
+    return 0;
+  }
+
+  return location.speed;
 };

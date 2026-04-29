@@ -9,6 +9,7 @@ import { useCourseStore } from "@/store/useCourseStore";
 import { useStomp } from "./useStomp";
 import {
   getFilteredRunningDistance,
+  getFilteredRunningSpeed,
   hasNewerLocationTimestamp,
 } from "@/lib/runningLocationFilter";
 
@@ -63,7 +64,7 @@ export const useSoloCourseRunning = () => {
   useInterval(() => {
     if (runningStatus === "go" && myLocation) {
       if (runDistance > 0) {
-        setSpeed(convertSpeedToPace(myLocation?.speed ?? 0));
+        setSpeed(convertSpeedToPace(getFilteredRunningSpeed(myLocation)));
       }
       if (hasNewerLocationTimestamp(lastSentTimestamp.current, myLocation)) {
         lastSentTimestamp.current = myLocation.timestamp;
@@ -91,7 +92,6 @@ export const useSoloCourseRunning = () => {
           );
 
           if (distance <= 0) {
-            prevLocation.current = stompLocation;
             return;
           }
           setRunDistance((prev) => prev + distance);
