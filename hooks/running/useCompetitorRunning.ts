@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCompetitor } from "../../lib/map/fetchCompetitor";
 import { useEffect, useRef, useState } from "react";
 import useInterval from "./useInterval";
-import { getDistance, getPathLength } from "geolib";
+import { getPathLength } from "geolib";
 import { location } from "../../types";
 import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
@@ -10,6 +10,10 @@ import { useLocationStore } from "@/store/useLocationStore";
 import { useShallow } from "zustand/react/shallow";
 import { useRunningStore } from "@/store/useRunningStore";
 import { useCourseStore } from "@/store/useCourseStore";
+import {
+  getFilteredRunningDistance,
+  hasNewerLocationTimestamp,
+} from "@/lib/runningLocationFilter";
 export const useCompetitorRunning = () => {
   const { selectedCourseId, currentCourses, totalDistance, setTotalDistance } = useCourseStore(
     useShallow((state) => ({
@@ -55,6 +59,7 @@ export const useCompetitorRunning = () => {
   const [progress, setProgress] = useState<number[]>([]);
   const [competitorProgress, setCompetitorProgress] = useState<number>(0);
   const prevLocation = useRef<location | null>(null);
+  const lastSentTimestamp = useRef(0);
   const [distanceToCompetitor, setDistanceToCompetitor] = useState<number>(0);
   const [winning, setWinning] = useState<boolean>(true);
   const [index, setIndex] = useState<number>(0);
@@ -89,8 +94,11 @@ export const useCompetitorRunning = () => {
         if (index < (data?.progress.length ?? 1) - 1) {
           setIndex((prev) => prev + 1);
         }
-        sendLocation(myLocation);
-        setSpeed(convertSpeedToPace(myLocation?.speed));
+        if (hasNewerLocationTimestamp(lastSentTimestamp.current, myLocation)) {
+          lastSentTimestamp.current = myLocation.timestamp;
+          sendLocation(myLocation);
+        }
+        setSpeed(convertSpeedToPace(myLocation?.speed ?? 0));
       }
     },
     data && runningStatus === 'go' ? 500 : null
@@ -106,7 +114,7 @@ export const useCompetitorRunning = () => {
     if (stompLocation) {
       if (prevLocation.current) {
         if (stompLocation?.runningStatus === "ONGOING") {
-          const distance = getDistance(
+          const distance = getFilteredRunningDistance(
             {
               latitude: prevLocation.current.latitude,
               longitude: prevLocation.current.longitude,
@@ -114,8 +122,14 @@ export const useCompetitorRunning = () => {
             {
               latitude: stompLocation?.latitude,
               longitude: stompLocation?.longitude,
+              accuracy: stompLocation?.accuracy,
+              speed: stompLocation?.speed,
             }
           );
+          if (distance <= 0) {
+            prevLocation.current = stompLocation;
+            return;
+          }
           setRunDistance((prev) => prev + distance);
         }
 

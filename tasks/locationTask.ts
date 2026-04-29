@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
-import { getDistance } from "geolib";
 import {
   BG_NOTIFICATION_METRICS_KEY,
   BG_NOTIFICATION_UPDATED_AT_KEY,
@@ -9,6 +8,7 @@ import {
   parseRunningNotificationMetrics,
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
+import { getFilteredRunningDistance } from "@/lib/runningLocationFilter";
 
 export const BACKGROUND_LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 export const BG_LOCATION_KEY = "@bg_locations";
@@ -19,6 +19,8 @@ export type BackgroundLocationPoint = {
   latitude: number;
   longitude: number;
   timestamp: number;
+  accuracy: number | null;
+  speed: number | null;
 };
 
 // About 2h 45m at the current 2s collection interval.
@@ -43,9 +45,19 @@ const parseStoredLocations = (raw: string | null): BackgroundLocationPoint[] => 
 
 const calculateDistance = (locations: BackgroundLocationPoint[]) => {
   let distance = 0;
+  let previousAcceptedLocation = locations[0];
 
   for (let index = 1; index < locations.length; index += 1) {
-    distance += getDistance(locations[index - 1], locations[index]);
+    const nextLocation = locations[index];
+    const filteredDistance = getFilteredRunningDistance(
+      previousAcceptedLocation,
+      nextLocation
+    );
+
+    if (filteredDistance <= 0) continue;
+
+    distance += filteredDistance;
+    previousAcceptedLocation = nextLocation;
   }
 
   return distance;
@@ -110,6 +122,12 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
       timestamp: location.timestamp,
+      accuracy:
+        typeof location.coords.accuracy === "number"
+          ? location.coords.accuracy
+          : null,
+      speed:
+        typeof location.coords.speed === "number" ? location.coords.speed : null,
     }));
 
   if (points.length === 0) return;

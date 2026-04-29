@@ -155,7 +155,10 @@ export const useLocationTracking = () => {
         distanceInterval: isRunning ? 1 : 5,
       },
       (newLocation) => {
-        setMyLocation(newLocation.coords);
+        setMyLocation({
+          ...newLocation.coords,
+          timestamp: newLocation.timestamp,
+        });
       }
     );
     subscription.current = sub;
@@ -244,7 +247,13 @@ export const useLocationTracking = () => {
         setMyLocation({
           latitude: lastLocation.latitude,
           longitude: lastLocation.longitude,
-        } as Location.LocationObjectCoords);
+          accuracy: lastLocation.accuracy ?? null,
+          speed: lastLocation.speed ?? null,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          timestamp: lastLocation.timestamp,
+        });
       }
 
       if (result.newDistance > 0) {

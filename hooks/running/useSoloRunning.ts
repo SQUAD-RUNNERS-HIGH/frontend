@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { DeviceEventEmitter } from "react-native";
 import { location } from "@/types";
-import { getDistance } from "geolib";
 import { isSoloRunningRecord } from "../../lib/discriminateRecordType";
 import { calculatePaceFromDistance } from "../../lib/convertSpeedToPace";
 import { useLocationStore } from "@/store/useLocationStore";
@@ -12,6 +11,10 @@ import {
   BACKGROUND_LOCATION_SYNC_EVENT,
 } from "@/lib/syncBackgroundLocations";
 import { BackgroundLocationPoint } from "@/tasks/locationTask";
+import {
+  getFilteredRunningDistance,
+  hasNewerLocationTimestamp,
+} from "@/lib/runningLocationFilter";
 
 export const useSoloRunning = () => {
   const {
@@ -40,6 +43,7 @@ export const useSoloRunning = () => {
     { timestamp: number; distance: number }[]
   >([]);
   const skipSyncedProgressEffect = useRef(false);
+  const lastProgressTimestamp = useRef(0);
   const PACE_WINDOW_SECONDS = 10;
   useEffect(() => {
     if (runningStatus === "go") {
@@ -70,7 +74,16 @@ export const useSoloRunning = () => {
       const newLocation = {
         latitude: myLocation.latitude,
         longitude: myLocation.longitude,
+        accuracy: myLocation.accuracy,
+        speed: myLocation.speed,
+        timestamp: myLocation.timestamp,
       };
+
+      if (!hasNewerLocationTimestamp(lastProgressTimestamp.current, newLocation)) {
+        return;
+      }
+
+      lastProgressTimestamp.current = newLocation.timestamp;
       setProgress((prev) => {
         const newProgress = [...prev, newLocation];
         return newProgress;
@@ -115,10 +128,14 @@ export const useSoloRunning = () => {
 
     if (progress.length >= 2 && runningStatus === "go") {
       const now = Date.now();
-      const distance = getDistance(
+      const distance = getFilteredRunningDistance(
         progress[progress.length - 1],
         progress[progress.length - 2]
       );
+
+      if (distance <= 0) {
+        return;
+      }
 
       // 최근 거리 버퍼 업데이트 (10초 윈도우 유지)
       const newBuffer = [
@@ -155,10 +172,14 @@ export const useSoloRunning = () => {
     }
 
     if (progress.length >= 2) {
-      const distance = getDistance(
+      const distance = getFilteredRunningDistance(
         progress[progress.length - 1],
         progress[progress.length - 2]
       );
+
+      if (distance <= 0) {
+        return;
+      }
 
       // 전체 거리 업데이트
       setRunDistance((prev) => prev + distance);

@@ -14,6 +14,9 @@ type StompMessage = {
   runningStatus?: string;
   latitude?: number;
   longitude?: number;
+  accuracy?: number;
+  speed?: number;
+  timestamp?: number;
   userId?: string;
   username?: string;
 };
@@ -142,6 +145,9 @@ export function useStomp() {
           runningStatus: data?.runningStatus,
           latitude: data?.latitude,
           longitude: data?.longitude,
+          accuracy: data?.accuracy,
+          speed: data?.speed,
+          timestamp: data?.timestamp,
           userId: data?.userId,
           username: data?.username,
         } as any));

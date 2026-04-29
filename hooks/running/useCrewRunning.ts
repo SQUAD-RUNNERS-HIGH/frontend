@@ -1,6 +1,5 @@
 import { CrewRunningParticipant } from "./../../types/index";
 import { useEffect, useRef, useState } from "react";
-import { getDistance } from "geolib";
 import { location } from "../../types";
 import { convertSpeedToPace } from "../../lib/convertSpeedToPace";
 import { useStomp } from "./useStomp";
@@ -11,6 +10,10 @@ import { useCourseStore } from "@/store/useCourseStore";
 import useInterval from "./useInterval";
 import { useStompStore } from "@/store/useStompStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import {
+  getFilteredRunningDistance,
+  hasNewerLocationTimestamp,
+} from "@/lib/runningLocationFilter";
 export const useCrewRunning = () => {
   const { selectedCourseId, currentCourses } = useCourseStore(
     useShallow((state) => ({
@@ -50,6 +53,7 @@ export const useCrewRunning = () => {
   const [speed, setSpeed] = useState<string>("00'00\"");
   const [index, setIndex] = useState<number>(0);
   const [text, setText] = useState<string>("");
+  const lastSentTimestamp = useRef(0);
 
   useEffect(() => {
     if (selectedCourseId) {
@@ -72,8 +76,11 @@ export const useCrewRunning = () => {
     () => {
       if (myLocation) {
         setIndex((prev) => prev + 1);
-        sendLocation(myLocation);
-        setSpeed(convertSpeedToPace(myLocation?.speed));
+        if (hasNewerLocationTimestamp(lastSentTimestamp.current, myLocation)) {
+          lastSentTimestamp.current = myLocation.timestamp;
+          sendLocation(myLocation);
+        }
+        setSpeed(convertSpeedToPace(myLocation?.speed ?? 0));
       }
     },
     runningStatus === "go" && myLocation ? 500 : null
@@ -95,7 +102,7 @@ export const useCrewRunning = () => {
     if (prevParticipant) {
       const prevDistance = prevParticipant.distance ?? 0;
 
-      distance = getDistance(
+      distance = getFilteredRunningDistance(
         {
           latitude: prevParticipant.latitude,
           longitude: prevParticipant.longitude,
@@ -103,6 +110,8 @@ export const useCrewRunning = () => {
         {
           latitude,
           longitude,
+          accuracy: stompLocation?.accuracy,
+          speed: stompLocation?.speed,
         }
       );
       setCrewRunningParticipants(userId, {
