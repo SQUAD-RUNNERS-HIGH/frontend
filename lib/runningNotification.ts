@@ -2,7 +2,7 @@ import * as Location from "expo-location";
 import { calculatePaceFromDistance } from "@/lib/convertSpeedToPace";
 import { formatTime } from "@/lib/formatTime";
 
-export const RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS = 15000;
+export const RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS = 10000;
 export const BG_NOTIFICATION_METRICS_KEY = "@bg_notification_metrics";
 export const BG_NOTIFICATION_UPDATED_AT_KEY = "@bg_notification_updated_at";
 
