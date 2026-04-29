@@ -343,17 +343,6 @@ export const useLocationTracking = () => {
         if (!wasActive) return;
 
         const runningState = useRunningStore.getState();
-        await AsyncStorage.multiSet([
-          [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
-          [BG_RUNNING_FLAG_KEY, "true"],
-          [
-            BG_NOTIFICATION_METRICS_KEY,
-            JSON.stringify({
-              distance: runningState.runDistance,
-              seconds: runningState.seconds,
-            }),
-          ],
-        ]);
 
         if (Platform.OS === "android") {
           const hasStarted = await Location.hasStartedLocationUpdatesAsync(
@@ -368,6 +357,18 @@ export const useLocationTracking = () => {
             lastNotificationUpdateAt.current = Date.now();
           }
         }
+
+        await AsyncStorage.multiSet([
+          [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
+          [BG_RUNNING_FLAG_KEY, "true"],
+          [
+            BG_NOTIFICATION_METRICS_KEY,
+            JSON.stringify({
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            }),
+          ],
+        ]);
 
         const currentLocation = useLocationStore.getState().myLocation;
         if (currentLocation) {
