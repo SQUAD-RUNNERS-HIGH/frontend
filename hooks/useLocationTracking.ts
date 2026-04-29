@@ -14,6 +14,7 @@ import { useAlertStore } from "@/store/useAlertStore";
 import {
   BACKGROUND_LOCATION_TASK,
   BG_LOCATION_KEY,
+  BG_RUNNING_METRICS_KEY,
   BG_RUNNING_FLAG_KEY,
   BG_SECONDS_OFFSET_KEY,
 } from "@/tasks/locationTask";
@@ -27,22 +28,38 @@ import {
 } from "@/lib/discriminateRecordType";
 import { useCourseStore } from "@/store/useCourseStore";
 import {
-  BG_NOTIFICATION_METRICS_KEY,
   BG_NOTIFICATION_UPDATED_AT_KEY,
   buildBackgroundLocationOptions,
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
+import { buildBackgroundRunningMetrics } from "@/lib/backgroundRunningMetrics";
 
-const setNotificationMetrics = async ({
+const setBackgroundRunningMetrics = async ({
   distance,
   seconds,
+  latitude,
+  longitude,
+  timestamp,
 }: {
   distance: number;
   seconds: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  timestamp?: number | null;
 }) => {
   await AsyncStorage.setItem(
-    BG_NOTIFICATION_METRICS_KEY,
-    JSON.stringify({ distance, seconds })
+    BG_RUNNING_METRICS_KEY,
+    JSON.stringify(
+      buildBackgroundRunningMetrics({
+        baseDistance: distance,
+        baseSeconds: seconds,
+        distance,
+        seconds,
+        lastLatitude: latitude ?? null,
+        lastLongitude: longitude ?? null,
+        lastTimestamp: timestamp ?? null,
+      })
+    )
   );
 };
 
@@ -53,7 +70,6 @@ const updateRunningNotification = async ({
   distance: number;
   seconds: number;
 }) => {
-  await setNotificationMetrics({ distance, seconds });
   await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(Date.now()));
 
   await Location.startLocationUpdatesAsync(
@@ -177,9 +193,13 @@ export const useLocationTracking = () => {
 
     await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
     const runningState = useRunningStore.getState();
-    await setNotificationMetrics({
+    const currentLocation = useLocationStore.getState().myLocation;
+    await setBackgroundRunningMetrics({
       distance: runningState.runDistance,
       seconds: runningState.seconds,
+      latitude: currentLocation?.latitude ?? null,
+      longitude: currentLocation?.longitude ?? null,
+      timestamp: currentLocation?.timestamp ?? Date.now(),
     });
 
     const hasStarted = await Location.hasStartedLocationUpdatesAsync(
@@ -213,7 +233,7 @@ export const useLocationTracking = () => {
     const keys = [
       BG_RUNNING_FLAG_KEY,
       BG_SECONDS_OFFSET_KEY,
-      BG_NOTIFICATION_METRICS_KEY,
+      BG_RUNNING_METRICS_KEY,
       BG_NOTIFICATION_UPDATED_AT_KEY,
     ];
     if (clearLocations) keys.push(BG_LOCATION_KEY);
@@ -367,19 +387,21 @@ export const useLocationTracking = () => {
           }
         }
 
+        const currentLocation = useLocationStore.getState().myLocation;
+
         await AsyncStorage.multiSet([
           [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
           [BG_RUNNING_FLAG_KEY, "true"],
-          [
-            BG_NOTIFICATION_METRICS_KEY,
-            JSON.stringify({
-              distance: runningState.runDistance,
-              seconds: runningState.seconds,
-            }),
-          ],
         ]);
 
-        const currentLocation = useLocationStore.getState().myLocation;
+        await setBackgroundRunningMetrics({
+          distance: runningState.runDistance,
+          seconds: runningState.seconds,
+          latitude: currentLocation?.latitude ?? null,
+          longitude: currentLocation?.longitude ?? null,
+          timestamp: currentLocation?.timestamp ?? Date.now(),
+        }).catch(() => undefined);
+
         if (currentLocation) {
           await AsyncStorage.setItem(
             BG_LOCATION_KEY,
@@ -387,7 +409,9 @@ export const useLocationTracking = () => {
               {
                 latitude: currentLocation.latitude,
                 longitude: currentLocation.longitude,
-                timestamp: Date.now(),
+                timestamp: currentLocation.timestamp ?? Date.now(),
+                accuracy: currentLocation.accuracy ?? null,
+                speed: currentLocation.speed ?? null,
               },
             ])
           );
