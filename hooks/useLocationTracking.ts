@@ -46,6 +46,22 @@ const setNotificationMetrics = async ({
   );
 };
 
+const updateRunningNotification = async ({
+  distance,
+  seconds,
+}: {
+  distance: number;
+  seconds: number;
+}) => {
+  await setNotificationMetrics({ distance, seconds });
+  await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(Date.now()));
+
+  await Location.startLocationUpdatesAsync(
+    BACKGROUND_LOCATION_TASK,
+    buildBackgroundLocationOptions({ distance, seconds })
+  );
+};
+
 export const useLocationTracking = () => {
   const subscription = useRef<Location.LocationSubscription | null>(null);
   const appState = useRef(AppState.currentState);
@@ -152,7 +168,9 @@ export const useLocationTracking = () => {
     const hasBackgroundPermission = await ensureBackgroundPermission();
     if (!hasBackgroundPermission) return;
 
-    await ensureAndroidNotificationPermission();
+    const hasNotificationPermission =
+      await ensureAndroidNotificationPermission();
+    if (!hasNotificationPermission) return;
 
     await AsyncStorage.setItem(BG_RUNNING_FLAG_KEY, "true");
     const runningState = useRunningStore.getState();
@@ -166,13 +184,10 @@ export const useLocationTracking = () => {
     ).catch(() => false);
 
     if (!hasStarted) {
-      await Location.startLocationUpdatesAsync(
-        BACKGROUND_LOCATION_TASK,
-        buildBackgroundLocationOptions({
-          distance: runningState.runDistance,
-          seconds: runningState.seconds,
-        })
-      );
+      await updateRunningNotification({
+        distance: runningState.runDistance,
+        seconds: runningState.seconds,
+      });
       lastNotificationUpdateAt.current = Date.now();
     }
   }, [
@@ -314,13 +329,7 @@ export const useLocationTracking = () => {
       .then((hasStarted) => {
         if (!hasStarted || AppState.currentState !== "active") return;
         lastNotificationUpdateAt.current = now;
-        setNotificationMetrics({ distance: runDistance, seconds }).catch(
-          () => undefined
-        );
-        return Location.startLocationUpdatesAsync(
-          BACKGROUND_LOCATION_TASK,
-          buildBackgroundLocationOptions({ distance: runDistance, seconds })
-        );
+        return updateRunningNotification({ distance: runDistance, seconds });
       })
       .catch(() => undefined);
   }, [isRunning, runDistance, seconds]);
@@ -345,6 +354,20 @@ export const useLocationTracking = () => {
             }),
           ],
         ]);
+
+        if (Platform.OS === "android") {
+          const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+            BACKGROUND_LOCATION_TASK
+          ).catch(() => false);
+
+          if (hasStarted) {
+            await updateRunningNotification({
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            }).catch(() => undefined);
+            lastNotificationUpdateAt.current = Date.now();
+          }
+        }
 
         const currentLocation = useLocationStore.getState().myLocation;
         if (currentLocation) {
