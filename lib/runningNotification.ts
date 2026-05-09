@@ -8,6 +8,7 @@ export const BG_NOTIFICATION_UPDATED_AT_KEY = "@bg_notification_updated_at";
 export type RunningNotificationMetrics = {
   distance: number;
   seconds: number;
+  useForegroundService?: boolean;
 };
 
 export const formatRunningDistance = (distance: number) => {
@@ -19,22 +20,27 @@ export const buildRunningNotificationBody = ({
   seconds,
 }: RunningNotificationMetrics) => {
   const pace = calculatePaceFromDistance(distance, seconds);
-  return `거리 ${formatRunningDistance(distance)} · 시간 ${formatTime(seconds)} · 페이스 ${pace}`;
+  return `${formatRunningDistance(distance)} | ${formatTime(seconds)} | ${pace}`;
 };
 
 export const buildBackgroundLocationOptions = ({
   distance,
   seconds,
+  useForegroundService = true,
 }: RunningNotificationMetrics): Location.LocationTaskOptions => ({
   accuracy: Location.Accuracy.BestForNavigation,
   timeInterval: 2000,
   distanceInterval: 1,
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
-  foregroundService: {
-    notificationTitle: "러닝 중",
-    notificationBody: buildRunningNotificationBody({ distance, seconds }),
-    notificationColor: "#4169E1",
-    killServiceOnDestroy: false,
-  },
+  ...(useForegroundService
+    ? {
+        foregroundService: {
+          notificationTitle: "Running",
+          notificationBody: buildRunningNotificationBody({ distance, seconds }),
+          notificationColor: "#4169E1",
+          killServiceOnDestroy: false,
+        },
+      }
+    : {}),
 });

@@ -6,11 +6,20 @@ import {
   buildBackgroundLocationOptions,
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
-import { getFilteredRunningDistance } from "@/lib/runningLocationFilter";
+import {
+  getFilteredRunningDistance,
+  getFilteredRunningSpeed,
+} from "@/lib/runningLocationFilter";
 import {
   buildBackgroundRunningMetrics,
   parseBackgroundRunningMetrics,
 } from "@/lib/backgroundRunningMetrics";
+import {
+  getNativeRunningSnapshot,
+  isNativeRunningServiceAvailable,
+  updateNativeRunningMetrics,
+} from "@/lib/nativeRunningService";
+import { convertSpeedToPace } from "@/lib/convertSpeedToPace";
 
 export const BACKGROUND_LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 export const BG_LOCATION_KEY = "@bg_locations";
@@ -49,10 +58,23 @@ const parseStoredLocations = (raw: string | null): BackgroundLocationPoint[] => 
 const updateAndroidForegroundNotification = async ({
   distance,
   seconds,
+  pace,
 }: {
   distance: number;
   seconds: number;
+  pace: string;
 }) => {
+  if (isNativeRunningServiceAvailable()) {
+    await updateNativeRunningMetrics({ distance, seconds, pace }).catch(
+      () => false
+    );
+
+    const nativeSnapshot = await getNativeRunningSnapshot().catch(() => null);
+    if (nativeSnapshot?.isRunning) {
+      return;
+    }
+  }
+
   const now = Date.now();
   const lastUpdated = Number(
     await AsyncStorage.getItem(BG_NOTIFICATION_UPDATED_AT_KEY)
@@ -71,6 +93,7 @@ const updateAndroidForegroundNotification = async ({
     buildBackgroundLocationOptions({
       distance,
       seconds,
+      useForegroundService: true,
     })
   );
 };
@@ -165,6 +188,12 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     }
 
     const trimmedLocations = updatedLocations.slice(-MAX_BACKGROUND_LOCATIONS);
+    const latestPoint = points[points.length - 1];
+    const currentPace = latestPoint
+      ? convertSpeedToPace(getFilteredRunningSpeed(latestPoint))
+      : nextMetrics.pace;
+    const nextPace = currentPace === `00'00"` ? nextMetrics.pace : currentPace;
+
     await AsyncStorage.multiSet([
       [BG_LOCATION_KEY, JSON.stringify(trimmedLocations)],
       [BG_RUNNING_METRICS_KEY, JSON.stringify(nextMetrics)],
@@ -172,6 +201,7 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     await updateAndroidForegroundNotification({
       distance: nextMetrics.distance,
       seconds: nextMetrics.seconds,
+      pace: nextPace,
     });
   } catch {
     // Background tasks must fail quietly; foreground sync can continue later.

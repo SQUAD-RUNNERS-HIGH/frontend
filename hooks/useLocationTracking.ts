@@ -33,6 +33,19 @@ import {
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
 import { buildBackgroundRunningMetrics } from "@/lib/backgroundRunningMetrics";
+import {
+  calculatePaceFromDistance,
+  convertSpeedToPace,
+} from "@/lib/convertSpeedToPace";
+import { getFilteredRunningSpeed } from "@/lib/runningLocationFilter";
+import {
+  ensureNativeRunningServiceStarted,
+  getNativeRunningSnapshot,
+  isNativeRunningServiceAvailable,
+  isNativeRunningServiceRunning,
+  stopNativeRunningService,
+  updateNativeRunningMetrics,
+} from "@/lib/nativeRunningService";
 
 const setBackgroundRunningMetrics = async ({
   distance,
@@ -66,16 +79,67 @@ const setBackgroundRunningMetrics = async ({
 const updateRunningNotification = async ({
   distance,
   seconds,
+  pace,
 }: {
   distance: number;
   seconds: number;
+  pace: string;
 }) => {
+  if (isNativeRunningServiceAvailable()) {
+    await updateNativeRunningMetrics({ distance, seconds, pace }).catch(
+      () => false
+    );
+
+    const isNativeRunning = await isNativeRunningServiceRunning().catch(
+      () => false
+    );
+    if (isNativeRunning) {
+      return;
+    }
+  }
+
   await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(Date.now()));
 
   await Location.startLocationUpdatesAsync(
     BACKGROUND_LOCATION_TASK,
-    buildBackgroundLocationOptions({ distance, seconds })
+    buildBackgroundLocationOptions({
+      distance,
+      seconds,
+      useForegroundService: true,
+    })
   );
+};
+
+const startBackgroundLocationUpdates = async ({
+  distance,
+  seconds,
+  useForegroundService,
+}: {
+  distance: number;
+  seconds: number;
+  useForegroundService: boolean;
+}) => {
+  await Location.startLocationUpdatesAsync(
+    BACKGROUND_LOCATION_TASK,
+    buildBackgroundLocationOptions({
+      distance,
+      seconds,
+      useForegroundService,
+    })
+  );
+};
+
+const getCurrentNotificationPace = (
+  location: ReturnType<typeof useLocationStore.getState>["myLocation"] | null,
+  distance: number,
+  seconds: number
+) => {
+  const currentPace = convertSpeedToPace(getFilteredRunningSpeed(location));
+  if (currentPace !== `00'00"`) {
+    return currentPace;
+  }
+
+  return calculatePaceFromDistance(distance, seconds);
 };
 
 export const useLocationTracking = () => {
@@ -83,6 +147,7 @@ export const useLocationTracking = () => {
   const appState = useRef(AppState.currentState);
   const syncingRef = useRef(false);
   const lastNotificationUpdateAt = useRef(0);
+  const lastNativeMetricsSync = useRef({ distance: 0, seconds: 0 });
   const showError = useAlertStore((s) => s.showError);
   const setMyLocation = useLocationStore((s) => s.setMyLocation);
   const runningStatus = useRunningStore((state) => state.runningStatus);
@@ -202,15 +267,38 @@ export const useLocationTracking = () => {
       timestamp: currentLocation?.timestamp ?? Date.now(),
     });
 
-    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-      BACKGROUND_LOCATION_TASK
-    ).catch(() => false);
+    const initialPace = getCurrentNotificationPace(
+      currentLocation,
+      runningState.runDistance,
+      runningState.seconds
+    );
+    let nativeServiceReady = false;
 
-    if (!hasStarted) {
-      await updateRunningNotification({
+    if (Platform.OS === "android" && isNativeRunningServiceAvailable()) {
+      nativeServiceReady = await ensureNativeRunningServiceStarted({
         distance: runningState.runDistance,
         seconds: runningState.seconds,
+        pace: initialPace,
       });
+      if (nativeServiceReady) {
+        lastNativeMetricsSync.current = {
+          distance: runningState.runDistance,
+          seconds: runningState.seconds,
+        };
+      } else {
+        console.warn(
+          "[running-notification] Native foreground service did not report running. Falling back to Expo foreground service notification."
+        );
+      }
+    }
+
+    await startBackgroundLocationUpdates({
+      distance: runningState.runDistance,
+      seconds: runningState.seconds,
+      useForegroundService: !nativeServiceReady,
+    });
+
+    if (!nativeServiceReady) {
       lastNotificationUpdateAt.current = Date.now();
     }
   }, [
@@ -230,6 +318,8 @@ export const useLocationTracking = () => {
       );
     }
 
+    await stopNativeRunningService().catch(() => undefined);
+
     const keys = [
       BG_RUNNING_FLAG_KEY,
       BG_SECONDS_OFFSET_KEY,
@@ -245,11 +335,16 @@ export const useLocationTracking = () => {
     syncingRef.current = true;
 
     try {
+      const nativeSnapshot =
+        Platform.OS === "android" && isNativeRunningServiceAvailable()
+          ? await getNativeRunningSnapshot().catch(() => null)
+          : null;
       const result = await syncBackgroundLocations();
       if (
         result.newDistance <= 0 &&
         result.secondsElapsed <= 0 &&
-        result.locations.length === 0
+        result.locations.length === 0 &&
+        !nativeSnapshot?.isRunning
       ) {
         return;
       }
@@ -257,8 +352,11 @@ export const useLocationTracking = () => {
       const runningState = useRunningStore.getState();
       if (runningState.runningStatus !== "go") return;
 
-      const nextSeconds = runningState.seconds + result.secondsElapsed;
-      if (result.secondsElapsed > 0) {
+      const nextSeconds = Math.max(
+        runningState.seconds + result.secondsElapsed,
+        nativeSnapshot?.seconds ?? 0
+      );
+      if (nextSeconds > runningState.seconds) {
         runningState.setSeconds(nextSeconds);
       }
 
@@ -276,9 +374,15 @@ export const useLocationTracking = () => {
         });
       }
 
-      if (result.newDistance > 0) {
+      const nextDistance = Math.max(
+        runningState.runDistance + result.newDistance,
+        nativeSnapshot?.distance ?? 0
+      );
+      const distanceDelta = Math.max(0, nextDistance - runningState.runDistance);
+
+      if (distanceDelta > 0) {
         const previousDistance = runningState.runDistance;
-        runningState.setRunDistance((prev) => prev + result.newDistance);
+        runningState.setRunDistance(nextDistance);
 
         const record = runningState.runningRecord;
         if (record && isSoloRunningRecord(record)) {
@@ -346,6 +450,32 @@ export const useLocationTracking = () => {
   useEffect(() => {
     if (Platform.OS !== "android" || !isRunning) return;
 
+    const pace = getCurrentNotificationPace(
+      useLocationStore.getState().myLocation,
+      runDistance,
+      seconds
+    );
+
+    if (isNativeRunningServiceAvailable()) {
+      const distanceChanged =
+        Math.abs(runDistance - lastNativeMetricsSync.current.distance) > 0;
+      const secondsDrift =
+        seconds - lastNativeMetricsSync.current.seconds >= 10;
+
+      if (!distanceChanged && !secondsDrift) {
+        return;
+      }
+
+      lastNativeMetricsSync.current = {
+        distance: runDistance,
+        seconds,
+      };
+      updateRunningNotification({ distance: runDistance, seconds, pace }).catch(
+        () => undefined
+      );
+      return;
+    }
+
     const now = Date.now();
     if (
       now - lastNotificationUpdateAt.current <
@@ -358,7 +488,7 @@ export const useLocationTracking = () => {
       .then((hasStarted) => {
         if (!hasStarted || AppState.currentState !== "active") return;
         lastNotificationUpdateAt.current = now;
-        return updateRunningNotification({ distance: runDistance, seconds });
+        return updateRunningNotification({ distance: runDistance, seconds, pace });
       })
       .catch(() => undefined);
   }, [isRunning, runDistance, seconds]);
@@ -372,16 +502,29 @@ export const useLocationTracking = () => {
         if (!wasActive) return;
 
         const runningState = useRunningStore.getState();
+        const currentLocation = useLocationStore.getState().myLocation;
 
         if (Platform.OS === "android") {
+          const pace = getCurrentNotificationPace(
+            currentLocation,
+            runningState.runDistance,
+            runningState.seconds
+          );
           await updateRunningNotification({
             distance: runningState.runDistance,
             seconds: runningState.seconds,
+            pace,
           }).catch(() => undefined);
-          lastNotificationUpdateAt.current = Date.now();
-        }
 
-        const currentLocation = useLocationStore.getState().myLocation;
+          if (isNativeRunningServiceAvailable()) {
+            lastNativeMetricsSync.current = {
+              distance: runningState.runDistance,
+              seconds: runningState.seconds,
+            };
+          } else {
+            lastNotificationUpdateAt.current = Date.now();
+          }
+        }
 
         await AsyncStorage.multiSet([
           [BG_SECONDS_OFFSET_KEY, Date.now().toString()],
