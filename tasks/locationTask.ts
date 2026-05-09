@@ -2,18 +2,30 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import {
-  BG_NOTIFICATION_METRICS_KEY,
   BG_NOTIFICATION_UPDATED_AT_KEY,
   buildBackgroundLocationOptions,
-  parseRunningNotificationMetrics,
   RUNNING_NOTIFICATION_UPDATE_INTERVAL_MS,
 } from "@/lib/runningNotification";
-import { getFilteredRunningDistance } from "@/lib/runningLocationFilter";
+import {
+  getFilteredRunningDistance,
+  getFilteredRunningSpeed,
+} from "@/lib/runningLocationFilter";
+import {
+  buildBackgroundRunningMetrics,
+  parseBackgroundRunningMetrics,
+} from "@/lib/backgroundRunningMetrics";
+import {
+  getNativeRunningSnapshot,
+  isNativeRunningServiceAvailable,
+  updateNativeRunningMetrics,
+} from "@/lib/nativeRunningService";
+import { convertSpeedToPace } from "@/lib/convertSpeedToPace";
 
 export const BACKGROUND_LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 export const BG_LOCATION_KEY = "@bg_locations";
 export const BG_RUNNING_FLAG_KEY = "@bg_running_active";
 export const BG_SECONDS_OFFSET_KEY = "@bg_seconds_offset";
+export const BG_RUNNING_METRICS_KEY = "@bg_running_metrics";
 
 export type BackgroundLocationPoint = {
   latitude: number;
@@ -43,33 +55,26 @@ const parseStoredLocations = (raw: string | null): BackgroundLocationPoint[] => 
   }
 };
 
-const calculateDistance = (locations: BackgroundLocationPoint[]) => {
-  let distance = 0;
-  let previousAcceptedLocation = locations[0];
-
-  for (let index = 1; index < locations.length; index += 1) {
-    const nextLocation = locations[index];
-    const filteredDistance = getFilteredRunningDistance(
-      previousAcceptedLocation,
-      nextLocation
+const updateAndroidForegroundNotification = async ({
+  distance,
+  seconds,
+  pace,
+}: {
+  distance: number;
+  seconds: number;
+  pace: string;
+}) => {
+  if (isNativeRunningServiceAvailable()) {
+    await updateNativeRunningMetrics({ distance, seconds, pace }).catch(
+      () => false
     );
 
-    if (filteredDistance <= 0) continue;
-
-    distance += filteredDistance;
-    previousAcceptedLocation = nextLocation;
+    const nativeSnapshot = await getNativeRunningSnapshot().catch(() => null);
+    if (nativeSnapshot?.isRunning) {
+      return;
+    }
   }
 
-  return distance;
-};
-
-const updateAndroidForegroundNotification = async ({
-  locations,
-  backgroundStartedAt,
-}: {
-  locations: BackgroundLocationPoint[];
-  backgroundStartedAt: string;
-}) => {
   const now = Date.now();
   const lastUpdated = Number(
     await AsyncStorage.getItem(BG_NOTIFICATION_UPDATED_AT_KEY)
@@ -82,20 +87,13 @@ const updateAndroidForegroundNotification = async ({
     return;
   }
 
-  const baseMetrics = parseRunningNotificationMetrics(
-    await AsyncStorage.getItem(BG_NOTIFICATION_METRICS_KEY)
-  );
-  const offset = Number(backgroundStartedAt);
-  const backgroundSeconds = Number.isFinite(offset)
-    ? Math.max(0, Math.floor((now - offset) / 1000))
-    : 0;
-
   await AsyncStorage.setItem(BG_NOTIFICATION_UPDATED_AT_KEY, String(now));
   await Location.startLocationUpdatesAsync(
     BACKGROUND_LOCATION_TASK,
     buildBackgroundLocationOptions({
-      distance: baseMetrics.distance + calculateDistance(locations),
-      seconds: baseMetrics.seconds + backgroundSeconds,
+      distance,
+      seconds,
+      useForegroundService: true,
     })
   );
 };
@@ -133,13 +131,77 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   if (points.length === 0) return;
 
   try {
-    const raw = await AsyncStorage.getItem(BG_LOCATION_KEY);
-    const stored = parseStoredLocations(raw);
-    const updated = [...stored, ...points].slice(-MAX_BACKGROUND_LOCATIONS);
-    await AsyncStorage.setItem(BG_LOCATION_KEY, JSON.stringify(updated));
+    const [rawLocations, rawMetrics] = await AsyncStorage.multiGet([
+      BG_LOCATION_KEY,
+      BG_RUNNING_METRICS_KEY,
+    ]).then((entries) => entries.map(([, value]) => value));
+    const stored = parseStoredLocations(rawLocations);
+    const metrics = parseBackgroundRunningMetrics(rawMetrics);
+    const offset = Number(backgroundStartedAt);
+    const elapsedSeconds = Number.isFinite(offset)
+      ? Math.max(0, Math.floor((Date.now() - offset) / 1000))
+      : 0;
+
+    let nextMetrics = buildBackgroundRunningMetrics({
+      ...metrics,
+      seconds: metrics.baseSeconds + elapsedSeconds,
+    });
+    const updatedLocations = [...stored];
+
+    let previousAcceptedLocation =
+      typeof nextMetrics.lastLatitude === "number" &&
+      typeof nextMetrics.lastLongitude === "number"
+        ? {
+            latitude: nextMetrics.lastLatitude,
+            longitude: nextMetrics.lastLongitude,
+            timestamp: nextMetrics.lastTimestamp ?? 0,
+          }
+        : stored[stored.length - 1] ?? null;
+
+    if (!previousAcceptedLocation && points.length > 0) {
+      const anchor = points[0];
+      updatedLocations.push(anchor);
+      previousAcceptedLocation = anchor;
+      nextMetrics = buildBackgroundRunningMetrics({
+        ...nextMetrics,
+        lastLatitude: anchor.latitude,
+        lastLongitude: anchor.longitude,
+        lastTimestamp: anchor.timestamp,
+      });
+    }
+
+    for (const point of points) {
+      if (!previousAcceptedLocation) continue;
+
+      const distance = getFilteredRunningDistance(previousAcceptedLocation, point);
+      if (distance <= 0) continue;
+
+      updatedLocations.push(point);
+      previousAcceptedLocation = point;
+      nextMetrics = buildBackgroundRunningMetrics({
+        ...nextMetrics,
+        distance: nextMetrics.distance + distance,
+        lastLatitude: point.latitude,
+        lastLongitude: point.longitude,
+        lastTimestamp: point.timestamp,
+      });
+    }
+
+    const trimmedLocations = updatedLocations.slice(-MAX_BACKGROUND_LOCATIONS);
+    const latestPoint = points[points.length - 1];
+    const currentPace = latestPoint
+      ? convertSpeedToPace(getFilteredRunningSpeed(latestPoint))
+      : nextMetrics.pace;
+    const nextPace = currentPace === `00'00"` ? nextMetrics.pace : currentPace;
+
+    await AsyncStorage.multiSet([
+      [BG_LOCATION_KEY, JSON.stringify(trimmedLocations)],
+      [BG_RUNNING_METRICS_KEY, JSON.stringify(nextMetrics)],
+    ]);
     await updateAndroidForegroundNotification({
-      locations: updated,
-      backgroundStartedAt,
+      distance: nextMetrics.distance,
+      seconds: nextMetrics.seconds,
+      pace: nextPace,
     });
   } catch {
     // Background tasks must fail quietly; foreground sync can continue later.

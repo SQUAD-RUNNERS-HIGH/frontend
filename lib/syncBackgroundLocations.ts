@@ -1,10 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   BG_LOCATION_KEY,
+  BG_RUNNING_METRICS_KEY,
   BG_SECONDS_OFFSET_KEY,
   BackgroundLocationPoint,
 } from "@/tasks/locationTask";
 import { getFilteredRunningDistance } from "@/lib/runningLocationFilter";
+import { parseBackgroundRunningMetrics } from "@/lib/backgroundRunningMetrics";
 
 export const BACKGROUND_LOCATION_SYNC_EVENT = "background-location-sync";
 
@@ -42,21 +44,31 @@ const parseLocations = (raw: string | null): BackgroundLocationPoint[] => {
 };
 
 export async function syncBackgroundLocations(): Promise<BackgroundLocationSyncResult> {
-  const [rawLocations, rawOffset] = await AsyncStorage.multiGet([
+  const [rawLocations, rawOffset, rawMetrics] = await AsyncStorage.multiGet([
     BG_LOCATION_KEY,
     BG_SECONDS_OFFSET_KEY,
+    BG_RUNNING_METRICS_KEY,
   ]).then((entries) => entries.map(([, value]) => value));
 
   const locations = parseLocations(rawLocations);
   const offset = rawOffset ? Number(rawOffset) : NaN;
+  const metrics = parseBackgroundRunningMetrics(rawMetrics);
   const secondsElapsed = Number.isFinite(offset)
     ? Math.max(0, Math.floor((Date.now() - offset) / 1000))
     : 0;
 
-  await AsyncStorage.multiRemove([BG_LOCATION_KEY, BG_SECONDS_OFFSET_KEY]);
+  await AsyncStorage.multiRemove([
+    BG_LOCATION_KEY,
+    BG_SECONDS_OFFSET_KEY,
+    BG_RUNNING_METRICS_KEY,
+  ]);
 
   if (locations.length === 0) {
-    return { ...EMPTY_RESULT, secondsElapsed };
+    return {
+      ...EMPTY_RESULT,
+      newDistance: Math.max(0, metrics.distance - metrics.baseDistance),
+      secondsElapsed: Math.max(0, metrics.seconds - metrics.baseSeconds),
+    };
   }
 
   const segmentDistances: number[] = [];
@@ -80,12 +92,18 @@ export async function syncBackgroundLocations(): Promise<BackgroundLocationSyncR
   }
 
   return {
-    newDistance,
+    newDistance:
+      metrics.distance > 0
+        ? Math.max(0, metrics.distance - metrics.baseDistance)
+        : newDistance,
     newCoords: acceptedLocations
       .slice(1)
       .map(({ longitude, latitude }) => [longitude, latitude]),
     locations: acceptedLocations,
     segmentDistances,
-    secondsElapsed,
+    secondsElapsed:
+      metrics.seconds > 0
+        ? Math.max(0, metrics.seconds - metrics.baseSeconds)
+        : secondsElapsed,
   };
 }
